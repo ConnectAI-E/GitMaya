@@ -1,6 +1,6 @@
 import os
 
-from app import app
+from app import app, session
 from connectai.lark.oauth import Server as OauthServerBase
 from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer as LarkServerBase
