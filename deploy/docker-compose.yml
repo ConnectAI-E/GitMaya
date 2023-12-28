@@ -1,0 +1,55 @@
+version: '2'
+services:
+  gitmaya:
+    restart: always
+    image: gitmaya
+    volumes:
+      - .env:/server/.env
+    ports:
+      - "8888"
+    environment:
+      - VIRTUAL_HOST=api.gitmaya.com
+
+  redis:
+    restart: always
+    image: redis:alpine
+    ports:
+      - "6379"
+
+  rabbitmq:
+    restart: always
+    image: rabbitmq:3.7-management-alpine
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+      VIRTUAL_HOST: rabbitmq-manager.connectai.ai
+      VIRTUAL_PORT: 15672
+    ports:
+      - "15672"
+      - "5672"
+    volumes:
+      - ./data/rabbitmq:/data/mnesia
+
+  mysql:
+    restart: always
+    image: mysql:5.7
+    volumes:
+      - ./data/mysql/data:/var/lib/mysql
+      - ./data/mysql/conf.d:/etc/mysql/conf.d
+    environment:
+      MYSQL_ROOT_PASSWORD: 'connectai2023'
+      MYSQL_DATABASE: 'connectai-manager'
+      TZ: 'Asia/Shanghai'
+    ports:
+      - "3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  proxy:
+    image: jwilder/nginx-proxy:alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./dist:/var/www/html:ro
