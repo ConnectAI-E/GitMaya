@@ -3,9 +3,10 @@ import os
 from connectai.lark.oauth import Server as OauthServer
 from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer
-from flask import Flask
+from flask import Flask, session
 
 app = Flask(__name__)
+app.secret_key = (os.environ.get("SECRET_KEY"),)
 
 hook = LarkServer(prefix="/api/feishu/hook")
 oauth = OauthServer(prefix="/api/feishu/oauth")
@@ -29,6 +30,8 @@ def on_text_message(bot, message_id, content, *args, **kwargs):
 def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     # oauth user_info
     print("oauth", user_info)
+    # TODO
+    session["user_id"] = user_info["union_id"]
     return user_info
 
 
