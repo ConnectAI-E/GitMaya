@@ -24,7 +24,7 @@ services:
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
       RABBITMQ_DEFAULT_VHOST: "/"
-      VIRTUAL_HOST: rabbitmq-manager.connectai.ai
+      VIRTUAL_HOST: rabbitmq.gitmaya.com
       VIRTUAL_PORT: 15672
     ports:
       - "15672"
@@ -39,8 +39,8 @@ services:
       - ./data/mysql/data:/var/lib/mysql
       - ./data/mysql/conf.d:/etc/mysql/conf.d
     environment:
-      MYSQL_ROOT_PASSWORD: 'connectai2023'
-      MYSQL_DATABASE: 'connectai-manager'
+      MYSQL_ROOT_PASSWORD: 'gitmaya'
+      MYSQL_DATABASE: 'gitmaya2023'
       TZ: 'Asia/Shanghai'
     ports:
       - "3306"
