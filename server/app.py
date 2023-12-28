@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config.from_prefixed_env()
 app.secret_key = os.environ.get("SECRET_KEY")
 db = SQLAlchemy(app, engine_options={"isolation_level": "AUTOCOMMIT"})
 CORS(
