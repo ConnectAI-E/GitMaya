@@ -5,7 +5,11 @@ description = "Default template for PDM package"
 authors = [
     {name = "ConnectAI", email = "hi@connectai-e.com"},
 ]
-dependencies = []
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "ca-lark-oauth>=0.0.4",
+    "ca-lark-webhook>=0.0.3",
+]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
