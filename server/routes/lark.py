@@ -42,6 +42,7 @@ def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     print("oauth", user_info)
     # TODO
     session["user_id"] = user_info["union_id"]
+    session.permanent = True
     return user_info
 
 
