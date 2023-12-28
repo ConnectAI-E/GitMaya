@@ -1,6 +1,7 @@
 import os
 
 import env
+import routes
 from app import app
 
 if __name__ == "__main__":
