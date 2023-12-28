@@ -1,0 +1,27 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    -   id: isort
+        args: ["--profile", "black", "--filter-files"]
+-   repo: https://github.com/python/black
+    rev: 23.11.0
+    hooks:
+    -   id: black
+-   repo: https://github.com/pdm-project/pdm
+    rev: 2.11.1
+    hooks:
+    -   id: pdm-export
+        args: ['-o', 'requirements.txt', '--without-hashes']
+        files: ^pdm.lock$
+    -   id: pdm-lock-check
+    -   id: pdm-sync
