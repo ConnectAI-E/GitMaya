@@ -3,7 +3,7 @@
 
 anyio==4.2.0
 blinker==1.7.0
-ca-lark-oauth==0.0.4
+ca-lark-oauth==0.0.5
 ca-lark-sdk==0.0.7
 ca-lark-webhook==0.0.3
 certifi==2023.11.17
