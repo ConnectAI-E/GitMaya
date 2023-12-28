@@ -1,4 +1,4 @@
-FROM python:3.8-bullseye
+FROM python:3.10-bookworm
 
 RUN sed -i "s@http://deb.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list
 RUN sed -i "s@http://security.debian.org@http://mirrors.aliyun.com@g" /etc/apt/sources.list
