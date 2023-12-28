@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:e804c28637907a7db21acfb4cf9cd6516d4de53e9d951b6b8e5a106d82d01871"
+content_hash = "sha256:c6d5001ad8007f670b048d2f4d38cf3bdcfc2b5188d7e7bb794c36e214176bcf"
 
 [[package]]
 name = "anyio"
@@ -35,7 +35,7 @@ files = [
 
 [[package]]
 name = "ca-lark-oauth"
-version = "0.0.4"
+version = "0.0.5"
 requires_python = ">=3.8"
 summary = "lark(feishu) oauth webhook"
 dependencies = [
@@ -43,7 +43,7 @@ dependencies = [
     "flask",
 ]
 files = [
-    {file = "ca-lark-oauth-0.0.4.tar.gz", hash = "sha256:71926c700da858960143640b102d1c0f74777e087107b4648cf079f74e34c208"},
+    {file = "ca-lark-oauth-0.0.5.tar.gz", hash = "sha256:dc6b7c583642b3139716b2fd430d53b777d71a867483687c3f128f5992bd802f"},
 ]
 
 [[package]]

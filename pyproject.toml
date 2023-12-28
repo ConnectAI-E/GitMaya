@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "python-dotenv>=1.0.0",
-    "ca-lark-oauth>=0.0.4",
+    "ca-lark-oauth==0.0.5",
     "ca-lark-webhook>=0.0.3",
 ]
 requires-python = ">=3.10"
