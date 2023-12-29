@@ -4,8 +4,8 @@
 [metadata]
 groups = ["default"]
 strategy = ["cross_platform"]
-lock_version = "4.4.1"
-content_hash = "sha256:c1a5d1e22693f74c3174d55040fa95f5517b735391c8b4c2eced81269267fad9"
+lock_version = "4.4"
+content_hash = "sha256:60a66adf65ee59b47ebfb0bde94efd347cf4c9aeecb1bcf33c3a1459e9e98af0"
 
 [[package]]
 name = "anyio"
@@ -60,7 +60,7 @@ files = [
 
 [[package]]
 name = "ca-lark-sdk"
-version = "0.0.7"
+version = "0.0.8"
 requires_python = ">=3.8"
 summary = "lark(feishu) client"
 dependencies = [
@@ -68,7 +68,7 @@ dependencies = [
     "pycryptodome",
 ]
 files = [
-    {file = "ca-lark-sdk-0.0.7.tar.gz", hash = "sha256:07374e6cfeb97d96aed1358becc09529a66e292d50a94bb3b904306c7d2b6c93"},
+    {file = "ca-lark-sdk-0.0.8.tar.gz", hash = "sha256:ee04d245a66d0174c28318e6dcd4d074a8c11eed96e224105d05dedb2db8b557"},
 ]
 
 [[package]]
@@ -507,7 +507,7 @@ version = "2.0.23"
 requires_python = ">=3.7"
 summary = "Database Abstraction Library"
 dependencies = [
-    "greenlet!=0.4.17; platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\"",
+    "greenlet!=0.4.17; platform_machine == \"aarch64\" or (platform_machine == \"ppc64le\" or (platform_machine == \"x86_64\" or (platform_machine == \"amd64\" or (platform_machine == \"AMD64\" or (platform_machine == \"win32\" or platform_machine == \"WIN32\")))))",
     "typing-extensions>=4.2.0",
 ]
 files = [
