@@ -1,46 +1,51 @@
+import logging
 import os
 
 from app import app, session
 from connectai.lark.oauth import Server as OauthServerBase
 from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer as LarkServerBase
+from model.lark import get_bot_by_app_id
 
-bot = Bot(
-    app_id=os.environ.get("APP_ID"),
-    app_secret=os.environ.get("APP_SECRET"),
-    encrypt_key=os.environ.get("ENCRYPT_KEY"),
-    verification_token=os.environ.get("VERIFICATION_TOKEN"),
-)
+
+def get_bot(app_id):
+    with app.app_context():
+        application = get_bot_by_app_id(app_id)
+        if application:
+            return Bot(
+                app_id=application.app_id,
+                app_secret=application.app_secret,
+                encrypt_key=application.extra.get("encrypt_key"),
+                verification_token=application.extra.get("verification_token"),
+            )
 
 
 class LarkServer(LarkServerBase):
     def get_bot(self, app_id):
-        # TODO search in database and create Bot()
-        return bot
+        return get_bot(app_id)
 
 
 class OauthServer(OauthServerBase):
     def get_bot(self, app_id):
-        # TODO search in database and create Bot()
-        return bot
+        return get_bot(app_id)
 
 
 hook = LarkServer(prefix="/api/feishu/hook")
 oauth = OauthServer(prefix="/api/feishu/oauth")
 
 
-@hook.on_bot_message(message_type="text", bot=bot)
+@hook.on_bot_message(message_type="text")
 def on_text_message(bot, message_id, content, *args, **kwargs):
     text = content["text"]
     print("reply_text", message_id, text)
     bot.reply_text(message_id, "reply: " + text)
 
 
-@oauth.on_bot_event(event_type="oauth:user_info", bot=bot)
+@oauth.on_bot_event(event_type="oauth:user_info")
 def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     # oauth user_info
     print("oauth", user_info)
-    # TODO
+    # TODO save bind user
     session["user_id"] = user_info["union_id"]
     session.permanent = True
     return user_info
