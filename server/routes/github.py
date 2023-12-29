@@ -1,3 +1,4 @@
+import logging
 import os
 
 from app import app
@@ -23,7 +24,7 @@ def github_install():
             f"https://github.com/apps/{os.environ.get('GITHUB_APP_NAME')}/installations/new"
         )
 
-    print(f"installation_id: {installation_id}")
+    logging.debug(f"installation_id: {installation_id}")
 
     jwt = get_jwt(
         os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH"),
@@ -32,23 +33,23 @@ def github_install():
 
     installation_token = get_installation_token(jwt, installation_id)
     if installation_token is None:
-        print("Failed to get installation token.")
+        logging.debug("Failed to get installation token.")
 
         # TODO: 统一解决各类 http 请求失败的情况
         abort(500)
-    print(f"installation_token: {installation_token}")
+    logging.debug(f"installation_token: {installation_token}")
 
     # 如果有 code 参数，则为该用户注册
     code = request.args.get("code", None)
     if code is not None:
-        print(f"code: {code}")
+        logging.debug(f"code: {code}")
 
         user_token = register_by_code(code)
         if user_token is None:
-            print("Failed to register by code.")
+            logging.debug("Failed to register by code.")
             abort(500)
 
-        print(f"user_token: {user_token}")
+        logging.debug(f"user_token: {user_token}")
 
     return "Success!"
 
@@ -66,12 +67,12 @@ def github_register():
             f"https://github.com/login/oauth/authorize?client_id={os.environ.get('GITHUB_CLIENT_ID')}"
         )
 
-    print(f"code: {code}")
+    logging.debug(f"code: {code}")
     user_token = register_by_code(code)
     if user_token is None:
         return "Failed to register by code."
 
-    print(f"user_token: {user_token}")
+    logging.debug(f"user_token: {user_token}")
     return user_token
 
 
