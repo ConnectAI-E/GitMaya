@@ -2,18 +2,21 @@ import logging
 import os
 
 from app import app
-from flask import Blueprint, abort, redirect, request
-from utils.github import (
+from flask import Blueprint, abort, redirect, request, session
+from utils.auth import authenticated
+
+from server.utils.github.github import (
     get_installation_token,
     get_jwt,
-    register_by_code,
     verify_github_signature,
 )
+from server.utils.user import register
 
 bp = Blueprint("github", __name__, url_prefix="/api/github")
 
 
 @bp.route("/install", methods=["GET"])
+@authenticated
 def github_install():
     """Install GitHub App.
 
@@ -44,18 +47,6 @@ def github_install():
         abort(500)
     logging.debug(f"installation_token: {installation_token}")
 
-    # 如果有 code 参数，则为该用户注册
-    code = request.args.get("code", None)
-    if code is not None:
-        logging.debug(f"code: {code}")
-
-        user_token = register_by_code(code)
-        if user_token is None:
-            logging.debug("Failed to register by code.")
-            abort(500)
-
-        logging.debug(f"user_token: {user_token}")
-
     return "Success!"
 
 
@@ -72,13 +63,14 @@ def github_register():
             f"https://github.com/login/oauth/authorize?client_id={os.environ.get('GITHUB_CLIENT_ID')}"
         )
 
-    logging.debug(f"code: {code}")
-    user_token = register_by_code(code)
-    if user_token is None:
+    user_id = register(code)
+    if user_id is None:
         return "Failed to register by code."
 
-    logging.debug(f"user_token: {user_token}")
-    return user_token
+    session["user_id"] = user_id
+
+    # TODO: 统一的返回格式
+    return "Success!"
 
 
 @bp.route("/hook", methods=["POST"])
@@ -86,7 +78,8 @@ def github_register():
 def github_hook():
     """Receive GitHub webhook."""
 
-    x_github_event = request.headers.get("x-github-event")
+    x_github_event = request.headers.get("x-github-event", None)
+
     logging.info(x_github_event)
 
     logging.debug(request.json)

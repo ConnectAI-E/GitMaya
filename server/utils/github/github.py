@@ -72,7 +72,7 @@ def get_installation_token(jwt: str, installation_id: str) -> str | None:
     return None
 
 
-def register_by_code(code: str) -> str | None:
+def oauth_by_code(code: str) -> dict | None:
     """Register by code
 
     Args:
@@ -94,11 +94,13 @@ def register_by_code(code: str) -> str | None:
         if response.status_code != 200:
             return None
 
-        access_token = parse_qs(response.text).get("access_token", None)
-        if access_token is not None:
-            return access_token[0]
+        try:
+            oauth_info = parse_qs(response.text)
+        except Exception as e:
+            logging.debug(e)
+            return None
 
-    return None
+    return oauth_info
 
 
 def verify_github_signature(
@@ -141,3 +143,31 @@ def verify_github_signature(
         return wrapper
 
     return decorator
+
+
+def get_user_info(access_token: str):
+    """Get user info by access token.
+
+    Args:
+        access_token (str): The user access token.
+
+    Returns:
+        dict: User info.
+    """
+
+    with httpx.Client() as client:
+        response = client.get(
+            "https://api.github.com/user",
+            headers={
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": f"token {access_token}",
+            },
+        )
+        if response.status_code != 200:
+            logging.debug(f"Failed to get user info. {response.text}")
+            return None
+
+        user_info = response.json()
+        return user_info
+
+    return None
