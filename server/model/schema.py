@@ -22,7 +22,7 @@ class ObjID(BINARY):
 
     def result_processor(self, dialect, coltype):
         def processor(value):
-            if not isinstance(value, bytes):
+            if value and not isinstance(value, bytes):
                 value = bytes(value)
             return str(bson.ObjectId(value)) if bson.ObjectId.is_valid(value) else value
 
