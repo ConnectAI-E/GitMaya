@@ -1,10 +1,17 @@
 version: '2'
 services:
-  gitmaya:
-    restart: always
+  worker:
     image: gitmaya
     volumes:
       - .env:/server/.env
+    command: celery -A tasks.celery worker -l DEBUG -c 2
+
+  beat:
+    extends: worker
+    command: celery -A tasks.celery beat -l DEBUG
+
+  gitmaya:
+    extends: worker
     ports:
       - "8888"
     environment:
@@ -15,22 +22,9 @@ services:
     image: redis:alpine
     ports:
       - "6379"
-
-  rabbitmq:
-    restart: always
-    image: rabbitmq:3.7-management-alpine
-    environment:
-      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
-      RABBITMQ_DEFAULT_USER: "rabbitmq"
-      RABBITMQ_DEFAULT_PASS: "rabbitmq"
-      RABBITMQ_DEFAULT_VHOST: "/"
-      VIRTUAL_HOST: rabbitmq.gitmaya.com
-      VIRTUAL_PORT: 15672
-    ports:
-      - "15672"
-      - "5672"
     volumes:
-      - ./data/rabbitmq:/data/mnesia
+      - ./data/redis:/data
+    command: redis-server --save 20 1 --loglevel warning
 
   mysql:
     restart: always
@@ -39,8 +33,8 @@ services:
       - ./data/mysql/data:/var/lib/mysql
       - ./data/mysql/conf.d:/etc/mysql/conf.d
     environment:
-      MYSQL_ROOT_PASSWORD: 'gitmaya'
-      MYSQL_DATABASE: 'gitmaya2023'
+      MYSQL_ROOT_PASSWORD: 'gitmaya2023'
+      MYSQL_DATABASE: 'gitmaya'
       TZ: 'Asia/Shanghai'
     ports:
       - "3306"

@@ -22,7 +22,7 @@ class ObjID(BINARY):
 
     def result_processor(self, dialect, coltype):
         def processor(value):
-            if not isinstance(value, bytes):
+            if value and not isinstance(value, bytes):
                 value = bytes(value)
             return str(bson.ObjectId(value)) if bson.ObjectId.is_valid(value) else value
 
@@ -77,9 +77,20 @@ class Base(db.Model):
     __abstract__ = True
     id = db.Column(ObjID(12), primary_key=True)
     status = db.Column(db.Integer, nullable=True, default=0, server_default=text("0"))
-    created = db.Column(db.TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created = db.Column(
+        db.TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP"),
+        comment="创建时间",
+    )
     modified = db.Column(
-        db.TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
+        comment="修改时间",
     )
 
 
@@ -101,7 +112,7 @@ class Account(User):
 
 
 class BindUser(Base):
-    __tablename__ = "bint_user"
+    __tablename__ = "bind_user"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
     # 这里如果是飞书租户，可能会有不同的name等，但是在github这边不管是哪一个org，都是一样的
     # 这里如何统一？
