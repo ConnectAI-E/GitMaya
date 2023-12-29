@@ -52,7 +52,7 @@ def create_lark_app(app_id, app_secret, encrypt_key, verification_token, host):
             extra=dict(encrypt_key=encrypt_key, verification_token=verification_token),
         )
         db.session.add(application)
-        dn.session.commit()
+        db.session.commit()
     else:
         db.session.query(IMApplication).filter(
             IMApplication.id == application.id,
@@ -65,7 +65,7 @@ def create_lark_app(app_id, app_secret, encrypt_key, verification_token, host):
                 ),
             )
         )
-        dn.session.commit()
+        db.session.commit()
     click.echo(f"webhook: \n{host}/api/feishu/hook/{app_id}")
 
     click.confirm("success to save feishu app?", abort=True)
