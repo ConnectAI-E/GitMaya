@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:60a66adf65ee59b47ebfb0bde94efd347cf4c9aeecb1bcf33c3a1459e9e98af0"
+content_hash = "sha256:04f23922d3a60864955c3dee31178aa308a90bd72e18f3e1d9caba742f7431ad"
 
 [[package]]
 name = "anyio"
@@ -73,7 +73,7 @@ files = [
 
 [[package]]
 name = "ca-lark-webhook"
-version = "0.0.3"
+version = "0.0.4"
 requires_python = ">=3.8"
 summary = "lark(feishu) client"
 dependencies = [
@@ -81,7 +81,7 @@ dependencies = [
     "flask",
 ]
 files = [
-    {file = "ca-lark-webhook-0.0.3.tar.gz", hash = "sha256:79d6da1ab96b207b542b8a20eabb0d8dc6563f87b84948d468183337f543cf22"},
+    {file = "ca-lark-webhook-0.0.4.tar.gz", hash = "sha256:1ce7d6f92e61a12e434dada2fb12a2d6a18420576caa72db82afbbfaaa7ca3ce"},
 ]
 
 [[package]]

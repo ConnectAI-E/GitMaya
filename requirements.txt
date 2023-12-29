@@ -6,7 +6,7 @@ blinker==1.7.0
 bson==0.5.10
 ca-lark-oauth==0.0.5
 ca-lark-sdk==0.0.8
-ca-lark-webhook==0.0.3
+ca-lark-webhook==0.0.4
 certifi==2023.11.17
 cffi==1.16.0
 click==8.1.7
