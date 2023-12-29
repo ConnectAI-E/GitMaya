@@ -7,7 +7,6 @@ import click
 from app import app, db
 from flask.cli import with_appcontext
 from sqlalchemy import BINARY, ForeignKey, String, text
-from sqlalchemy.ext.declarative import declarative_base
 
 
 class ObjID(BINARY):

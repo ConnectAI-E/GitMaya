@@ -3,7 +3,6 @@ import os
 import env
 import routes
 from app import app
-from model.schema import *
 
 if __name__ == "__main__":
     # gunicorn -w 1 -b :8888 "server:app"
