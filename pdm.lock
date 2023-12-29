@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:03abf006ee3055e53a3a12c9933c85107a2fc0de61462e96e18b1327f85c3866"
+content_hash = "sha256:6aad74a90f0ad95144d877dcf48c872ce82df2a6ddbe42d04e67585c0734c5f8"
 
 [[package]]
 name = "amqp"
@@ -34,6 +34,16 @@ dependencies = [
 files = [
     {file = "anyio-4.2.0-py3-none-any.whl", hash = "sha256:745843b39e829e108e518c489b31dc757de7d2131d53fac32bd8df268227bfee"},
     {file = "anyio-4.2.0.tar.gz", hash = "sha256:e1875bb4b4e2de1669f4bc7869b6d3f54231cdced71605e6e64c9be77e3be50f"},
+]
+
+[[package]]
+name = "async-timeout"
+version = "4.0.3"
+requires_python = ">=3.7"
+summary = "Timeout context manager for asyncio programs"
+files = [
+    {file = "async-timeout-4.0.3.tar.gz", hash = "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f"},
+    {file = "async_timeout-4.0.3-py3-none-any.whl", hash = "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"},
 ]
 
 [[package]]
@@ -589,6 +599,19 @@ summary = "Read key-value pairs from a .env file and set them as environment var
 files = [
     {file = "python-dotenv-1.0.0.tar.gz", hash = "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"},
     {file = "python_dotenv-1.0.0-py3-none-any.whl", hash = "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"},
+]
+
+[[package]]
+name = "redis"
+version = "5.0.1"
+requires_python = ">=3.7"
+summary = "Python client for Redis database and key-value store"
+dependencies = [
+    "async-timeout>=4.0.2; python_full_version <= \"3.11.2\"",
+]
+files = [
+    {file = "redis-5.0.1-py3-none-any.whl", hash = "sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f"},
+    {file = "redis-5.0.1.tar.gz", hash = "sha256:0dab495cd5753069d3bc650a0dde8a8f9edde16fc5691b689a566eda58100d0f"},
 ]
 
 [[package]]

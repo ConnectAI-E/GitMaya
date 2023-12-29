@@ -18,6 +18,7 @@ dependencies = [
     "urllib3>=2.1.0",
     "ca-lark-sdk>=0.0.8",
     "celery>=5.3.6",
+    "redis>=5.0.1",
 ]
 requires-python = ">=3.10"
 readme = "README.md"

@@ -1,3 +1,4 @@
+import env
 from app import app
 from celery import Celery
 

@@ -1,4 +1,5 @@
-from ..celery_app import celery
+from celery_app import celery
+
 from .lark import test_task
 
 celery.conf.beat_schedule = {

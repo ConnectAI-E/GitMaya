@@ -33,8 +33,8 @@ services:
       - ./data/mysql/data:/var/lib/mysql
       - ./data/mysql/conf.d:/etc/mysql/conf.d
     environment:
-      MYSQL_ROOT_PASSWORD: 'gitmaya'
-      MYSQL_DATABASE: 'gitmaya2023'
+      MYSQL_ROOT_PASSWORD: 'gitmaya2023'
+      MYSQL_DATABASE: 'gitmaya'
       TZ: 'Asia/Shanghai'
     ports:
       - "3306"
