@@ -3,8 +3,11 @@ import logging
 from datetime import datetime
 
 import bson
-from app import db
+import click
+from app import app, db
+from flask.cli import with_appcontext
 from sqlalchemy import BINARY, ForeignKey, String, text
+from sqlalchemy.ext.declarative import declarative_base
 
 
 class ObjID(BINARY):
@@ -72,6 +75,7 @@ class JSONStr(String):
 
 
 class Base(db.Model):
+    __abstract__ = True
     id = db.Column(ObjID(12), primary_key=True)
     status = db.Column(db.Integer, nullable=True, default=0, server_default=text("0"))
     created = db.Column(db.TIMESTAMP, nullable=False, default=datetime.utcnow)
@@ -92,18 +96,18 @@ class User(Base):
 
 
 class Account(User):
-    passwd = Column(
-        String(128), nullable=True, server_default=text("''"), comment="登录密码"
+    passwd = db.Column(
+        db.String(128), nullable=True, server_default=text("''"), comment="登录密码"
     )
 
 
 class BindUser(Base):
     __tablename__ = "bint_user"
-    user_id = Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
+    user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
     # 这里如果是飞书租户，可能会有不同的name等，但是在github这边不管是哪一个org，都是一样的
     # 这里如何统一？
     # 是不是说这里暂时不需要这个platform_id，还是说这个字段为空就好？
-    platform_id = Column(
+    platform_id = db.Column(
         ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="平台"
     )
     unionid = db.Column(db.String(128), nullable=True, comment="飞书的unionid")
@@ -120,11 +124,11 @@ class BindUser(Base):
 
 class Team(Base):
     __tablename__ = "team"
-    user_id = Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
-    code_platform_id = Column(
+    user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
+    code_platform_id = db.Column(
         ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="代码平台"
     )
-    im_platform_id = Column(
+    im_platform_id = db.Column(
         ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="协同平台"
     )
 
@@ -140,14 +144,16 @@ class Team(Base):
 
 class TeamMember(Base):
     __tablename__ = "team_member"
-    team_id = Column(ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组")
-    code_user_id = Column(
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
+    )
+    code_user_id = db.Column(
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
         comment="从code_platform关联过来的用户",
     )
-    im_user_id = Column(
+    im_user_id = db.Column(
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
@@ -166,10 +172,10 @@ class CodePlatform(Base):
 
 class Repo(Base):
     __tablename__ = "repo"
-    code_platform_id = Column(
+    code_platform_id = db.Column(
         ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="属于哪一个org"
     )
-    application_id = Column(
+    application_id = db.Column(
         ObjID(12),
         ForeignKey("code_application.id"),
         nullable=True,
@@ -184,16 +190,16 @@ class Repo(Base):
 
 class RepoUser(Base):
     __tablename__ = "repo_user"
-    code_platform_id = Column(
+    code_platform_id = db.Column(
         ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="属于哪一个org"
     )
-    application_id = Column(
+    application_id = db.Column(
         ObjID(12),
         ForeignKey("code_application.id"),
         nullable=True,
         comment="哪一个application_id",
     )
-    bind_user_id = Column(
+    bind_user_id = db.Column(
         ObjID(12), ForeignKey("bind_user.id"), nullable=True, comment="项目协作者"
     )
 
@@ -210,7 +216,7 @@ class IMPlatform(Base):
 
 class CodeApplication(Base):
     __tablename__ = "code_application"
-    platform_id = Column(
+    platform_id = db.Column(
         ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="代码平台"
     )
     installation_id = db.Column(db.String(128), nullable=True, comment="安装id")
@@ -221,7 +227,7 @@ class CodeApplication(Base):
 
 class CodeEvent(Base):
     __tablename__ = "code_event"
-    application_id = Column(
+    application_id = db.Column(
         ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="应用id"
     )
     event_id = db.Column(db.String(128), nullable=True, comment="event_id")
@@ -234,7 +240,7 @@ class CodeEvent(Base):
 
 class CodeAction(Base):
     __tablename__ = "code_action"
-    event_id = Column(
+    event_id = db.Column(
         ObjID(12), ForeignKey("code_event.id"), nullable=True, comment="事件ID"
     )
     action_type = db.Column(
@@ -248,7 +254,7 @@ class CodeAction(Base):
 
 class IMApplication(Base):
     __tablename__ = "im_application"
-    platform_id = Column(
+    platform_id = db.Column(
         ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="协同平台"
     )
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
@@ -260,7 +266,7 @@ class IMApplication(Base):
 
 class IMEvent(Base):
     __tablename__ = "im_event"
-    application_id = Column(
+    application_id = db.Column(
         ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="应用id"
     )
     event_id = db.Column(db.String(128), nullable=True, comment="event_id")
@@ -273,7 +279,7 @@ class IMEvent(Base):
 
 class IMAction(Base):
     __tablename__ = "im_action"
-    event_id = Column(
+    event_id = db.Column(
         ObjID(12), ForeignKey("im_event.id"), nullable=True, comment="事件ID"
     )
     action_type = db.Column(
@@ -287,8 +293,10 @@ class IMAction(Base):
 
 class ChatGroup(Base):
     __tablename__ = "chat_group"
-    repo_id = Column(ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目")
-    im_application_id = Column(
+    repo_id = db.Column(
+        ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目"
+    )
+    im_application_id = db.Column(
         ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="哪一个项目创建的"
     )
     chat_id = db.Column(db.String(128), nullable=True, comment="chat_id")
@@ -299,8 +307,12 @@ class ChatGroup(Base):
     )
 
 
-if __name__ == "__main__":
-    from app import app
+# create command function
+@click.command(name="create")
+@with_appcontext
+def create():
+    db.create_all()
 
-    with app.app_context():
-        db.create_all()
+
+# add command function to cli commands
+app.cli.add_command(create)
