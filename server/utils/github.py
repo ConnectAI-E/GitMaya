@@ -1,5 +1,6 @@
 import os
 import time
+from urllib.parse import parse_qs
 
 import httpx
 from jwt import JWT, jwk_from_pem
@@ -79,14 +80,16 @@ def register_by_code(code: str) -> str | None:
         response = client.post(
             "https://github.com/login/oauth/access_token",
             params={
-                "client_id": os.environ.get("CLIENT_ID"),
-                "client_secret": os.environ.get("CLIENT_SECRET"),
+                "client_id": os.environ.get("GITHUB_CLIENT_ID"),
+                "client_secret": os.environ.get("GITHUB_CLIENT_SECRET"),
                 "code": code,
             },
         )
-        if response.status_code == 200:
+        if response.status_code != 200:
             return None
 
-        return response.text
+        access_token = parse_qs(response.text).get("access_token", None)
+        if access_token is not None:
+            return access_token[0]
 
     return None

@@ -9,6 +9,13 @@ bp = Blueprint("github", __name__, url_prefix="/api/github")
 
 @bp.route("/install", methods=["GET"])
 def github_install():
+    """Install GitHub App.
+
+    If not `installation_id`, redirect to install page.
+    If `installation_id`, get installation token.
+
+    If `code`, register by code.
+    """
     installation_id = request.args.get("installation_id", None)
 
     if installation_id is None:
@@ -44,6 +51,28 @@ def github_install():
         print(f"user_token: {user_token}")
 
     return "Success!"
+
+
+@bp.route("/register", methods=["GET"])
+def github_register():
+    """GitHub OAuth register.
+
+    If not `code`, redirect to GitHub OAuth page.
+    If `code`, register by code.
+    """
+    code = request.args.get("code", None)
+    if code is None:
+        return redirect(
+            f"https://github.com/login/oauth/authorize?client_id={os.environ.get('GITHUB_CLIENT_ID')}"
+        )
+
+    print(f"code: {code}")
+    user_token = register_by_code(code)
+    if user_token is None:
+        return "Failed to register by code."
+
+    print(f"user_token: {user_token}")
+    return user_token
 
 
 app.register_blueprint(bp)
