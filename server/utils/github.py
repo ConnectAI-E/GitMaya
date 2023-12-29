@@ -1,8 +1,13 @@
+import hashlib
+import hmac
+import logging
 import os
 import time
+from functools import wraps
 from urllib.parse import parse_qs
 
 import httpx
+from flask import abort, request
 from jwt import JWT, jwk_from_pem
 
 
@@ -57,7 +62,8 @@ def get_installation_token(jwt: str, installation_id: str) -> str | None:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-        if response.status_code == 200:
+        if response.status_code != 200:
+            logging.debug(f"Failed to get installation token. {response.text}")
             return None
 
         installation_token = response.json().get("token", None)
@@ -93,3 +99,45 @@ def register_by_code(code: str) -> str | None:
             return access_token[0]
 
     return None
+
+
+def verify_github_signature(
+    secret: str = os.environ.get("GITHUB_WEBHOOK_SECRET", "secret")
+):
+    """Decorator to verify the signature of a GitHub webhook request.
+
+    Args:
+        secret (str): The secret key used to sign the webhook request.
+
+    Returns:
+        function: The decorated function.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            signature = request.headers.get("x-hub-signature-256")
+            if not signature:
+                abort(400, "No signature provided.")
+
+            # Verify the signature
+            body = request.get_data()
+
+            hash_object = hmac.new(
+                secret.encode("utf-8"),
+                msg=body,
+                digestmod=hashlib.sha256,
+            )
+            expected_signature = "sha256=" + hash_object.hexdigest()
+
+            logging.debug(f"{expected_signature} {signature}")
+
+            if not hmac.compare_digest(expected_signature, signature):
+                logging.debug("Invalid signature.")
+                abort(403, "Invalid signature.")
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator

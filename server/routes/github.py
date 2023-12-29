@@ -3,7 +3,12 @@ import os
 
 from app import app
 from flask import Blueprint, abort, redirect, request
-from utils.github import get_installation_token, get_jwt, register_by_code
+from utils.github import (
+    get_installation_token,
+    get_jwt,
+    register_by_code,
+    verify_github_signature,
+)
 
 bp = Blueprint("github", __name__, url_prefix="/api/github")
 
@@ -74,6 +79,19 @@ def github_register():
 
     logging.debug(f"user_token: {user_token}")
     return user_token
+
+
+@bp.route("/hook", methods=["POST"])
+@verify_github_signature(os.environ.get("GITHUB_WEBHOOK_SECRET"))
+def github_hook():
+    """Receive GitHub webhook."""
+
+    x_github_event = request.headers.get("x-github-event")
+    logging.info(x_github_event)
+
+    logging.debug(request.json)
+
+    return "Receive Success!"
 
 
 app.register_blueprint(bp)
