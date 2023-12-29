@@ -77,9 +77,20 @@ class Base(db.Model):
     __abstract__ = True
     id = db.Column(ObjID(12), primary_key=True)
     status = db.Column(db.Integer, nullable=True, default=0, server_default=text("0"))
-    created = db.Column(db.TIMESTAMP, nullable=False, default=datetime.utcnow)
+    created = db.Column(
+        db.TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP"),
+        comment="创建时间",
+    )
     modified = db.Column(
-        db.TIMESTAMP, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.TIMESTAMP,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"),
+        comment="修改时间",
     )
 
 
