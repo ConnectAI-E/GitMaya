@@ -26,22 +26,6 @@ services:
       - ./data/redis:/data
     command: redis-server --save 20 1 --loglevel warning
 
-  rabbitmq:
-    restart: always
-    image: rabbitmq:3.7-management-alpine
-    environment:
-      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
-      RABBITMQ_DEFAULT_USER: "rabbitmq"
-      RABBITMQ_DEFAULT_PASS: "rabbitmq"
-      RABBITMQ_DEFAULT_VHOST: "/"
-      VIRTUAL_HOST: rabbitmq.gitmaya.com
-      VIRTUAL_PORT: 15672
-    ports:
-      - "15672"
-      - "5672"
-    volumes:
-      - ./data/rabbitmq:/data/mnesia
-
   mysql:
     restart: always
     image: mysql:5.7
