@@ -1,3 +1,5 @@
+import logging
+
 from celery_app import celery
 
 
