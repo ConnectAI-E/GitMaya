@@ -1,12 +1,10 @@
 import logging
 import os
 
-import click
-from app import app, db, session
+from app import app, session
 from connectai.lark.oauth import Server as OauthServerBase
 from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer as LarkServerBase
-from flask.cli import with_appcontext
 from model.lark import get_bot_by_app_id
 
 
@@ -51,22 +49,6 @@ def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     session["user_id"] = user_info["union_id"]
     session.permanent = True
     return user_info
-
-
-# create command function
-@app.cli.command(name="larkapp")
-@click.option("-a", "--app-id", "app_id", required=True)
-@click.option("-s", "--app-secret", "app_secret", required=True)
-@click.option("-e", "--encrypt-key", "encrypt_key")
-@click.option("-v", "--verification-token", "verification_token")
-@click.option("-h", "--host", "host", default="https://testapi.gitmaya.com")
-def create_lark_app(app_id, app_secret, encrypt_key, verification_token, host):
-    click.echo(
-        f"create_lark_app {app_id} {app_secret} {encrypt_key} {verification_token} {host}"
-    )
-    click.echo(f"webhook: \n{host}/api/feishu/hook/{app_id}")
-    application = db.session.query(IMApplication).filter(IMApplication)
-    db.session
 
 
 app.register_blueprint(oauth.get_blueprint())
