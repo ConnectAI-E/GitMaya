@@ -101,7 +101,7 @@ class Account(User):
 
 
 class BindUser(Base):
-    __tablename__ = "bint_user"
+    __tablename__ = "bind_user"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
     # 这里如果是飞书租户，可能会有不同的name等，但是在github这边不管是哪一个org，都是一样的
     # 这里如何统一？
