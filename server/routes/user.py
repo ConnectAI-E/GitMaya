@@ -1,5 +1,3 @@
-import logging
-
 from app import app
 from flask import Blueprint, jsonify, session
 from model.team import get_team_list_by_user_id, is_team_admin

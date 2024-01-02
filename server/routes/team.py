@@ -1,5 +1,3 @@
-import logging
-
 from app import app
 from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (

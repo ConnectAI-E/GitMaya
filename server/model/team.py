@@ -78,10 +78,6 @@ def get_team_member(team_id, user_id, page=1, size=20):
         return [], 0
     return query_one_page(query, page, size), total
 
-    platform_id = db.Column(
-        ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="平台"
-    )
-
 
 def get_im_user_by_team_id(team_id, page=1, size=20):
     query = (
