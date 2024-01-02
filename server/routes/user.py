@@ -1,7 +1,7 @@
 import logging
 
 from app import app
-from flask import Blueprint, abort, jsonify, redirect, request
+from flask import Blueprint, jsonify, session
 from model.team import get_team_list_by_user_id, is_team_admin
 from model.user import get_user_by_id
 from utils.auth import authenticated

@@ -320,23 +320,17 @@ class ChatGroup(Base):
     )
 
 
-def _default(value):
-    if isinstance(value, db.Model):
-        return value.__dict__
-    elif isinstance(value, Decimal):
-        return int(value)
-    elif isinstance(value, datetime):
-        return value.strftime("%Y-%m-%d %H:%M:%S")
-    elif isinstance(value, time):
-        return value.isoformat()
-    return str(value)
-
-
 class CustomJsonProvider(DefaultJSONProvider):
-    default = _default
+    @staticmethod
+    def default(value):
+        if isinstance(value, db.Model):
+            return value.__dict__
+        elif isinstance(value, datetime):
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        return str(value)
 
 
-app.json_provider_class = CustomJsonProvide
+app.json_provider_class = CustomJsonProvider
 app.json = CustomJsonProvider(app)
 
 

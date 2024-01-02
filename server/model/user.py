@@ -1,6 +1,6 @@
 from sqlalchemy import and_, or_
 
-from .schema import User
+from .schema import User, db
 
 
 def get_user_by_id(user_id):

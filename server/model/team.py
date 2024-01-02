@@ -16,6 +16,9 @@ def get_team_list_by_user_id(user_id, page=1, size=100):
             Team.status == 0,
         )
     )
+    total = query.count()
+    if total == 0:
+        return [], 0
     return query_one_page(query, page, size), total
 
 
