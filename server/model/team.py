@@ -58,6 +58,11 @@ def get_team_by_id(team_id, user_id):
     return team
 
 
+def get_platform_info_by_team_id(team_id):
+    # TODO
+    return None, None
+
+
 def get_team_member(team_id, user_id, page=1, size=20):
     query = db.session.query(TeamMember).filter(
         TeamMember.team_id == team_id,

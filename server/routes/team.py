@@ -3,6 +3,7 @@ import logging
 from app import app
 from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (
+    get_platform_info_by_team_id,
     get_team_by_id,
     get_team_list_by_user_id,
     get_team_member,
@@ -28,8 +29,19 @@ def get_team_list():
 @bp.route("/<team_id>", methods=["GET"])
 @authenticated
 def get_team_detail(team_id):
-    data = get_team_by_id(team_id, session["user_id"])
-    return jsonify({"code": 0, "msg": "success", "data": data})
+    team = get_team_by_id(team_id, session["user_id"])
+    code_platform, im_platform = get_platform_info_by_team_id(team_id)
+    return jsonify(
+        {
+            "code": 0,
+            "msg": "success",
+            "data": {
+                "team": team,
+                "code_platform": code_platform,
+                "im_platform": im_platform,
+            },
+        }
+    )
 
 
 @bp.route("/<team_id>/member", methods=["GET"])
