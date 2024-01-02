@@ -1,3 +1,4 @@
+from flask import abort
 from sqlalchemy import and_, or_
 from utils.utils import query_one_page
 
@@ -34,3 +35,24 @@ def is_team_admin(team_id, user_id):
         .scalar()
         else False
     )
+
+
+def get_team_by_id(team_id, user_id):
+    team = (
+        db.session.query(Team)
+        .filter(
+            or_(
+                Team.user_id == user_id,  # 管理员
+                and_(
+                    TeamMember.team_id == Team.id,
+                    TeamMember.code_user_id == user_id,  # 属于某个team的员工
+                    TeamMember.status == 0,
+                ),
+                Team.status == 0,
+            )
+        )
+        .first()
+    )
+    if not team:
+        return abort(404, "can not found team by id")
+    return team

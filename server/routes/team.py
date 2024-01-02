@@ -19,4 +19,12 @@ def get_team_list():
     return jsonify({"code": 0, "msg": "success", "data": data, "total": total})
 
 
+@app.route("/<name>")
+@bp.route("/<team_id>", methods=["GET"])
+@authenticated
+def get_team_detail(team_id):
+    data = get_team_by_id(team_id, session["user_id"])
+    return jsonify({"code": 0, "msg": "success", "data": data})
+
+
 app.register_blueprint(bp)
