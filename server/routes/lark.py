@@ -1,10 +1,10 @@
-import logging
 import os
 
-from app import app, session
+from app import app
 from connectai.lark.oauth import Server as OauthServerBase
 from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer as LarkServerBase
+from flask import session
 from model.lark import get_bot_by_app_id
 
 

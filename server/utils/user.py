@@ -35,7 +35,7 @@ def register(code: str) -> str | None:
     )
 
     db.session.add(new_user)
-    db.session.commit()
+    db.session.flush()
 
     new_bind_user = BindUser(
         id=ObjID.new_id(),

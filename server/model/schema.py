@@ -1,11 +1,13 @@
 import json
 import logging
 from datetime import datetime
+from time import time
 
 import bson
 import click
 from app import app, db
 from flask.cli import with_appcontext
+from flask.json.provider import DefaultJSONProvider
 from sqlalchemy import BINARY, ForeignKey, String, text
 
 
@@ -316,6 +318,20 @@ class ChatGroup(Base):
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
+
+
+class CustomJsonProvider(DefaultJSONProvider):
+    @staticmethod
+    def default(value):
+        if isinstance(value, db.Model):
+            return value.__dict__
+        elif isinstance(value, datetime):
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        return str(value)
+
+
+app.json_provider_class = CustomJsonProvider
+app.json = CustomJsonProvider(app)
 
 
 # create command function
