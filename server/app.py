@@ -15,9 +15,16 @@ CORS(
 
 
 @app.errorhandler(404)
-def custom404(error):
+def page_not_found(error):
     response = jsonify({"code": -1, "msg": error.description})
     response.status_code = 404
+    return response
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    response = jsonify({"code": -1, "msg": error.description})
+    response.status_code = 400
     return response
 
 

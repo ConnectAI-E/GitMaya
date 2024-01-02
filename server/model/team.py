@@ -14,8 +14,8 @@ def get_team_list_by_user_id(user_id, page=1, size=100):
                 TeamMember.code_user_id == user_id,  # 属于某个team的员工
                 TeamMember.status == 0,
             ),
-            Team.status == 0,
-        )
+        ),
+        Team.status == 0,
     )
     total = query.count()
     if total == 0:
@@ -48,11 +48,36 @@ def get_team_by_id(team_id, user_id):
                     TeamMember.code_user_id == user_id,  # 属于某个team的员工
                     TeamMember.status == 0,
                 ),
-                Team.status == 0,
-            )
+            ),
+            Team.status == 0,
         )
         .first()
     )
     if not team:
         return abort(404, "can not found team by id")
     return team
+
+
+def get_team_member(team_id, user_id, page=1, size=20):
+    query = db.session.query(TeamMember).filter(
+        TeamMember.team_id == team_id,
+        TeamMember.status == 0,
+    )
+    # admin can get all users in current_team
+    if not is_team_admin(team_id, user_id):
+        query = query.filter(
+            TeamMember.code_user_id == user_id,
+        )
+    total = query.count()
+    if total == 0:
+        return [], 0
+    return query_one_page(query, page, size), total
+
+
+def set_team_member(team_id, code_user_id, im_user_id):
+    db.session.query(TeamMember).filter(
+        TeamMember.team_id == team_id,
+        TeamMember.code_user_id == code_user_id,
+        TeamMember.status == 0,
+    ).update(dict(im_user_id=im_user_id))
+    db.session.commit()
