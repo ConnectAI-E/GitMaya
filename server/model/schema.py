@@ -135,11 +135,11 @@ class BindUser(Base):
 class Team(Base):
     __tablename__ = "team"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
-    code_platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="代码平台"
+    code_application_id = db.Column(
+        ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="代码平台"
     )
-    im_platform_id = db.Column(
-        ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="协同平台"
+    im_application_id = db.Column(
+        ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="协同平台"
     )
 
     name = db.Column(db.String(128), nullable=True, comment="名称")
@@ -161,13 +161,13 @@ class TeamMember(Base):
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
-        comment="从code_platform关联过来的用户",
+        comment="从code_application关联过来的用户",
     )
     im_user_id = db.Column(
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
-        comment="从im_platform关联过来的用户",
+        comment="从im_application关联过来的用户",
     )
 
 
@@ -188,9 +188,6 @@ class Repo(Base):
 
 class RepoUser(Base):
     __tablename__ = "repo_user"
-    code_platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="属于哪一个org"
-    )
     application_id = db.Column(
         ObjID(12),
         ForeignKey("code_application.id"),
