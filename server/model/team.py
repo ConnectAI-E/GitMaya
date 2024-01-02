@@ -1,16 +1,10 @@
 from sqlalchemy import and_, or_
+from utils.utils import query_one_page
 
 from .schema import Team, TeamMember, db
 
 
-def query_one_page(query, page, size):
-    offset = (page - 1) * int(size)
-    return (
-        query.offset(offset if offset > 0 else 0).limit(size if size > 0 else 0).all()
-    )
-
-
-def get_team_list_by_user_id(app_id, page=1, size=20):
+def get_team_list_by_user_id(user_id, page=1, size=100):
     query = db.session.query(Team).filter(
         or_(
             Team.user_id == user_id,  # 管理员
@@ -23,3 +17,17 @@ def get_team_list_by_user_id(app_id, page=1, size=20):
         )
     )
     return query_one_page(query, page, size), total
+
+
+def is_team_admin(team_id, user_id):
+    return (
+        True
+        if db.session.query(Team.id)
+        .filter(
+            Team.user_id == user_id,
+            Team.status == 0,
+        )
+        .limit(1)
+        .scalar()
+        else False
+    )
