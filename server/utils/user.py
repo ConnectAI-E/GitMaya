@@ -1,6 +1,8 @@
 from app import app, db
+from flask import abort
 from model.schema import BindUser, ObjID, User
-from utils.github.common import get_user_info, oauth_by_code
+from utils.github.account import get_email, get_user_info
+from utils.github.application import oauth_by_code
 
 
 def register(code: str) -> str | None:
@@ -10,6 +12,8 @@ def register(code: str) -> str | None:
     """
 
     oauth_info = oauth_by_code(code)  # 获取 access token
+    if oauth_info is None:
+        abort(500)
 
     access_token = oauth_info.get("access_token", None)[0]  # 这里要考虑取哪个，为什么会有多个？
 
@@ -23,12 +27,12 @@ def register(code: str) -> str | None:
         if user is not None:
             return user.id
 
+    email = get_email(access_token)
+
     new_user = User(
         id=ObjID.new_id(),
         github_id=github_id,
-        email=user_info.get(
-            "email", None
-        ),  # 这里的邮箱其实是公开邮箱，可能会获取不到 TODO: 换成使用用户邮箱 API 来获取
+        email=email,  # 这里的邮箱其实是公开邮箱，可能会获取不到 TODO: 换成使用用户邮箱 API 来获取
         name=user_info.get("login", None),
         avatar=user_info.get("avatar_url", None),
         extra=user_info,
@@ -41,8 +45,10 @@ def register(code: str) -> str | None:
         id=ObjID.new_id(),
         user_id=new_user.id,
         platform="github",
-        email=user_info.get("email", None),
+        email=email,
+        name=user_info.get("login", None),
         avatar=user_info.get("avatar_url", None),
+        access_token=access_token,
         extra=oauth_info,
     )
 

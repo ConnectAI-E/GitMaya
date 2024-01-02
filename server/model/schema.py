@@ -127,6 +127,9 @@ class BindUser(Base):
     email = db.Column(db.String(128), nullable=True, comment="邮箱")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
     avatar = db.Column(db.String(128), nullable=True, comment="头像")
+    access_token = db.Column(
+        db.String(128), nullable=True, comment="GitHub access_token"
+    )
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )

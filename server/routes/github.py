@@ -1,11 +1,14 @@
-import logging
 import os
 
 from app import app
 from flask import Blueprint, abort, redirect, request, session
 from model.schema import Team
 from utils.auth import authenticated
-from utils.github.common import get_installation_token, get_jwt, verify_github_signature
+from utils.github.application import (
+    get_installation_token,
+    get_jwt,
+    verify_github_signature,
+)
 from utils.user import register
 
 bp = Blueprint("github", __name__, url_prefix="/api/github")
@@ -25,7 +28,7 @@ def github_install():
         )
 
 
-@bp.route("/register", methods=["GET"])
+@bp.route("/oauth", methods=["GET"])
 def github_register():
     """GitHub OAuth register.
 
@@ -57,9 +60,9 @@ def github_hook():
 
     x_github_event = request.headers.get("x-github-event", None)
 
-    logging.info(x_github_event)
+    app.logger.info(x_github_event)
 
-    logging.debug(request.json)
+    app.logger.debug(request.json)
 
     return "Receive Success!"
 
