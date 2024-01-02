@@ -7,6 +7,7 @@ import bson
 import click
 from app import app, db
 from flask.cli import with_appcontext
+from flask.json.provider import DefaultJSONProvider
 from sqlalchemy import BINARY, ForeignKey, String, text
 
 
@@ -319,18 +320,21 @@ class ChatGroup(Base):
     )
 
 
-class JSONEncoder(json.JSONEncoder):
-    def default(self, value):
-        if isinstance(value, Decimal):
-            return int(value)
-        if isinstance(value, datetime):
-            return value.strftime("%Y-%m-%d %H:%M:%S")
-        if isinstance(value, time):
-            return value.isoformat()
-        return json.JSONEncoder.default(self, value)
+class CustomJsonProvider(DefaultJSONProvider):
+    def dumps(self, value, **kw):
+        if isinstance(value, db.Model):
+            value = value.__dict__
+        elif isinstance(value, Decimal):
+            value = int(value)
+        elif isinstance(value, datetime):
+            value = value.strftime("%Y-%m-%d %H:%M:%S")
+        elif isinstance(value, time):
+            value = value.isoformat()
+        return super().dumps(value, **kw)  # Delegate to the default dumps
 
 
-app.json_encoder = JSONEncoder
+app.json_provider_class = CustomJsonProvide
+app.json = CustomJsonProvider(app)
 
 
 # create command function
