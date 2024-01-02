@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from time import time
 
 import bson
 import click
@@ -316,6 +317,20 @@ class ChatGroup(Base):
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, value):
+        if isinstance(value, Decimal):
+            return int(value)
+        if isinstance(value, datetime):
+            return value.strftime("%Y-%m-%d %H:%M:%S")
+        if isinstance(value, time):
+            return value.isoformat()
+        return json.JSONEncoder.default(self, value)
+
+
+app.json_encoder = JSONEncoder
 
 
 # create command function
