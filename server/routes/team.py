@@ -1,8 +1,8 @@
 from app import app
 from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (
+    get_application_info_by_team_id,
     get_im_user_by_team_id,
-    get_platform_info_by_team_id,
     get_team_by_id,
     get_team_list_by_user_id,
     get_team_member,
@@ -29,15 +29,15 @@ def get_team_list():
 @authenticated
 def get_team_detail(team_id):
     team = get_team_by_id(team_id, session["user_id"])
-    code_platform, im_platform = get_platform_info_by_team_id(team_id)
+    code_application, im_application = get_application_info_by_team_id(team_id)
     return jsonify(
         {
             "code": 0,
             "msg": "success",
             "data": {
                 "team": team,
-                "code_platform": code_platform,
-                "im_platform": im_platform,
+                "code_application": code_application,
+                "im_application": im_application,
             },
         }
     )
