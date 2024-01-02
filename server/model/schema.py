@@ -135,12 +135,7 @@ class BindUser(Base):
 class Team(Base):
     __tablename__ = "team"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
-    code_application_id = db.Column(
-        ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="代码平台"
-    )
-    im_application_id = db.Column(
-        ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="协同平台"
-    )
+    # 移除从team到application_id的关联，使用application.team_id关联
 
     name = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
