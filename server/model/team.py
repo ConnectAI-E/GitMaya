@@ -78,6 +78,31 @@ def get_team_member(team_id, user_id, page=1, size=20):
         return [], 0
     return query_one_page(query, page, size), total
 
+    platform_id = db.Column(
+        ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="平台"
+    )
+
+
+def get_im_user_by_team_id(team_id, page=1, size=20):
+    query = (
+        db.session.query(BindUser)
+        .join(
+            IMPlatform,
+            IMPlatform.id == BindUser.platform_id,
+        )
+        .filter(
+            IMPlatform.team_id == team_id,
+            IMPlatform.status == 0,
+            BindUser.status == 0,
+        )
+    )
+    total = query.count()
+    if total == 0:
+        return [], 0
+    return query_one_page(query, page, size), total
+
+    data, total = get_im_user_by_team_id(team_id, page, size)
+
 
 def set_team_member(team_id, code_user_id, im_user_id):
     db.session.query(TeamMember).filter(

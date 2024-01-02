@@ -3,6 +3,7 @@ import logging
 from app import app
 from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (
+    get_im_user_by_team_id,
     get_platform_info_by_team_id,
     get_team_by_id,
     get_team_list_by_user_id,
@@ -53,6 +54,35 @@ def get_team_member_by_team_id(team_id):
     current_user = session["user_id"]
     data, total = get_team_member(team_id, current_user, page, size)
     return jsonify({"code": 0, "msg": "success", "data": data, "total": total})
+
+
+@bp.route("/<team_id>/<platform>/user", methods=["GET"])
+@authenticated
+def get_im_user_by_team_id_and_platform(team_id, platform):
+    page = request.args.get("page", default=1, type=int)
+    size = request.args.get("size", default=20, type=int)
+
+    if platform not in ["lark"]:  # TODO lark/slack...
+        return abort(400, "params error")
+
+    current_user = session["user_id"]
+    data, total = get_im_user_by_team_id(team_id, page, size)
+    return jsonify(
+        {
+            "code": 0,
+            "msg": "success",
+            "data": [
+                {
+                    "value": i.user_id,
+                    "label": i.name or i.email,
+                    "email": i.email,
+                    "avatar": i.avatar,
+                }
+                for i in data
+            ],
+            "total": total,
+        }
+    )
 
 
 @bp.route("/<team_id>/member", methods=["POST"])
