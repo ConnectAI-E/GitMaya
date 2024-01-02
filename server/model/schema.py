@@ -320,17 +320,20 @@ class ChatGroup(Base):
     )
 
 
+def _default(value):
+    if isinstance(value, db.Model):
+        return value.__dict__
+    elif isinstance(value, Decimal):
+        return int(value)
+    elif isinstance(value, datetime):
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+    elif isinstance(value, time):
+        return value.isoformat()
+    return str(value)
+
+
 class CustomJsonProvider(DefaultJSONProvider):
-    def dumps(self, value, **kw):
-        if isinstance(value, db.Model):
-            value = value.__dict__
-        elif isinstance(value, Decimal):
-            value = int(value)
-        elif isinstance(value, datetime):
-            value = value.strftime("%Y-%m-%d %H:%M:%S")
-        elif isinstance(value, time):
-            value = value.isoformat()
-        return super().dumps(value, **kw)  # Delegate to the default dumps
+    default = _default
 
 
 app.json_provider_class = CustomJsonProvide
