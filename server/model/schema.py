@@ -104,7 +104,7 @@ class User(Base):
     email = db.Column(db.String(128), nullable=True, comment="邮箱,这里考虑一下如何做唯一的用户")
     telephone = db.Column(db.String(128), nullable=True, comment="手机号")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
-    avatar = db.Column(db.String(128), nullable=True, comment="头像")
+    avatar = db.Column(db.String(256), nullable=True, comment="头像")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )
@@ -128,7 +128,7 @@ class BindUser(Base):
 
     email = db.Column(db.String(128), nullable=True, comment="邮箱")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
-    avatar = db.Column(db.String(128), nullable=True, comment="头像")
+    avatar = db.Column(db.String(256), nullable=True, comment="头像")
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )

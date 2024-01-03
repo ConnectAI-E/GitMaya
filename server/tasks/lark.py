@@ -2,7 +2,7 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import IMApplication, ObjID, db
+from model.schema import BindUser, IMApplication, ObjID, User, db
 
 
 @celery.task()
@@ -50,7 +50,7 @@ def get_contact_by_lark_application(application_id):
         )
         for item in get_contact_by_bot(bot):
             # add bind_user and user
-            app.logger.info("debug user %r", user)
+            app.logger.info("debug user %r", item)
             user_id = (
                 db.session.query(BindUser.id)
                 .filter(
