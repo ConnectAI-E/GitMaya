@@ -64,13 +64,13 @@ def get_application_info_by_team_id(team_id):
         db.session.query(CodeApplication)
         .filter(
             CodeApplication.team_id == team_id,
-            CodeApplication.status == 0,
+            CodeApplication.status.in_([0, 1]),
         )
         .first(),
         db.session.query(IMApplication)
         .filter(
             IMApplication.team_id == team_id,
-            IMApplication.status == 0,
+            IMApplication.status.in_([0, 1]),
         )
         .first(),
     )
@@ -101,7 +101,7 @@ def get_im_user_by_team_id(team_id, page=1, size=20):
         )
         .filter(
             IMApplication.team_id == team_id,
-            IMApplication.status == 0,
+            IMApplication.status.in_([0, 1]),
             BindUser.status == 0,
         )
     )
@@ -190,3 +190,37 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
     db.session.commit()
 
     return new_code_application
+
+
+def save_im_application(
+    team_id, platform, app_id, app_secret, encrypt_key, verification_token
+):
+    application = (
+        db.session.query(IMApplication).filter(IMApplication.app_id == app_id).first()
+    )
+    if not application:
+        application = IMApplication(
+            id=ObjID.new_id(),
+            platform=platform,
+            team_id=team_id,
+            app_id=app_id,
+            app_secret=app_secret,
+            extra=dict(encrypt_key=encrypt_key, verification_token=verification_token),
+        )
+        db.session.add(application)
+        db.session.commit()
+    else:
+        db.session.query(IMApplication).filter(
+            IMApplication.id == application.id,
+        ).update(
+            dict(
+                platform=platform,
+                team_id=team_id,
+                app_id=app_id,
+                app_secret=app_secret,
+                extra=dict(
+                    encrypt_key=encrypt_key, verification_token=verification_token
+                ),
+            )
+        )
+        db.session.commit()

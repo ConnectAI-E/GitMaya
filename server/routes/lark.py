@@ -6,6 +6,7 @@ from connectai.lark.sdk import Bot, MarketBot
 from connectai.lark.webhook import LarkServer as LarkServerBase
 from flask import session
 from model.lark import get_bot_by_app_id
+from tasks.lark import get_contact_by_lark_application
 
 
 def get_bot(app_id):
@@ -48,6 +49,11 @@ def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     # TODO save bind user
     session["user_id"] = user_info["union_id"]
     session.permanent = True
+    # TODO ISV application
+    if isinstance(bot, MarketBot):
+        with app.app_context():
+            task = get_contact_by_lark_application.delay(bot.app_id)
+            app.logger.info("try get_contact_by_lark_application %r", bot.app_id)
     return user_info
 
 

@@ -7,6 +7,7 @@ from model.team import (
     get_team_list_by_user_id,
     get_team_member,
     is_team_admin,
+    save_im_application,
     set_team_member,
 )
 from utils.auth import authenticated
@@ -97,6 +98,27 @@ def save_team_member_by_team_id(team_id):
         return abort(400, "permission error")
 
     set_team_member(team_id, code_user_id, im_user_id)
+    return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/<team_id>/<platform>/app", methods=["POST"])
+@authenticated
+def install_im_application_to_team(team_id, platform):
+    # install lark app
+    if platform not in ["lark"]:  # TODO lark/slack...
+        return abort(400, "params error")
+
+    app_id = request.json.get("app_id")
+    app_secret = request.json.get("app_secret")
+    encrypt_key = request.json.get("encrypt_key")
+    verification_token = request.json.get("verification_token")
+    if not app_id or not app_secret:
+        return abort(400, "params error")
+
+    result = save_im_application(
+        team_id, platform, app_id, app_secret, encrypt_key, verification_token
+    )
+    app.logger.info("result %r", result)
     return jsonify({"code": 0, "msg": "success"})
 
 
