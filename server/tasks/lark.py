@@ -118,10 +118,10 @@ def get_contact_by_lark_application(application_id):
 
 @celery.task()
 def get_contact_for_all_lark_application():
-    for app in db.session.query(IMApplication).filter(
+    for application in db.session.query(IMApplication).filter(
         IMApplication.status == 0,
     ):
-        user_ids = get_contact_by_lark_application(app.id)
+        user_ids = get_contact_by_lark_application(application.id)
         app.logger.info(
             "success to get_contact_fo_lark_application %r %r", app.id, len(user_ids)
         )
