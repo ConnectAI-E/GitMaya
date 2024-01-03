@@ -23,7 +23,7 @@ def register(code: str) -> str | None:
     # 查询 github_id 是否已经存在，若存在，则返回 user_id
     github_id = user_info.get("id", None)
     if github_id is not None:
-        user = User.query.filter_by(github_id=github_id).first()
+        user = User.query.filter_by(unionid=github_id).first()
         if user is not None:
             return user.id
 
@@ -31,7 +31,7 @@ def register(code: str) -> str | None:
 
     new_user = User(
         id=ObjID.new_id(),
-        github_id=github_id,
+        unionid=github_id,
         email=email,  # 这里的邮箱其实是公开邮箱，可能会获取不到 TODO: 换成使用用户邮箱 API 来获取
         name=user_info.get("login", None),
         avatar=user_info.get("avatar_url", None),
