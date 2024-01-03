@@ -17,6 +17,8 @@
 
 
 ## Alternatives
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya?ref=badge_shield)
+
 
 `gitmaya` is inspired by the following tools.
 
@@ -41,3 +43,6 @@ There are four repositories for gitmaya, and this is one of them:
 ## License
 
 MIT License © 2024 [ConnectAI-E](https://github.com/connectai-e)
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya?ref=badge_large)
