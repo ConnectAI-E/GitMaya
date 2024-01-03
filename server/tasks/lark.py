@@ -68,6 +68,8 @@ def get_contact_by_lark_application(application_id):
                     name=item["name"],
                     avatar=item["avatar"]["avatar_origin"],
                 )
+                db.session.add(user)
+                db.session.flush()
                 bind_user = BindUser(
                     id=user_id,
                     user_id=user_id,
@@ -79,7 +81,7 @@ def get_contact_by_lark_application(application_id):
                     avatar=item["avatar"]["avatar_origin"],
                     extra=item,
                 )
-                db.session.add_all([user, bind_user])
+                db.session.add(bind_user)
                 db.session.commit()
                 user_ids.append(user_id)
 
