@@ -239,6 +239,7 @@ class IMApplication(Base):
     team_id = db.Column(
         ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
+    platform = db.Column(db.String(128), nullable=True, comment="平台：lark")
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
     app_secret = db.Column(db.String(128), nullable=True, comment="app_id")
     extra = db.Column(
