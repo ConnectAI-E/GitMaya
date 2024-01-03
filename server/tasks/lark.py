@@ -2,7 +2,7 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import BindUser, IMApplication, ObjID, User, db
+from model.schema import BindUser, ChatGroup, IMApplication, ObjID, Repo, User, db
 from sqlalchemy import or_
 
 
@@ -126,4 +126,107 @@ def get_contact_for_all_lark_application():
             "success to get_contact_fo_lark_application %r %r",
             application.id,
             len(user_ids),
+        )
+
+
+@celery.task()
+def create_chat_group_for_repo(repo_id):
+    """
+    1. 按repo_id找到repo
+    2. 尝试找对应的chat_group，如果已经存在了，就不创建
+    3. 否则创建chat_group，然后保存chat_group
+    """
+    repo = db.session.query(Repo).filter(Repo.id == repo_id).first()
+    if repo:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == repo.id,
+                ChatGroup.status == 0,
+            )
+            .first()
+        )
+        if chat_group:
+            app.logger.info("chat_group exists. %r", chat_group.chat_id)
+            return chat_group.id
+        else:
+            application = (
+                db.session.query(IMApplication)
+                .join(
+                    Team,
+                    Team.id == IMApplication.team_id,
+                )
+                .join(
+                    CodeApplication,
+                    CodeApplication.team_id == Team.id,
+                )
+                .filter(
+                    Team.status == 0,
+                    CodeApplication.status.in_([0, 1]),
+                    IMApplication.status.in_([0, 1]),
+                )
+                .first()
+            )
+            if application:
+                bot = Bot(
+                    app_id=application.app_id,
+                    app_secret=application.app_secret,
+                )
+                chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+                name = f"{repo.name} 项目群"
+                description = f"{repo.description}"
+                result = bot.post(
+                    chat_group_url,
+                    json={
+                        "name": name,
+                        "description": description,
+                        "edit_permission": "all_members",
+                    },
+                ).json()
+                chat_id = result.get("data", {}).get("chat_id")
+                if chat_id:
+                    chat_group_id = ObjID.new_id()
+                    chat_group = ChatGroup(
+                        id=chat_group_id,
+                        repo_id=repo.id,
+                        im_application_id=application.id,
+                        chat_id=chat_id,
+                        name=name,
+                        description=description,
+                        extra=result,
+                    )
+                    db.session.add(chat_group)
+                    db.session.commit()
+                    return chat_group_id
+    return
+
+
+@celery.task()
+def create_chat_group_for_all_repo():
+    """
+    1. 找出repo对应的群数量为空的repo_id
+    """
+    chat_group_count_column = func.count(ChatGroup.id)
+    for repo_id, _ in (
+        db.session.query(
+            Repo.id,
+            chat_group_count_column,
+        )
+        .join(
+            ChatGroup,
+            ChatGroup.repo_id == Repo.id,
+        )
+        .filter(
+            Repo.status == 0,
+            ChatGroup.status == 0,
+        )
+        .having(
+            chat_group_count_column == 0,
+        )
+    ):
+        result = create_chat_group_for_repo(repo_id)
+        app.logger.info(
+            "success to create_chat_group_for_repo %r %r",
+            repo_id,
+            result,
         )
