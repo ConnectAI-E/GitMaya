@@ -123,5 +123,7 @@ def get_contact_for_all_lark_application():
     ):
         user_ids = get_contact_by_lark_application(application.id)
         app.logger.info(
-            "success to get_contact_fo_lark_application %r %r", app.id, len(user_ids)
+            "success to get_contact_fo_lark_application %r %r",
+            application.id,
+            len(user_ids),
         )
