@@ -130,7 +130,7 @@ class BindUser(Base):
     name = db.Column(db.String(128), nullable=True, comment="用户名")
     avatar = db.Column(db.String(256), nullable=True, comment="头像")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )
 
 
