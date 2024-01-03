@@ -3,7 +3,7 @@ import logging
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from model.schema import BindUser, ChatGroup, IMApplication, ObjID, Repo, User, db
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 
 
 @celery.task()
