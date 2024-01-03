@@ -117,16 +117,13 @@ class Account(User):
 class BindUser(Base):
     __tablename__ = "bind_user"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
-    # 这里如果是飞书租户，可能会有不同的name等，但是在github这边不管是哪一个org，都是一样的
-    # 这里如何统一？
-    # 是不是说这里暂时不需要这个platform_id，还是说这个字段为空就好？
-    platform_id = db.Column(
-        ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="平台"
-    )
-    unionid = db.Column(db.String(128), nullable=True, comment="飞书的unionid")
-
     # 这里还是用platform标记一下
     platform = db.Column(db.String(128), nullable=True, comment="平台：github/lark")
+    # 实际关联的，可能是code_application.id或者im_application.id
+    application_id = db.Column(ObjID(12), nullable=True, comment="应用ID")
+    unionid = db.Column(db.String(128), nullable=True, comment="飞书的unionid")
+    openid = db.Column(db.String(128), nullable=True, comment="飞书的openid")
+
     email = db.Column(db.String(128), nullable=True, comment="邮箱")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
     avatar = db.Column(db.String(128), nullable=True, comment="头像")
@@ -138,12 +135,7 @@ class BindUser(Base):
 class Team(Base):
     __tablename__ = "team"
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
-    code_platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="代码平台"
-    )
-    im_platform_id = db.Column(
-        ObjID(12), ForeignKey("im_platform.id"), nullable=True, comment="协同平台"
-    )
+    # 移除从team到application_id的关联，使用application.team_id关联
 
     name = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
@@ -164,30 +156,18 @@ class TeamMember(Base):
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
-        comment="从code_platform关联过来的用户",
+        comment="从code_application关联过来的用户",
     )
     im_user_id = db.Column(
         ObjID(12),
         ForeignKey("bind_user.id"),
         nullable=True,
-        comment="从im_platform关联过来的用户",
-    )
-
-
-class CodePlatform(Base):
-    __tablename__ = "code_platform"
-    name = db.Column(db.String(128), nullable=True, comment="名称")
-    description = db.Column(db.String(1024), nullable=True, comment="描述")
-    extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        comment="从im_application关联过来的用户",
     )
 
 
 class Repo(Base):
     __tablename__ = "repo"
-    code_platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="属于哪一个org"
-    )
     application_id = db.Column(
         ObjID(12),
         ForeignKey("code_application.id"),
@@ -203,9 +183,6 @@ class Repo(Base):
 
 class RepoUser(Base):
     __tablename__ = "repo_user"
-    code_platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="属于哪一个org"
-    )
     application_id = db.Column(
         ObjID(12),
         ForeignKey("code_application.id"),
@@ -217,20 +194,10 @@ class RepoUser(Base):
     )
 
 
-class IMPlatform(Base):
-    __tablename__ = "im_platform"
-    tenant_key = db.Column(db.String(128), nullable=True, comment="飞书租户id")
-    name = db.Column(db.String(128), nullable=True, comment="名称")
-    description = db.Column(db.String(1024), nullable=True, comment="描述")
-    extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
 class CodeApplication(Base):
     __tablename__ = "code_application"
-    platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="代码平台"
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
     installation_id = db.Column(db.String(128), nullable=True, comment="安装id")
     extra = db.Column(
@@ -267,8 +234,8 @@ class CodeAction(Base):
 
 class IMApplication(Base):
     __tablename__ = "im_application"
-    platform_id = db.Column(
-        ObjID(12), ForeignKey("code_platform.id"), nullable=True, comment="协同平台"
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
     app_secret = db.Column(db.String(128), nullable=True, comment="app_id")

@@ -2,7 +2,7 @@ from flask import abort
 from sqlalchemy import and_, or_
 from utils.utils import query_one_page
 
-from .schema import Team, TeamMember, db
+from .schema import *
 
 
 def get_team_list_by_user_id(user_id, page=1, size=100):
@@ -58,9 +58,22 @@ def get_team_by_id(team_id, user_id):
     return team
 
 
-def get_platform_info_by_team_id(team_id):
+def get_application_info_by_team_id(team_id):
     # TODO
-    return None, None
+    return (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.team_id == team_id,
+            CodeApplication.status == 0,
+        )
+        .first(),
+        db.session.query(IMApplication)
+        .filter(
+            IMApplication.team_id == team_id,
+            IMApplication.status == 0,
+        )
+        .first(),
+    )
 
 
 def get_team_member(team_id, user_id, page=1, size=20):
@@ -83,12 +96,12 @@ def get_im_user_by_team_id(team_id, page=1, size=20):
     query = (
         db.session.query(BindUser)
         .join(
-            IMPlatform,
-            IMPlatform.id == BindUser.platform_id,
+            IMApplication,
+            IMApplication.id == BindUser.application_id,
         )
         .filter(
-            IMPlatform.team_id == team_id,
-            IMPlatform.status == 0,
+            IMApplication.team_id == team_id,
+            IMApplication.status == 0,
             BindUser.status == 0,
         )
     )
