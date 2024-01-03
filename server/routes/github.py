@@ -34,24 +34,28 @@ def github_install():
         os.environ.get("GITHUB_APP_ID"),
     )
     installation_token = get_installation_token(jwt, installation_id)
-    if installation_token is None:
-        app.logger.error("Failed to get installation token.")
-        return jsonify({"message": "Failed to get installation token."}), 500
+    try:
+        if installation_token is None:
+            app.logger.error("Failed to get installation token.")
+            raise Exception("Failed to get installation token.")
 
-    app_info = get_installation_info(jwt, installation_id)
-    if app_info is None:
-        app.logger.error("Failed to get installation info.")
-        return jsonify({"message": "Failed to get installation info."}), 500
+        app_info = get_installation_info(jwt, installation_id)
+        if app_info is None:
+            app.logger.error("Failed to get installation info.")
+            raise Exception("Failed to get installation info.")
 
-    # 判断安装者的身份是用户还是组织
-    type: str = app_info["account"]["type"]
-    if type.lower() == "user":
-        app.logger.error("User is not allowed to install.")
-        # TODO: 定义与前端的交互数据格式
-        return jsonify({"message": "User is not allowed to install."}), 403
+        # 判断安装者的身份是用户还是组织
+        type: str = app_info["account"]["type"]
+        if type.lower() == "user":
+            app.logger.error("User is not allowed to install.")
+            # TODO: 定义与前端的交互数据格式
+            raise Exception("User is not allowed to install.")
 
-    team = create_team(app_info)
-    code_application = create_code_application(team.id, installation_id)
+        team = create_team(app_info)
+        code_application = create_code_application(team.id, installation_id)
+    except Exception as e:
+        # 返回错误信息
+        app_info = str(e)
 
     # TODO: 加入后台任务
 
@@ -89,11 +93,12 @@ def github_register():
 
     # 通过 code 注册；如果 user 已经存在，则一样会返回 user_id
     user_id = register(code)
-    if user_id is None:
-        return jsonify({"message": "Failed to register."}), 500
+    # if user_id is None:
+    #     return jsonify({"message": "Failed to register."}), 500
 
     # 保存用户注册状态
-    session["user_id"] = user_id
+    if user_id:
+        session["user_id"] = user_id
 
     return make_response(
         """
