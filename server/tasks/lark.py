@@ -107,7 +107,7 @@ def get_contact_by_lark_application(application_id):
                     user_ids.append(bind_user_id)
             db.session.query(IMApplication).filter(
                 IMApplication.id == application.id,
-            ).update(dist(status=1))
+            ).update(dict(status=1))
             db.session.commit()
         except Exception as e:
             # can not get contacts
