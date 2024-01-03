@@ -201,6 +201,7 @@ class CodeApplication(Base):
     team_id = db.Column(
         ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
+    platform = db.Column(db.String(128), nullable=True, comment="平台：github")
     installation_id = db.Column(db.String(128), nullable=True, comment="安装id")
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
