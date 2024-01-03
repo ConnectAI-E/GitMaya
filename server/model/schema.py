@@ -183,6 +183,10 @@ class Repo(Base):
         nullable=True,
         comment="哪一个application_id",
     )
+    owner_bind_id = db.Column(
+        ObjID(12), ForeignKey("bind_user.id"), nullable=True, comment="项目所有者"
+    )
+    repo_id = db.Column(db.String(128), nullable=True, comment="repo_id")
     name = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     extra = db.Column(
