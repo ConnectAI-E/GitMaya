@@ -2,7 +2,7 @@ from flask import abort
 from sqlalchemy import and_, or_
 from utils.utils import query_one_page
 
-from .schema import Team, TeamMember, db
+from .schema import *
 
 
 def get_team_list_by_user_id(user_id, page=1, size=100):
@@ -100,8 +100,8 @@ def get_im_user_by_team_id(team_id, page=1, size=20):
             IMApplication.id == BindUser.application_id,
         )
         .filter(
-            IMPlatform.team_id == team_id,
-            IMPlatform.status == 0,
+            IMApplication.team_id == team_id,
+            IMApplication.status == 0,
             BindUser.status == 0,
         )
     )
