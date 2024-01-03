@@ -98,11 +98,13 @@ class Base(db.Model):
 
 class User(Base):
     __tablename__ = "user"
-    github_id = db.Column(db.String(128), nullable=True, comment="GitHub ID, 作为唯一标识")
+    unionid = db.Column(
+        db.String(128), nullable=True, comment="GitHub ID/lark union_id, 作为唯一标识"
+    )
     email = db.Column(db.String(128), nullable=True, comment="邮箱,这里考虑一下如何做唯一的用户")
     telephone = db.Column(db.String(128), nullable=True, comment="手机号")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
-    avatar = db.Column(db.String(128), nullable=True, comment="头像")
+    avatar = db.Column(db.String(256), nullable=True, comment="头像")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )
@@ -126,9 +128,9 @@ class BindUser(Base):
 
     email = db.Column(db.String(128), nullable=True, comment="邮箱")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
-    avatar = db.Column(db.String(128), nullable=True, comment="头像")
+    avatar = db.Column(db.String(256), nullable=True, comment="头像")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )
 
 
@@ -140,7 +142,7 @@ class Team(Base):
     name = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     extra = db.Column(
-        JSONStr(1024),
+        JSONStr(2048),
         nullable=True,
         server_default=text("'{}'"),
         comment="其他字段，可能有一些前期没想好的配置项放这里",
@@ -177,7 +179,7 @@ class Repo(Base):
     name = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -199,9 +201,10 @@ class CodeApplication(Base):
     team_id = db.Column(
         ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
+    platform = db.Column(db.String(128), nullable=True, comment="平台：github")
     installation_id = db.Column(db.String(128), nullable=True, comment="安装id")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -214,7 +217,7 @@ class CodeEvent(Base):
     event_type = db.Column(db.String(128), nullable=True, comment="event_type")
     content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -228,7 +231,7 @@ class CodeAction(Base):
     )
     content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -237,10 +240,11 @@ class IMApplication(Base):
     team_id = db.Column(
         ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
     )
+    platform = db.Column(db.String(128), nullable=True, comment="平台：lark")
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
     app_secret = db.Column(db.String(128), nullable=True, comment="app_id")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -253,7 +257,7 @@ class IMEvent(Base):
     event_type = db.Column(db.String(128), nullable=True, comment="event_type")
     content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -267,7 +271,7 @@ class IMAction(Base):
     )
     content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
@@ -283,7 +287,7 @@ class ChatGroup(Base):
     name = db.Column(db.String(128), nullable=True, comment="群名称")
     description = db.Column(db.String(128), nullable=True, comment="群描述")
     extra = db.Column(
-        JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="其他字段"
+        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
 
 
