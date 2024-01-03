@@ -129,6 +129,13 @@ class BindUser(Base):
     email = db.Column(db.String(128), nullable=True, comment="邮箱")
     name = db.Column(db.String(128), nullable=True, comment="用户名")
     avatar = db.Column(db.String(256), nullable=True, comment="头像")
+    access_token = db.Column(
+        db.String(128), nullable=True, comment="GitHub access_token"
+    )
+    refresh_token = db.Column(
+        db.String(128), nullable=True, comment="GitHub refresh_token"
+    )
+    expire_time = db.Column(db.Integer, nullable=True, comment="GitHub token过期时间 时间戳")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )

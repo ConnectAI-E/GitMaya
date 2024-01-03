@@ -1,4 +1,4 @@
-from flask import abort
+from flask import abort, session
 from sqlalchemy import and_, or_
 from utils.utils import query_one_page
 
@@ -120,6 +120,76 @@ def set_team_member(team_id, code_user_id, im_user_id):
         TeamMember.status == 0,
     ).update(dict(im_user_id=im_user_id))
     db.session.commit()
+
+
+def create_team(app_info: dict) -> Team:
+    """Create a team.
+
+    Args:
+        name (str): Team name.
+        app_info (dict): GitHub App info.
+
+    Returns:
+        Team: Team object.
+    """
+
+    current_user_id = session.get("user_id", None)
+    if not current_user_id:
+        abort(403, "can not found user by id")
+
+    new_team = Team(
+        id=ObjID.new_id(),
+        user_id=current_user_id,
+        name=app_info["account"]["login"],
+        description=None,
+        # extra=app_info,
+    )
+
+    db.session.add(new_team)
+    db.session.flush()
+
+    # 创建 TeamMember
+    current_bind_user = BindUser.query.filter(
+        BindUser.user_id == current_user_id,
+        BindUser.status == 0,
+    ).first()
+    if not current_bind_user:
+        abort(403, "can not found bind user by id")
+
+    new_team_member = TeamMember(
+        id=ObjID.new_id(),
+        team_id=new_team.id,
+        code_user_id=current_bind_user.id,
+        im_user_id=None,
+    )
+
+    db.session.add(new_team_member)
+    db.session.commit()
+
+    return new_team
+
+
+def create_code_application(team_id: str, installation_id: str) -> CodeApplication:
+    """Create a code application.
+
+    Args:
+        team_id (str): Team ID.
+        installation_id (str): GitHub App installation ID.
+
+    Returns:
+        CodeApplication: CodeApplication object.
+    """
+
+    new_code_application = CodeApplication(
+        id=ObjID.new_id(),
+        team_id=team_id,
+        installation_id=installation_id,
+    )
+
+    db.session.add(new_code_application)
+    db.session.commit()
+
+    return new_code_application
 
 
 def save_im_application(
