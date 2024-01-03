@@ -98,7 +98,9 @@ class Base(db.Model):
 
 class User(Base):
     __tablename__ = "user"
-    github_id = db.Column(db.String(128), nullable=True, comment="GitHub ID, 作为唯一标识")
+    unionid = db.Column(
+        db.String(128), nullable=True, comment="GitHub ID/lark union_id, 作为唯一标识"
+    )
     email = db.Column(db.String(128), nullable=True, comment="邮箱,这里考虑一下如何做唯一的用户")
     telephone = db.Column(db.String(128), nullable=True, comment="手机号")
     name = db.Column(db.String(128), nullable=True, comment="用户名")

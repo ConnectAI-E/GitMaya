@@ -2,7 +2,7 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import IMApplication, db
+from model.schema import IMApplication, ObjID, db
 
 
 @celery.task()
@@ -34,6 +34,7 @@ def get_contact_by_bot(bot):
 
 @celery.task()
 def get_contact_by_lark_application(application_id):
+    user_ids = []
     application = (
         db.session.query(IMApplication)
         .filter(
@@ -43,9 +44,43 @@ def get_contact_by_lark_application(application_id):
         .first()
     )
     if application:
-        bot = Bpt(
+        bot = Bot(
             app_id=application.app_id,
             app_secret=application.app_secret,
         )
-        for user in get_contact_by_bot(bot):
+        for item in get_contact_by_bot(bot):
+            # add bind_user and user
             app.logger.info("debug user %r", user)
+            user_id = (
+                db.session.query(BindUser.id)
+                .filter(
+                    BindUser.unionid == item["union_id"],
+                    BindUser.status == 0,
+                )
+                .limit(1)
+                .scalar()
+            )
+            if not user_id:
+                user_id = ObjID.new_id()
+                user = User(
+                    id=user_id,
+                    unionid=item["union_id"],
+                    name=item["name"],
+                    avatar=item["avatar"]["avatar_origin"],
+                )
+                bind_user = BindUser(
+                    id=user_id,
+                    user_id=user_id,
+                    platform="lark",
+                    application_id=application_id,
+                    unionid=item["union_id"],
+                    openid=item["open_id"],
+                    name=item["name"],
+                    avatar=item["avatar"]["avatar_origin"],
+                    extra=item,
+                )
+                db.session.add_all([user, bind_user])
+                db.session.commit()
+                user_ids.append(user_id)
+
+    return user_ids
