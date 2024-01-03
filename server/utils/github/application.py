@@ -62,13 +62,38 @@ def get_installation_token(jwt: str, installation_id: str) -> str | None:
                 "X-GitHub-Api-Version": "2022-11-28",
             },
         )
-        if response.status_code != 200:
-            app.logger.debug(f"Failed to get installation token. {response.text}")
-            return None
 
         installation_token = response.json().get("token", None)
         return installation_token
 
+    app.logger.debug(f"Failed to get installation token. {response.text}")
+    return None
+
+
+def get_installation_info(jwt: str, installation_id: str) -> dict | None:
+    """Get installation info
+    Args:
+        jwt (str): The JSON Web Token used for authentication.
+        installation_id (str): The ID of the installation.
+
+    Returns:
+        dict: The installation info.
+    """
+
+    with httpx.Client() as client:
+        response = client.get(
+            f"https://api.github.com/app/installations/{installation_id}",
+            headers={
+                "Accept": "application/vnd.github+json",
+                "Authorization": f"Bearer {jwt}",
+                "X-GitHub-Api-Version": "2022-11-28",
+            },
+        )
+
+        app_info = response.json()
+        return app_info
+
+    app.logger.debug(f"Failed to get installation info. {response.text}")
     return None
 
 

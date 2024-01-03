@@ -130,6 +130,10 @@ class BindUser(Base):
     access_token = db.Column(
         db.String(128), nullable=True, comment="GitHub access_token"
     )
+    refresh_token = db.Column(
+        db.String(128), nullable=True, comment="GitHub refresh_token"
+    )
+    expire_time = db.Column(db.Integer, nullable=True, comment="GitHub token过期时间 时间戳")
     extra = db.Column(
         JSONStr(1024), nullable=True, server_default=text("'{}'"), comment="用户其他字段"
     )
