@@ -52,12 +52,8 @@ def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     # TODO ISV application
     if isinstance(bot, MarketBot):
         with app.app_context():
-            application = get_bot_by_app_id(app_id)
-            if application:
-                task = get_contact_by_lark_application.delay(application.id)
-                app.logger.info(
-                    "try get_contact_by_lark_application %r", application.id
-                )
+            task = get_contact_by_lark_application.delay(bot.app_id)
+            app.logger.info("try get_contact_by_lark_application %r", bot.app_id)
     return user_info
 
 

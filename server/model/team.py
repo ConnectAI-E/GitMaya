@@ -64,13 +64,13 @@ def get_application_info_by_team_id(team_id):
         db.session.query(CodeApplication)
         .filter(
             CodeApplication.team_id == team_id,
-            CodeApplication.status == 0,
+            CodeApplication.status.in_([0, 1]),
         )
         .first(),
         db.session.query(IMApplication)
         .filter(
             IMApplication.team_id == team_id,
-            IMApplication.status == 0,
+            IMApplication.status.in_([0, 1]),
         )
         .first(),
     )
@@ -101,7 +101,7 @@ def get_im_user_by_team_id(team_id, page=1, size=20):
         )
         .filter(
             IMApplication.team_id == team_id,
-            IMApplication.status == 0,
+            IMApplication.status.in_([0, 1]),
             BindUser.status == 0,
         )
     )
