@@ -1,6 +1,8 @@
+from datetime import timedelta
+
 from celery_app import celery
 
-from .lark import test_task
+from .lark import *
 
 celery.conf.beat_schedule = {
     # 定时拉取用户数据
