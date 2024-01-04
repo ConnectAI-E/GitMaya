@@ -1,0 +1,36 @@
+from base import *
+
+
+class IssueTipSuccess(FeishuMessageCard):
+    def __init__(
+        self,
+        content='1. 已修改 Issue 标题为 "sss"\n2. 已分配任务给 @xx\n3. 已关闭 issue\n',
+    ):
+        elements = [
+            FeishuMessageDiv(
+                content=content,
+                tag="lark_md",
+            ),
+            GitMayaCardNote("GitMaya Issue Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+if __name__ == "__main__":
+    import json
+    import os
+
+    import httpx
+    from dotenv import find_dotenv, load_dotenv
+
+    load_dotenv(find_dotenv())
+    message = IssueTipSuccess()
+    print("message", json.dumps(message))
+    result = httpx.post(
+        os.environ.get("TEST_BOT_HOOK"),
+        json={"card": message, "msg_type": "interactive"},
+    ).json()
+    print("result", result)
