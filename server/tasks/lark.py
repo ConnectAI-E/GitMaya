@@ -4,6 +4,7 @@ from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from model.schema import BindUser, ChatGroup, IMApplication, ObjID, Repo, User, db
 from sqlalchemy import func, or_
+from utils.lark import ManageManual
 
 
 @celery.task()
