@@ -12,7 +12,7 @@ services:
 
   flower:
     extends: worker
-    command: pip install flower && celery -A tasks.celery flower --basic-auth="gitmaya:gitmaya2023"
+    command: bash -c 'pip install flower && celery -A tasks.celery flower --basic-auth="gitmaya:gitmaya2023"'
     ports:
       - "5555"
     environment:
