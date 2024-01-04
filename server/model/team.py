@@ -1,21 +1,47 @@
 from flask import abort, session
 from sqlalchemy import and_, or_
+from sqlalchemy.orm import aliased, joinedload, relationship
 from utils.utils import query_one_page
 
 from .schema import *
 
+CodeUser = aliased(BindUser)
+IMUser = aliased(BindUser)
+
+
+class TeamMemberWithUser(TeamMember):
+    code_user = relationship(
+        CodeUser,
+        primaryjoin=and_(
+            TeamMember.code_user_id == CodeUser.id,
+            CodeUser.status == 0,
+        ),
+    )
+
+    im_user = relationship(
+        IMUser,
+        primaryjoin=and_(
+            TeamMember.im_user_id == IMUser.id,
+            IMUser.status == 0,
+        ),
+    )
+
 
 def get_team_list_by_user_id(user_id, page=1, size=100):
-    query = db.session.query(Team).filter(
-        or_(
-            Team.user_id == user_id,  # 管理员
-            and_(
-                TeamMember.team_id == Team.id,
-                TeamMember.code_user_id == user_id,  # 属于某个team的员工
-                TeamMember.status == 0,
+    query = (
+        db.session.query(Team)
+        .filter(
+            or_(
+                Team.user_id == user_id,  # 管理员
+                and_(
+                    TeamMember.team_id == Team.id,
+                    TeamMember.code_user_id == user_id,  # 属于某个team的员工
+                    TeamMember.status == 0,
+                ),
             ),
-        ),
-        Team.status == 0,
+            Team.status == 0,
+        )
+        .group_by(Team.id)
     )
     total = query.count()
     if total == 0:
@@ -77,9 +103,16 @@ def get_application_info_by_team_id(team_id):
 
 
 def get_team_member(team_id, user_id, page=1, size=20):
-    query = db.session.query(TeamMember).filter(
-        TeamMember.team_id == team_id,
-        TeamMember.status == 0,
+    query = (
+        db.session.query(TeamMemberWithUser)
+        .options(
+            joinedload("code_user"),
+            joinedload("im_user"),
+        )
+        .filter(
+            TeamMember.team_id == team_id,
+            TeamMember.status == 0,
+        )
     )
     # admin can get all users in current_team
     if not is_team_admin(team_id, user_id):
