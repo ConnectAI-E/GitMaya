@@ -10,6 +10,14 @@ services:
     extends: worker
     command: celery -A tasks.celery beat -l DEBUG
 
+  flower:
+    extends: worker
+    command: pip install flower && celery -A tasks.celery flower --basic-auth="gitmaya:gitmaya2023"
+    ports:
+      - "5555"
+    environment:
+      - VIRTUAL_HOST=flower.gitmaya.com
+
   gitmaya:
     extends: worker
     ports:
