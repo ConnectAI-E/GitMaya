@@ -47,12 +47,7 @@ class IssueManualHelp(FeishuMessageCard):
                 content="** 🏖️ 重新分配 Issue 负责人**\n*话题下回复「/assign + @成员」 **",
                 tag="lark_md",
                 extra=FeishuMessageSelectPerson(
-                    *[
-                        {
-                            "value": person["open_id"],
-                        }
-                        for person in persons
-                    ],
+                    *[FeishuMessageOption(value=open_id) for open_id in persons],
                     placeholder=",".join(assignees),
                     value={
                         "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
@@ -136,7 +131,9 @@ if __name__ == "__main__":
     from dotenv import find_dotenv, load_dotenv
 
     load_dotenv(find_dotenv())
-    message = IssueManualHelp(tags=["bug", "doc"])
+    message = IssueManualHelp(
+        persons=os.environ.get("TEST_USER_OPEN_ID").split(","), tags=["bug", "doc"]
+    )
     print("message", json.dumps(message))
     result = httpx.post(
         os.environ.get("TEST_BOT_HOOK"),
