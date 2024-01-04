@@ -9,6 +9,12 @@ def register(code: str) -> str | None:
     """GitHub OAuth register.
 
     If `code`, register by code.
+
+    Args:
+        code (str): The code of the GitHub OAuth.
+
+    Returns:
+        str | None: The id of the user.
     """
 
     oauth_info = oauth_by_code(code)  # 获取 access token
@@ -20,22 +26,67 @@ def register(code: str) -> str | None:
     # 使用 oauth_info 中的 access_token 获取用户信息
     user_info = get_user_info(access_token)
 
-    # 查询 github_id 是否已经存在，若存在，则返回 user_id
+    # 查询 github_id 是否已经存在，若存在，则刷新 access_token，返回 user_id
     github_id = user_info.get("id", None)
+
+    email = get_email(access_token)
+
+    new_user_id = create_github_user(
+        github_id=github_id,
+        name=user_info.get("name", None),
+        email=email,
+        avatar=user_info.get("avatar_url", None),
+        access_token=access_token,
+        extra={"user_info": user_info, "oauth_info": oauth_info},
+    )
+
+    return new_user_id
+
+
+def create_github_user(
+    github_id: str,
+    name: str,
+    email: str,
+    avatar: str,
+    access_token: str = None,
+    extra: dict = {},
+) -> str:
+    """Create a GitHub user.
+
+    Args:
+        name (str): The name of the user.
+        email (str): The email of the user.
+        avatar (str): The avatar of the user.
+        extra (dict): The extra of the user.
+
+    Returns:
+        str: The id of the user.
+    """
+
     if github_id is not None:
         user = User.query.filter_by(unionid=github_id).first()
         if user is not None:
-            return user.id
+            bind_user = BindUser.query.filter_by(
+                user_id=user.id, platform="github"
+            ).first()
 
-    email = get_email(access_token)
+            if bind_user is None:
+                raise Exception("Failed to get bind user.")
+
+            # 刷新 access_token
+            if access_token is not None:
+                bind_user.access_token = access_token
+                db.session.commit()
+
+            return user.id
 
     new_user = User(
         id=ObjID.new_id(),
         unionid=github_id,
-        email=email,  # 这里的邮箱其实是公开邮箱，可能会获取不到 TODO: 换成使用用户邮箱 API 来获取
-        name=user_info.get("login", None),
-        avatar=user_info.get("avatar_url", None),
-        extra=user_info,
+        email=email,
+        name=name,
+        avatar=avatar,
+        extra=extra.get("user_info", None),
     )
 
     db.session.add(new_user)
@@ -46,10 +97,10 @@ def register(code: str) -> str | None:
         user_id=new_user.id,
         platform="github",
         email=email,
-        name=user_info.get("login", None),
-        avatar=user_info.get("avatar_url", None),
+        name=name,
+        avatar=avatar,
         access_token=access_token,
-        extra=oauth_info,
+        extra=extra.get("oauth_info", None),
     )
 
     db.session.add(new_bind_user)
