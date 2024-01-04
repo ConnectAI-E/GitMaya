@@ -202,6 +202,9 @@ class RepoUser(Base):
         nullable=True,
         comment="哪一个application_id",
     )
+    repo_id = db.Column(
+        ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目"
+    )
     bind_user_id = db.Column(
         ObjID(12), ForeignKey("bind_user.id"), nullable=True, comment="项目协作者"
     )
