@@ -233,7 +233,7 @@ def create_chat_group_for_all_repo():
 
 
 @celery.task()
-def send_manage_manual(app_id, message_id, **kwargs):
+def send_manage_manual(app_id, message_id, *args, **kwargs):
     application = (
         db.session.query(IMApplication)
         .filter(
