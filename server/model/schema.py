@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 from datetime import datetime
@@ -309,7 +310,9 @@ class CustomJsonProvider(DefaultJSONProvider):
     @staticmethod
     def default(value):
         if isinstance(value, db.Model):
-            return value.__dict__
+            value = copy.deepcopy(value.__dict__)
+            del value["_sa_instance_state"]
+            return value
         elif isinstance(value, datetime):
             return value.strftime("%Y-%m-%d %H:%M:%S")
         return str(value)
