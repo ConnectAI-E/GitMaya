@@ -16,6 +16,7 @@ class TeamMemberWithUser(TeamMember):
             TeamMember.code_user_id == CodeUser.id,
             CodeUser.status == 0,
         ),
+        viewonly=True,
     )
 
     im_user = relationship(
@@ -24,6 +25,7 @@ class TeamMemberWithUser(TeamMember):
             TeamMember.im_user_id == IMUser.id,
             IMUser.status == 0,
         ),
+        viewonly=True,
     )
 
 
