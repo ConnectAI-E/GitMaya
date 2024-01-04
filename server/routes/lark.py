@@ -37,9 +37,9 @@ oauth = OauthServer(prefix="/api/feishu/oauth")
 parser = GitMayaLarkParser()
 
 
-@hook.on_bot_message(event_type="card:action")
+@hook.on_bot_event(event_type="card:action")
 def on_card_action(bot, token, data, *args, **kwargs):
-    app.logger.info("on_card_action %r", (bot, token, data, *args))
+    app.logger.error("on_card_action %r", (bot, token, data, *args))
 
 
 @hook.on_bot_message(message_type="text")
