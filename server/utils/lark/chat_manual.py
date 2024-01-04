@@ -70,14 +70,13 @@ if __name__ == "__main__":
     import os
 
     import httpx
-    from pprint import pprint
     from dotenv import find_dotenv, load_dotenv
 
     load_dotenv(find_dotenv())
     message = ChatManual(actions=["aaa", "bbb"])
-    pprint(json.dumps(message))
+    print(json.dumps(message))
     result = httpx.post(
         os.environ.get("TEST_BOT_HOOK"),
         json={"card": message, "msg_type": "interactive"},
     ).json()
-    pprint(result)
+    print(result)
