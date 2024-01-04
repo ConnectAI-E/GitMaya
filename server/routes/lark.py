@@ -40,6 +40,7 @@ parser = GitMayaLarkParser()
 @hook.on_bot_event(event_type="card:action")
 def on_card_action(bot, token, data, *args, **kwargs):
     app.logger.error("on_card_action %r", (bot, token, data, *args))
+    # TODO 将action中的按钮，或者选择的东西，重新组织成 command 继续走parser的逻辑
 
 
 @hook.on_bot_message(message_type="text")
