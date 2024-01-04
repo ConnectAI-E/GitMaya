@@ -97,7 +97,7 @@ class IssueManualHelp(FeishuMessageCard):
             ),
             GitMayaCardNote("GitMaya Issue Manual"),
         ]
-        header = FeishuMessageCardHeader("ISSUE MANUAL\n", template="gray")
+        header = FeishuMessageCardHeader("ISSUE MANUAL\n", template="grey")
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)
