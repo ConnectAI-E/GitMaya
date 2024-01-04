@@ -122,6 +122,33 @@ def set_team_member(team_id, code_user_id, im_user_id):
     db.session.commit()
 
 
+def add_team_member(team_id, code_user_id):
+    """Add a team member.
+    Args:
+        team_id (str): Team ID.
+        code_user_id (str): BindUser ID.
+    """
+    # 检查是否已经存在
+    if (
+        TeamMember.query.filter_by(
+            team_id=team_id,
+            code_user_id=code_user_id,
+            status=0,
+        ).first()
+        is not None
+    ):
+        return
+
+    new_team_member = TeamMember(
+        id=ObjID.new_id(),
+        team_id=team_id,
+        code_user_id=code_user_id,
+        im_user_id=None,
+    )
+    db.session.add(new_team_member)
+    db.session.commit()
+
+
 def create_team(app_info: dict) -> Team:
     """Create a team.
 

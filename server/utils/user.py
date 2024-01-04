@@ -31,7 +31,7 @@ def register(code: str) -> str | None:
 
     email = get_email(access_token)
 
-    new_user_id = create_github_user(
+    new_user_id, _ = create_github_user(
         github_id=github_id,
         name=user_info.get("name", None),
         email=email,
@@ -49,8 +49,9 @@ def create_github_user(
     email: str,
     avatar: str,
     access_token: str = None,
+    application_id: str = None,
     extra: dict = {},
-) -> str:
+) -> (str, str):
     """Create a GitHub user.
 
     Args:
@@ -76,9 +77,12 @@ def create_github_user(
             # 刷新 access_token
             if access_token is not None:
                 bind_user.access_token = access_token
-                db.session.commit()
 
-            return user.id
+            if application_id is not None:
+                bind_user.application_id = application_id
+
+            db.session.commit()
+            return user.id, bind_user.id
 
     new_user = User(
         id=ObjID.new_id(),
@@ -100,6 +104,7 @@ def create_github_user(
         name=name,
         avatar=avatar,
         access_token=access_token,
+        application_id=application_id,
         extra=extra.get("oauth_info", None),
     )
 
@@ -107,4 +112,4 @@ def create_github_user(
 
     db.session.commit()
 
-    return new_user.id
+    return new_user.id, new_bind_user.id
