@@ -1,5 +1,5 @@
-from connectai.lark.sdk import *
 from base import *
+from connectai.lark.sdk import *
 
 
 class PrManual(FeishuMessageCard):
