@@ -54,6 +54,7 @@ def github_install():
         org_name=app_info["account"]["login"],
         installation_id=installation_id,
         application_id=code_application.id,
+        team_id=team.id,
     )
 
     return make_response(
