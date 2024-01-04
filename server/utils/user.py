@@ -22,6 +22,7 @@ def register(code: str) -> str | None:
         abort(500)
 
     access_token = oauth_info.get("access_token", None)[0]  # 这里要考虑取哪个，为什么会有多个？
+    # TODO: 预备好对 user_access_token 的刷新处理
 
     # 使用 oauth_info 中的 access_token 获取用户信息
     user_info = get_user_info(access_token)

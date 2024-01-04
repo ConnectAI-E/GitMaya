@@ -1,5 +1,29 @@
 import httpx
 from app import app
+from utils.github.bot import BaseGitHubApp
+
+
+class GitHubAppAccount(BaseGitHubApp):
+    def __init__(self, installation_id: str = None, user_id: str = None) -> None:
+        super().__init__(installation_id, user_id)
+
+    def _get_user_info(self):
+        """Get user info.
+
+        Returns:
+            dict: User info.
+        """
+
+        return get_user_info(self.user_token)
+
+    def _get_email(self):
+        """Get user email.
+
+        Returns:
+            str: User email.
+        """
+
+        return get_email(self.user_token)
 
 
 def get_user_info(access_token: str) -> dict | None:

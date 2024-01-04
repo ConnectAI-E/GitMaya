@@ -4,13 +4,15 @@ from datetime import datetime
 
 import httpx
 from jwt import JWT, jwk_from_pem
+from model.schema import BindUser
 
 
 class BaseGitHubApp:
-    def __init__(self, installation_id: str) -> None:
+    def __init__(self, installation_id: str = None, user_id: str = None) -> None:
         self.app_id = os.environ.get("GITHUB_APP_ID")
         self.client_id = os.environ.get("GITHUB_CLIENT_ID")
         self.installation_id = installation_id
+        self.user_id = user_id
 
         self._jwt_created_at: float = None
         self._jwt: str = None
@@ -42,8 +44,8 @@ class BaseGitHubApp:
                 auth = self.jwt
             case "install_token":
                 auth = self.installation_token
-            # case "user_token":
-            #     auth = self.user_token
+            case "user_token":
+                auth = self.user_token
             case _:
                 raise ValueError(
                     "auth_type must be 'jwt' or 'install_token' or 'user_token'"
@@ -118,6 +120,31 @@ class BaseGitHubApp:
             self._installation_token = res.get("token", None)
 
         return self._installation_token
+
+    @property
+    def user_token(self) -> str:
+        """Get a user token for the GitHub App.
+
+        Returns:
+            str: A user token for the GitHub App.
+        """
+
+        # TODO: 当前使用的是无期限的 token，可能需要考虑刷新 token 的问题
+        if (self._user_token is None or self._user_token_created_at is None,):
+            bind_user = BindUser.query.filter_by(
+                user_id=self.user_id, platform="github"
+            ).first()
+            if bind_user is None:
+                raise Exception("Failed to get bind user.")
+
+            if bind_user.access_token is None:
+                # 这种情况下可能是用户没有绑定 GitHub
+                raise Exception("Failed to get access token.")
+
+            self._user_token_created_at = datetime.now().timestamp()
+            self._user_token = bind_user.access_token
+
+        return self._user_token
 
     def get_installation_info(self) -> dict | None:
         """Get installation info
