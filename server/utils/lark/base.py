@@ -1,6 +1,26 @@
 from connectai.lark.sdk import *
 
 
+class GitMayaTitle(FeishuMessageDiv):
+    def __init__(self):
+        repo_url = "https://github.com/ConnectAI-E/GitMaya"
+        super().__init__(
+            content="** 🤠 haloooo，我是Maya~ **\n对 GitMaya 有新想法? 来Github 贡献你的代码吧。",
+            tag="lark_md",
+            extra=FeishuMessageButton(
+                "⭐️ Star Maya",
+                tag="lark_md",
+                type="primary",
+                multi_url={
+                    "url": repo_url,
+                    "android_url": repo_url,
+                    "ios_url": repo_url,
+                    "pc_url": repo_url,
+                },
+            ),
+        )
+
+
 class GitMayaCardNote(FeishuMessageNote):
     @property
     def img_key(self):
