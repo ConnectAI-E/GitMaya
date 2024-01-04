@@ -12,21 +12,7 @@ class IssueManualHelp(FeishuMessageCard):
     ):
         issue_url = f"{repo_url}/issues/{issue_id}"
         elements = [
-            FeishuMessageDiv(
-                content="** 🤠 haloooo，我是Maya~ **\n对 GitMaya 有新想法? 来Github 贡献你的代码吧。",
-                tag="lark_md",
-                extra=FeishuMessageButton(
-                    "⭐️ Star Maya",
-                    tag="lark_md",
-                    type="primary",
-                    multi_url={
-                        "url": repo_url,
-                        "android_url": repo_url,
-                        "ios_url": repo_url,
-                        "pc_url": repo_url,
-                    },
-                ),
-            ),
+            GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
                 content="** 🕹️ 更新 Issue 状态**\n*话题下回复「/close」/「/reopen」*",
