@@ -2,15 +2,11 @@ import json
 import os
 
 from app import app
-from flask import Blueprint, abort, jsonify, make_response, redirect, request, session
+from flask import Blueprint, make_response, redirect, request, session
 from model.team import create_code_application, create_team
 from utils.auth import authenticated
-from utils.github.application import (
-    get_installation_info,
-    get_installation_token,
-    get_jwt,
-    verify_github_signature,
-)
+from utils.github.application import verify_github_signature
+from utils.github.bot import BaseGitHubApp
 from utils.user import register
 
 bp = Blueprint("github", __name__, url_prefix="/api/github")
@@ -29,17 +25,11 @@ def github_install():
             f"https://github.com/apps/{os.environ.get('GITHUB_APP_NAME')}/installations/new"
         )
 
-    jwt = get_jwt(
-        os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH"),
-        os.environ.get("GITHUB_APP_ID"),
-    )
-    installation_token = get_installation_token(jwt, installation_id)
-    try:
-        if installation_token is None:
-            app.logger.error("Failed to get installation token.")
-            raise Exception("Failed to get installation token.")
+    github_app = BaseGitHubApp(installation_id)
 
-        app_info = get_installation_info(jwt, installation_id)
+    try:
+        app_info = github_app.get_installation_info()
+
         if app_info is None:
             app.logger.error("Failed to get installation info.")
             raise Exception("Failed to get installation info.")
@@ -48,11 +38,11 @@ def github_install():
         type: str = app_info["account"]["type"]
         if type.lower() == "user":
             app.logger.error("User is not allowed to install.")
-            # TODO: 定义与前端的交互数据格式
             raise Exception("User is not allowed to install.")
 
         team = create_team(app_info)
         code_application = create_code_application(team.id, installation_id)
+
     except Exception as e:
         # 返回错误信息
         app_info = str(e)
