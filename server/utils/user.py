@@ -79,6 +79,10 @@ def create_github_user(
             if access_token is not None:
                 bind_user.access_token = access_token
 
+            # 刷新 email
+            if email is not None:
+                bind_user.email = email
+
             if application_id is not None:
                 bind_user.application_id = application_id
 
