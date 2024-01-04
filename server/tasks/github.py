@@ -57,7 +57,6 @@ def pull_repo(org_name: str, installation_id: str, application_id: str, team_id:
 
             # 拉取仓库成员，创建 RepoUser
             repo_users = github_app.get_repo_collaborators(repo["name"], org_name)
-            print(repo_users)
 
             # 检查是否有 bind_user
             for repo_user in repo_users:
