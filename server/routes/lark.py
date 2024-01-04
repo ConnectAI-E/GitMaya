@@ -7,6 +7,7 @@ from connectai.lark.webhook import LarkServer as LarkServerBase
 from flask import session
 from model.lark import get_bot_by_app_id
 from tasks.lark import get_contact_by_lark_application
+from utils.lark.parser import GitMayaLarkParser
 
 
 def get_bot(app_id):
@@ -33,13 +34,18 @@ class OauthServer(OauthServerBase):
 
 hook = LarkServer(prefix="/api/feishu/hook")
 oauth = OauthServer(prefix="/api/feishu/oauth")
+parser = GitMayaLarkParser()
 
 
 @hook.on_bot_message(message_type="text")
 def on_text_message(bot, message_id, content, *args, **kwargs):
     text = content["text"]
-    print("reply_text", message_id, text)
-    bot.reply_text(message_id, "reply: " + text)
+    # print("reply_text", message_id, text)
+    # bot.reply_text(message_id, "reply: " + text)
+    try:
+        parser.parse_args(text, *args, **kwargs)
+    except Exception as e:
+        app.logger.exception(e)
 
 
 @oauth.on_bot_event(event_type="oauth:user_info")
