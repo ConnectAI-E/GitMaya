@@ -106,8 +106,8 @@ def get_team_member(team_id, user_id, page=1, size=20):
     query = (
         db.session.query(TeamMemberWithUser)
         .options(
-            joinedload("code_user"),
-            joinedload("im_user"),
+            joinedload(TeamMemberWithUser.code_user),
+            joinedload(TeamMemberWithUser.im_user),
         )
         .filter(
             TeamMember.team_id == team_id,
@@ -122,7 +122,32 @@ def get_team_member(team_id, user_id, page=1, size=20):
     total = query.count()
     if total == 0:
         return [], 0
-    return query_one_page(query, page, size), total
+    return [_format_member(item) for item in query_one_page(query, page, size)], total
+
+
+def _format_member(item):
+    return {
+        "id": item.id,
+        "status": item.status,
+        "code_user": {
+            "id": item.code_user.id,
+            "user_id": item.code_user.user_id,
+            "name": item.code_user.name,
+            "email": item.code_user.email,
+            "avatar": item.code_user.avatar,
+        }
+        if item.code_user
+        else None,
+        "im_user": {
+            "id": item.im_user.id,
+            "user_id": item.im_user.user_id,
+            "name": item.im_user.name,
+            "email": item.im_user.email,
+            "avatar": item.im_user.avatar,
+        }
+        if item.im_user
+        else None,
+    }
 
 
 def get_im_user_by_team_id(team_id, page=1, size=20):
