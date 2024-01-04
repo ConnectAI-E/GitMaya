@@ -37,13 +37,19 @@ oauth = OauthServer(prefix="/api/feishu/oauth")
 parser = GitMayaLarkParser()
 
 
+@hook.on_bot_event(event_type="card:action")
+def on_card_action(bot, token, data, *args, **kwargs):
+    app.logger.error("on_card_action %r", (bot, token, data, *args))
+    # TODO 将action中的按钮，或者选择的东西，重新组织成 command 继续走parser的逻辑
+
+
 @hook.on_bot_message(message_type="text")
 def on_text_message(bot, message_id, content, *args, **kwargs):
     text = content["text"]
     # print("reply_text", message_id, text)
     # bot.reply_text(message_id, "reply: " + text)
     try:
-        parser.parse_args(text, *args, **kwargs)
+        parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
     except Exception as e:
         app.logger.exception(e)
 

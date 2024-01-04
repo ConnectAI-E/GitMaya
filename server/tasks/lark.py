@@ -4,6 +4,7 @@ from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from model.schema import BindUser, ChatGroup, IMApplication, ObjID, Repo, User, db
 from sqlalchemy import func, or_
+from utils.lark.manage_manual import ManageManual
 
 
 @celery.task()
@@ -230,3 +231,23 @@ def create_chat_group_for_all_repo():
             repo_id,
             result,
         )
+
+
+@celery.task()
+def send_manage_manual(app_id, message_id, *args, **kwargs):
+    application = (
+        db.session.query(IMApplication)
+        .filter(
+            IMApplication.app_id == app_id,
+        )
+        .first()
+    )
+    if application:
+        bot = Bot(
+            app_id=application.app_id,
+            app_secret=application.app_secret,
+        )
+        # TODO repos
+        message = ManageManual(repos=[("GitMaya", "GitMaya")])
+        return bot.reply(message_id, message)
+    return False
