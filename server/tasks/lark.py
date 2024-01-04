@@ -249,5 +249,5 @@ def send_manage_manual(app_id, message_id, *args, **kwargs):
         )
         # TODO repos
         message = ManageManual(repos=[("GitMaya", "GitMaya")])
-        return bot.reply(message_id, message)
+        return bot.reply(message_id, message).json()
     return False
