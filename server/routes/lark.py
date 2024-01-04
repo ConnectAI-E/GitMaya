@@ -43,7 +43,7 @@ def on_text_message(bot, message_id, content, *args, **kwargs):
     # print("reply_text", message_id, text)
     # bot.reply_text(message_id, "reply: " + text)
     try:
-        parser.parse_args(text, *args, **kwargs)
+        parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
     except Exception as e:
         app.logger.exception(e)
 

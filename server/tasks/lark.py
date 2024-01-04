@@ -230,3 +230,23 @@ def create_chat_group_for_all_repo():
             repo_id,
             result,
         )
+
+
+@celery.task()
+def send_manage_manual(app_id, message_id, **kwargs):
+    application = (
+        db.session.query(IMApplication)
+        .filter(
+            IMApplication.app_id == app_id,
+        )
+        .first()
+    )
+    if application:
+        bot = Bot(
+            app_id=application.app_id,
+            app_secret=application.app_secret,
+        )
+        # TODO repos
+        message = ManageManual(repos=[("GitMaya", "GitMaya")])
+        return bot.reply(message_id, message)
+    return False

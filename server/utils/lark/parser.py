@@ -1,6 +1,8 @@
 import argparse
 import logging
 
+from tasks.lark import *
+
 
 class GitMayaLarkParser(object):
     def __init__(self):
@@ -71,6 +73,7 @@ class GitMayaLarkParser(object):
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
         # TODO call task.delay
+        send_manage_manual.delay(args, **kwargs)
         return "help", param, unkown
 
     def on_match(self, param, unkown, *args, **kwargs):
