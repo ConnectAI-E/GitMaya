@@ -140,6 +140,7 @@ class GitMayaLarkParser(object):
         try:
             # TODO
             command = command.replace("@_user_1", "")
+            command = command.replace("@_user_2", "")
             argv = [a for a in command.split(" ") if a]
             param, unkown = self.parser.parse_known_args(argv)
             return param.func(param, unkown, *args, **kwargs)
