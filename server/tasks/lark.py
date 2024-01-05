@@ -13,6 +13,19 @@ def test_task():
     return 1
 
 
+def get_contact_by_bot_and_department(bot, department_id):
+    page_token, page_size = "", 100
+    while True:
+        url = f"{bot.host}/open-apis/contact/v3/users/find_by_department?page_token={page_token}&page_size={page_size}&department_id={department_id}"
+        result = bot.get(url).json()
+        for department_user_info in result.get("data", {}).get("items", []):
+            yield department_user_info
+        has_more = result.get("data", {}).get("has_more")
+        if not has_more:
+            break
+        page_token = result.get("data", {}).get("page_token", "")
+
+
 def get_contact_by_bot(bot):
     page_token, page_size = "", 100
     while True:
@@ -28,6 +41,13 @@ def get_contact_by_bot(bot):
                 yield user_info.get("data", {}).get("user")
             else:
                 app.logger.error("can not get user_info %r", user_info)
+
+        for department_id in result.get("data", {}).get("department_ids", []):
+            for department_user_info in get_contact_by_bot_and_department(
+                bot, department_id
+            ):
+                yield department_user_info
+
         has_more = result.get("data", {}).get("has_more")
         if not has_more:
             break
