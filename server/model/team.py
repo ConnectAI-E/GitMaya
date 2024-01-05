@@ -37,8 +37,10 @@ def get_team_list_by_user_id(user_id, page=1, size=100):
                 Team.user_id == user_id,  # 管理员
                 and_(
                     TeamMember.team_id == Team.id,
-                    TeamMember.code_user_id == user_id,  # 属于某个team的员工
+                    TeamMember.code_user_id == BindUser.id,  # 属于某个team的员工
                     TeamMember.status == 0,
+                    BindUser.user_id == user_id,
+                    BindUser.status == 0,
                 ),
             ),
             Team.status == 0,
@@ -73,8 +75,10 @@ def get_team_by_id(team_id, user_id):
                 Team.user_id == user_id,  # 管理员
                 and_(
                     TeamMember.team_id == Team.id,
-                    TeamMember.code_user_id == user_id,  # 属于某个team的员工
+                    TeamMember.code_user_id == BindUser.id,  # 属于某个team的员工
                     TeamMember.status == 0,
+                    BindUser.user_id == user_id,
+                    BindUser.status == 0,
                 ),
             ),
             Team.id == team_id,
@@ -120,7 +124,10 @@ def get_team_member(team_id, user_id, page=1, size=20):
     # admin can get all users in current_team
     if not is_team_admin(team_id, user_id):
         query = query.filter(
-            TeamMember.code_user_id == user_id,
+            TeamMember.code_user_id == BindUser.id,
+            TeamMember.status == 0,
+            BindUser.user_id == user_id,
+            BindUser.status == 0,
         )
     total = query.count()
     if total == 0:
