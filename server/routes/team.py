@@ -10,7 +10,11 @@ from model.team import (
     save_im_application,
     set_team_member,
 )
-from tasks import get_contact_by_lark_application, get_status_by_id
+from tasks import (
+    get_contact_by_lark_application,
+    get_status_by_id,
+    pull_github_memebers,
+)
 from utils.auth import authenticated
 
 bp = Blueprint("team", __name__, url_prefix="/api/team")
@@ -85,7 +89,7 @@ def get_im_user_by_team_id_and_platform(team_id, platform):
     )
 
 
-@bp.route("/<team_id>/member", methods=["POST"])
+@bp.route("/<team_id>/member", methods=["PUT"])
 @authenticated
 def save_team_member_by_team_id(team_id):
     code_user_id = request.json.get("code_user_id")
@@ -100,6 +104,24 @@ def save_team_member_by_team_id(team_id):
 
     set_team_member(team_id, code_user_id, im_user_id)
     return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/<team_id>/member", methods=["POST"])
+@authenticated
+def refresh_team_member_by_team_id(team_id):
+    code_application, _ = get_application_info_by_team_id(team_id)
+    if not code_application:
+        app.logger.error("code_application not found")
+        return abort(400, "params error")
+
+    team = get_team_by_id(team_id, session["user_id"])
+
+    task = pull_github_memebers.delay(
+        code_application.id,
+        team.name,
+    )
+
+    return jsonify({"code": 0, "msg": "success", "data": {"task_id": task.id}})
 
 
 @bp.route("/<team_id>/<platform>/app", methods=["POST"])

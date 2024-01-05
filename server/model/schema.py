@@ -147,7 +147,9 @@ class Team(Base):
     user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
     # 移除从team到application_id的关联，使用application.team_id关联
 
-    name = db.Column(db.String(128), nullable=True, comment="名称")
+    name = db.Column(
+        db.String(128), nullable=True, comment="名称"
+    )  # 同时也是 GitHub Org 的 name
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     extra = db.Column(
         JSONStr(2048),
