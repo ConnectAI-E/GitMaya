@@ -10,11 +10,7 @@ from model.team import (
     save_im_application,
     set_team_member,
 )
-from tasks import (
-    get_contact_by_lark_application,
-    get_status_by_id,
-    pull_github_memebers,
-)
+from tasks import get_contact_by_lark_application, get_status_by_id, pull_github_members
 from utils.auth import authenticated
 
 bp = Blueprint("team", __name__, url_prefix="/api/team")
@@ -116,8 +112,8 @@ def refresh_team_member_by_team_id(team_id):
 
     team = get_team_by_id(team_id, session["user_id"])
 
-    task = pull_github_memebers.delay(
-        code_application.id,
+    task = pull_github_members.delay(
+        code_application.installation_id,
         team.name,
         team_id,
     )
