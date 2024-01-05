@@ -4,13 +4,14 @@ from .base import *
 class ManageManual(FeishuMessageCard):
     def __init__(
         self,
-        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        org_name="GitMaya",
         repos=[],
-        repo_name="GitMaya",
+        team_id="",
     ):
-        new_issue_url = f"{repo_url}/issues/new"
         github_url = "https://github.com"
-        setting_url = f"{repo_url}/settings"
+        new_repo_url = f"{github_url}/new"
+        profile_url = f"{github_url}/{org_name}"
+        setting_url = f"{github_url}/organizations/{org_name}/settings"
         elements = [
             GitMayaTitle(),
             FeishuMessageHr(),
@@ -24,7 +25,9 @@ class ManageManual(FeishuMessageCard):
                     ],
                     placeholder="",
                     value={
-                        "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
+                        # /match_repo_id + select repo_id, with chat_id
+                        "command": "/match_repo_id",
+                        "team_id": team_id,
                     },
                 )
                 if len(repos) > 0
@@ -38,10 +41,10 @@ class ManageManual(FeishuMessageCard):
                     tag="lark_md",
                     type="default",
                     multi_url={
-                        "url": new_issue_url,
-                        "android_url": new_issue_url,
-                        "ios_url": new_issue_url,
-                        "pc_url": new_issue_url,
+                        "url": new_repo_url,
+                        "android_url": new_repo_url,
+                        "ios_url": new_repo_url,
+                        "pc_url": new_repo_url,
                     },
                 ),
             ),
@@ -53,10 +56,10 @@ class ManageManual(FeishuMessageCard):
                     tag="lark_md",
                     type="default",
                     multi_url={
-                        "url": github_url,
-                        "android_url": github_url,
-                        "ios_url": github_url,
-                        "pc_url": github_url,
+                        "url": profile_url,
+                        "android_url": profile_url,
+                        "ios_url": profile_url,
+                        "pc_url": profile_url,
                     },
                 ),
             ),
