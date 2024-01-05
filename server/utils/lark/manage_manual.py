@@ -20,8 +20,8 @@ class ManageManual(FeishuMessageCard):
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[
-                        FeishuMessageOption(value=repo, content=name)
-                        for name, repo in repos
+                        FeishuMessageOption(value=repo_id, content=repo_name)
+                        for repo_id, repo_name in repos
                     ],
                     placeholder="",
                     value={
@@ -64,7 +64,7 @@ class ManageManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** ⚙️ 修改 {repo_name} 设置**\n*话题下回复「/setting 」*",
+                content=f"** ⚙️ 修改 {org_name} 设置**\n*话题下回复「/setting 」*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "前往 setting 面版",
