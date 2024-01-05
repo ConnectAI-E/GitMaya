@@ -10,6 +10,7 @@ from model.team import (
     save_im_application,
     set_team_member,
 )
+from tasks import get_contact_by_lark_application, get_status_by_id
 from utils.auth import authenticated
 
 bp = Blueprint("team", __name__, url_prefix="/api/team")
@@ -120,6 +121,37 @@ def install_im_application_to_team(team_id, platform):
     )
     app.logger.info("result %r", result)
     return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/<team_id>/<platform>/user", methods=["POST"])
+@authenticated
+def refresh_im_user_by_team_id_and_platform(team_id, platform):
+    # trigger task
+    if platform not in ["lark"]:  # TODO lark/slack...
+        return abort(400, "params error")
+    _, im_application = get_application_info_by_team_id(team_id)
+    task = get_contact_by_lark_application.delay(im_application.id)
+    return jsonify({"code": 0, "msg": "success", "data": {"task_id": task.id}})
+
+
+@bp.route("/<team_id>/task/<task_id>", methods=["GET"])
+@authenticated
+def get_task_result_by_id(team_id, task_id):
+    # get task result
+    task = get_status_by_id(task_id)
+    return jsonify(
+        {
+            "code": 0,
+            "msg": "success",
+            "data": {
+                "task_id": task.id,
+                "status": task.status,
+                "result": task.result
+                if isinstance(task.result, list)
+                else str(task.result),
+            },
+        }
+    )
 
 
 app.register_blueprint(bp)
