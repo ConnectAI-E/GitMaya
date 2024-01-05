@@ -20,3 +20,7 @@ celery.conf.beat_schedule = {
     #     "args": (),  # 函数传参的值
     # },
 }
+
+
+def get_status_by_id(task_id):
+    return celery.AsyncResult(task_id)
