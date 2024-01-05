@@ -28,10 +28,10 @@ class ChatManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往 Github 查看 Repo 主页 **\n*话题下回复「/view」 *",
+                content=f"** ⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
-                    "打开 Github 主页",
+                    "打开 GitHub 主页",
                     tag="lark_md",
                     type="default",
                     multi_url={

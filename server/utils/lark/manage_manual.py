@@ -15,13 +15,10 @@ class ManageManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="** 👀 关联历史 Github 项目**\n*话题下回复「/match + repo url + chat name 」 *",
+                content="** 👀 关联历史 GitHub 项目**\n*话题下回复「/match + repo url + chat name 」 *",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
-                    *[
-                        FeishuMessageOption(value=repo, content=name)
-                        for name, repo in repos
-                    ],
+                    *[FeishuMessageOption(value=repo, content=name) for name, repo in repos],
                     placeholder="",
                     value={
                         "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
@@ -31,10 +28,10 @@ class ManageManual(FeishuMessageCard):
                 else None,
             ),
             FeishuMessageDiv(
-                content="** 📦 新建 Github Repo**\n*话题下回复「/new」 *",
+                content="** 📦 新建 GitHub Repo**\n*话题下回复「/new」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
-                    "新建 Github Repo",
+                    "新建 GitHub Repo",
                     tag="lark_md",
                     type="default",
                     multi_url={
@@ -49,7 +46,7 @@ class ManageManual(FeishuMessageCard):
                 content=f"** ⚡️ 查看个人主页 **\n*话题下回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
-                    "打开 Github 主页",
+                    "打开 GitHub 主页",
                     tag="lark_md",
                     type="default",
                     multi_url={
