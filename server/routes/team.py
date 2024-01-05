@@ -116,6 +116,7 @@ def refresh_team_member_by_team_id(team_id):
         code_application.installation_id,
         team.name,
         team_id,
+        code_application.id,
     )
 
     return jsonify({"code": 0, "msg": "success", "data": {"task_id": task.id}})
