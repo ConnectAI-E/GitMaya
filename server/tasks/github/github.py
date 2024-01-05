@@ -1,8 +1,16 @@
 from celery_app import celery
-from model.schema import BindUser, ObjID, Repo, RepoUser, User, db
-from model.team import add_team_member
+from model.schema import (
+    BindUser,
+    CodeApplication,
+    ObjID,
+    Repo,
+    RepoUser,
+    Team,
+    User,
+    db,
+)
 from utils.github.organization import GitHubAppOrg
-from utils.user import create_github_user
+from utils.user import create_github_member
 
 
 @celery.task()
@@ -25,27 +33,15 @@ def pull_github_repo(
     if members is None or not isinstance(members, list):
         raise Exception("Failed to get org members.")
 
-    for member in members:
-        # 已存在的用户不会重复创建
-        _, new_bind_user_id = create_github_user(
-            github_id=member["id"],
-            name=member["login"],
-            email=member.get("email", None),
-            avatar=member["avatar_url"],
-            access_token=None,
-            application_id=application_id,
-            extra={},
-        )
-
-        add_team_member(team_id, new_bind_user_id)
+    # 创建 user 和 team member
+    create_github_member(members, application_id, team_id)
 
     # 拉取所有组织仓库，创建 Repo
     repos = github_app.get_org_repos(org_name)
     try:
         for repo in repos:
             # 检查是否已经存在
-            if Repo.query.filter_by(repo_id=repo["id"]).first() is not None:
-                continue
+            current_repo = Repo.query.filter_by(repo_id=repo["id"]).first()
 
             new_repo = Repo(
                 id=ObjID.new_id(),
@@ -61,8 +57,8 @@ def pull_github_repo(
             # 拉取仓库成员，创建 RepoUser
             repo_users = github_app.get_repo_collaborators(repo["name"], org_name)
 
-            # 检查是否有 bind_user
             for repo_user in repo_users:
+                # 检查是否有 bind_user，没有则跳过
                 bind_user = (
                     db.session.query(BindUser)
                     .filter(
@@ -76,10 +72,23 @@ def pull_github_repo(
                 if bind_user is None:
                     continue
 
+                # 检查是否有 repo_user，有则跳过
+                current_repo_user = (
+                    db.session.query(RepoUser)
+                    .filter(
+                        RepoUser.repo_id == current_repo.id,
+                        RepoUser.bind_user_id == bind_user.id,
+                        RepoUser.application_id == application_id,
+                    )
+                    .first()
+                )
+                if current_repo_user is not None:
+                    continue
+
                 new_repo_user = RepoUser(
                     id=ObjID.new_id(),
                     application_id=application_id,
-                    repo_id=new_repo.id,
+                    repo_id=current_repo.id,
                     bind_user_id=bind_user.id,
                 )
                 db.session.add(new_repo_user)
@@ -93,7 +102,7 @@ def pull_github_repo(
 
 @celery.task()
 def pull_github_members(
-    installation_id: str, org_name: str, team_id: str
+    installation_id: str, org_name: str, team_id: str, application_id: str = None
 ) -> list | None:
     """Background task to pull members from GitHub.
 
@@ -108,21 +117,29 @@ def pull_github_members(
 
     members = github_app.get_org_members(org_name)
 
-    if members is None or not isinstance(members, list):
-        return None
+    return create_github_member(members, application_id, team_id)
 
-    for member in members:
-        # 已存在的用户不会重复创建
-        _, new_bind_user_id = create_github_user(
-            github_id=member["id"],
-            name=member["login"],
-            email=member.get("email", None),
-            avatar=member["avatar_url"],
-            access_token=None,
-            application_id=None,
-            extra={},
+
+@celery.task()
+def pull_github_repo_all():
+    """Pull all repo from GitHub, build Repo and RepoUser."""
+
+    task_ids = []
+    # 查询所有的 application 和对应的 team
+    for team in db.session.query(Team).all():
+        application = CodeApplication.query.filter_by(
+            team_id=team.id, status=0, platform="github"
+        ).first()
+
+        if application is None:
+            continue
+
+        task = pull_github_repo.delay(
+            org_name=team.name,
+            installation_id=application.installation_id,
+            application_id=application.id,
+            team_id=team.id,
         )
+        task_ids.append(task.id)
 
-        add_team_member(team_id, new_bind_user_id)
-
-    return members
+    return task_ids

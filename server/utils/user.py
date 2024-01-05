@@ -1,6 +1,7 @@
 from app import app, db
 from flask import abort
 from model.schema import BindUser, ObjID, User
+from model.team import add_team_member
 from utils.github.account import get_email, get_user_info
 from utils.github.application import oauth_by_code
 
@@ -118,3 +119,30 @@ def create_github_user(
     db.session.commit()
 
     return new_user.id, new_bind_user.id
+
+
+def create_github_member(members: list, application_id: str, team_id: str) -> list:
+    """Create GitHub members.
+    Args:
+        members (list): The members of the GitHub.
+        application_id (str): The id of the application.
+        team_id (str): The id of the team.
+    Returns:
+        list: The members.
+    """
+
+    for member in members:
+        # 已存在的用户不会重复创建
+        _, new_bind_user_id = create_github_user(
+            github_id=member["id"],
+            name=member["login"],
+            email=member.get("email", None),
+            avatar=member["avatar_url"],
+            access_token=None,
+            application_id=application_id,
+            extra={},
+        )
+
+        add_team_member(team_id, new_bind_user_id)
+
+    return members
