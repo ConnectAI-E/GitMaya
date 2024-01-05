@@ -73,7 +73,7 @@ def get_im_user_by_team_id_and_platform(team_id, platform):
             "msg": "success",
             "data": [
                 {
-                    "value": i.user_id,
+                    "value": i.id,
                     "label": i.name or i.email,
                     "email": i.email,
                     "avatar": i.avatar,
