@@ -119,6 +119,7 @@ def refresh_team_member_by_team_id(team_id):
     task = pull_github_memebers.delay(
         code_application.id,
         team.name,
+        team_id,
     )
 
     return jsonify({"code": 0, "msg": "success", "data": {"task_id": task.id}})
