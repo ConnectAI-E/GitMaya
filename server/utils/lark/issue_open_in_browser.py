@@ -10,7 +10,7 @@ class IssueOpenInBrowser(FeishuMessageCard):
         issue_url = f"{repo_url}/issues/{issue_id}"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往 Github 查看更多 Issue 信息 **\n*{issue_url}*",
+                content=f"** ⚡️ 前往 GitHub 查看更多 Issue 信息 **\n*{issue_url}*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器中打开",

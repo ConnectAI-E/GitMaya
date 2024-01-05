@@ -81,7 +81,7 @@ class ManageRepoDetect(FeishuMessageCard):
             ),
             GitMayaCardNote("GitMaya Manage Action"),
         ]
-        header = FeishuMessageCardHeader("发现了新的 Github 仓库", template="violet")
+        header = FeishuMessageCardHeader("发现了新的 GitHub 仓库", template="violet")
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)
