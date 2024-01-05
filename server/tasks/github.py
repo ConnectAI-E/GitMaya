@@ -92,7 +92,7 @@ def pull_github_repo(
 
 
 @celery.task()
-def pull_github_memebers(
+def pull_github_members(
     installation_id: str, org_name: str, team_id: str
 ) -> list | None:
     """Background task to pull members from GitHub.
