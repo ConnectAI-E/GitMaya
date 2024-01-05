@@ -77,6 +77,7 @@ def get_team_by_id(team_id, user_id):
                     TeamMember.status == 0,
                 ),
             ),
+            Team.id == team_id,
             Team.status == 0,
         )
         .first()
