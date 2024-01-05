@@ -4,7 +4,7 @@ import os
 from app import app
 from flask import Blueprint, make_response, redirect, request, session
 from model.team import create_code_application, create_team
-from tasks.github import pull_repo
+from tasks.github import pull_github_repo
 from utils.auth import authenticated
 from utils.github.application import verify_github_signature
 from utils.github.bot import BaseGitHubApp
@@ -50,7 +50,7 @@ def github_install():
         app_info = str(e)
 
     # 在后台任务中拉取仓库
-    results = pull_repo.delay(
+    task = pull_github_repo.delay(
         org_name=app_info["account"]["login"],
         installation_id=installation_id,
         application_id=code_application.id,

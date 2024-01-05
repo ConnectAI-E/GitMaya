@@ -6,7 +6,9 @@ from utils.user import create_github_user
 
 
 @celery.task()
-def pull_repo(org_name: str, installation_id: str, application_id: str, team_id: str):
+def pull_github_repo(
+    org_name: str, installation_id: str, application_id: str, team_id: str
+):
     """Pull repo from GitHub, build Repo and RepoUser.
 
     Args:
@@ -87,3 +89,24 @@ def pull_repo(org_name: str, installation_id: str, application_id: str, team_id:
     except Exception as e:
         db.session.rollback()
         raise e
+
+
+@celery.task()
+def pull_github_memebers(installation_id: str, org_name: str) -> list | None:
+    """Background task to pull members from GitHub.
+
+    Args:
+        installation_id: GitHub App installation id.
+        org_name: GitHub organization name.
+
+    Returns:
+        list: GitHub members.
+    """
+    github_app = GitHubAppOrg(installation_id)
+
+    members = github_app.get_org_members(org_name)
+
+    if members is None or not isinstance(members, list):
+        return None
+
+    return members
