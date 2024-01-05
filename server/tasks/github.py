@@ -52,6 +52,7 @@ def pull_github_repo(
                 application_id=application_id,
                 owner_bind_id=None,  # TODO: 暂定不填写
                 repo_id=repo["id"],
+                name=repo["name"],
                 description=repo["description"],
             )
             db.session.add(new_repo)
