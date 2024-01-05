@@ -14,7 +14,7 @@ def test_task():
 
 
 def get_contact_by_bot_and_department(bot, department_id):
-    page_token, page_size = "", 100
+    page_token, page_size = "", 50
     while True:
         url = f"{bot.host}/open-apis/contact/v3/users/find_by_department?page_token={page_token}&page_size={page_size}&department_id={department_id}"
         result = bot.get(url).json()
