@@ -16,7 +16,10 @@ class RepoManual(FeishuMessageCard):
                 content="** 👀 修改 Repo 可见性**\n*话题下回复「/visit + public, private, internal」  *",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
-                    *[FeishuMessageOption(value=status, content=status) for status in statuses],
+                    *[
+                        FeishuMessageOption(value=status, content=status)
+                        for status in statuses
+                    ],
                     placeholder="public",
                     value={
                         "key": "value",

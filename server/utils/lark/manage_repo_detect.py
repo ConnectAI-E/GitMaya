@@ -50,8 +50,12 @@ class ManageRepoDetect(FeishuMessageCard):
                     weight=1,
                     vertical_align="top",
                 ),
-                FeishuMessageMarkdown(f"**🗒️ 描述：**\n{repo_description}", text_align="left"),
-                FeishuMessageMarkdown(f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"),
+                FeishuMessageMarkdown(
+                    f"**🗒️ 描述：**\n{repo_description}", text_align="left"
+                ),
+                FeishuMessageMarkdown(
+                    f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"
+                ),
                 flex_mode="flow",
                 background_style="grey",
             ),
@@ -71,7 +75,9 @@ class ManageRepoDetect(FeishuMessageCard):
                         "pc_url": repo_url,
                     },
                 ),
-                FeishuMessageOverflow(FeishuMessageOption(value="appStore", content="关联已有项目群")),
+                FeishuMessageOverflow(
+                    FeishuMessageOption(value="appStore", content="关联已有项目群")
+                ),
             ),
             GitMayaCardNote("GitMaya Manage Action"),
         ]

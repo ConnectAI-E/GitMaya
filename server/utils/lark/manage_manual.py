@@ -18,7 +18,10 @@ class ManageManual(FeishuMessageCard):
                 content="** 👀 关联历史 GitHub 项目**\n*话题下回复「/match + repo url + chat name 」 *",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
-                    *[FeishuMessageOption(value=repo, content=name) for name, repo in repos],
+                    *[
+                        FeishuMessageOption(value=repo, content=name)
+                        for name, repo in repos
+                    ],
                     placeholder="",
                     value={
                         "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid

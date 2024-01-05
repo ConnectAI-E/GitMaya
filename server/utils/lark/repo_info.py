@@ -52,8 +52,12 @@ class RepoInfo(FeishuMessageCard):
                         flex_mode="stretch",
                         background_style="grey",
                     ),
-                    FeishuMessageMarkdown(f"**🗒️ 描述：**\n{repo_description}\n\n", text_align="left"),
-                    FeishuMessageMarkdown(f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"),
+                    FeishuMessageMarkdown(
+                        f"**🗒️ 描述：**\n{repo_description}\n\n", text_align="left"
+                    ),
+                    FeishuMessageMarkdown(
+                        f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"
+                    ),
                     width="auto",
                     weight=1,
                     vertical_align="top",
