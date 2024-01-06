@@ -97,6 +97,8 @@ def github_register():
     # 保存用户注册状态
     if user_id:
         session["user_id"] = user_id
+        # 默认是会话级别的session，关闭浏览器直接就失效了
+        session.permanent = True
 
     return make_response(
         """
