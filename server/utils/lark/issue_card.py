@@ -18,7 +18,7 @@ class IssueCard(FeishuMessageCard):
         template = "blue" if status == "已关闭" else "red"
         # 这里使用飞书的用户
         # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
-        users = "".join(["<at id={open_id}></at>" for open_id in assignees])
+        users = "".join([f"<at id={open_id}></at>" for open_id in assignees])
         action_button = (
             FeishuMessageButton(
                 "重新打开", type="primary", value={"action": f"reopen:{issue_url}"}
