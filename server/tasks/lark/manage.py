@@ -209,7 +209,7 @@ def create_chat_group_for_repo(
     # 持有相同uuid的请求10小时内只可成功创建1个群聊
     chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
     # TODO 这里是一个可以配置的模板
-    name = f"{repo.name} 项目群"
+    name = chat_name or f"{repo.name} 项目群"
     description = f"{repo.description}"
     # TODO 当前先使用发消息的人，后面查找这个项目的所有者...
     try:
