@@ -5,7 +5,7 @@ from utils.github.organization import GitHubAppOrg
 
 def create_repo_from_github(
     repo: dict, org_name: str, application_id: str, github_app: GitHubAppOrg
-) -> None:
+) -> Repo:
     """Create repo from github
 
     Args:
@@ -15,7 +15,7 @@ def create_repo_from_github(
         github_app (GitHubAppOrg): github app instance
 
     Returns:
-        None, raise error if failed
+        Repo: repo instance
     """
 
     # 检查是否已经存在
@@ -76,10 +76,10 @@ def create_repo_from_github(
                 continue
 
             if current_repo_user is not None:
-                # # 更新权限
-                # current_repo_user.permission = permission
-                # db.session.add(current_repo_user)
-                # db.session.flush()
+                # 更新权限
+                current_repo_user.permission = permission
+                db.session.add(current_repo_user)
+                db.session.flush()
                 continue
 
             new_repo_user = RepoUser(
@@ -87,7 +87,7 @@ def create_repo_from_github(
                 application_id=application_id,
                 repo_id=current_repo.id,
                 bind_user_id=bind_user.id,
-                # permission=permission,
+                permission=permission,
             )
             db.session.add(new_repo_user)
             db.session.flush()
@@ -97,3 +97,5 @@ def create_repo_from_github(
     except Exception as e:
         db.session.rollback()
         raise e
+
+    return current_repo
