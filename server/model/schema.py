@@ -298,7 +298,7 @@ class ChatGroup(Base):
         ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目"
     )
     im_application_id = db.Column(
-        ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="哪一个项目创建的"
+        ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="哪一个项目创建的"
     )
     chat_id = db.Column(db.String(128), nullable=True, comment="chat_id")
     name = db.Column(db.String(128), nullable=True, comment="群名称")
