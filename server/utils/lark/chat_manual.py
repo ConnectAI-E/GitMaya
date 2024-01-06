@@ -25,7 +25,9 @@ class ChatManual(FeishuMessageCard):
                     value={
                         "key": "value",  # TODO
                     },
-                ),
+                )
+                if len(actions) > 0
+                else None,
             ),
             FeishuMessageDiv(
                 content=f"** ⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」 *",
