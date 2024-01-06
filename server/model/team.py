@@ -277,6 +277,7 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
         id=ObjID.new_id(),
         team_id=team_id,
         installation_id=installation_id,
+        platform="github",
     )
 
     db.session.add(new_code_application)

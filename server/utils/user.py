@@ -66,29 +66,29 @@ def create_github_user(
         str: The id of the user.
     """
 
-    if github_id is not None:
-        user = User.query.filter_by(unionid=github_id).first()
-        if user is not None:
-            bind_user = BindUser.query.filter_by(
-                user_id=user.id, platform="github"
-            ).first()
+    if github_id is None:
+        raise Exception("Failed to get github_id.")
 
-            if bind_user is None:
-                raise Exception("Failed to get bind user.")
+    user = User.query.filter_by(unionid=github_id).first()
+    if user is not None:
+        bind_user = BindUser.query.filter_by(user_id=user.id, platform="github").first()
 
-            # 刷新 access_token
-            if access_token is not None:
-                bind_user.access_token = access_token
+        if bind_user is None:
+            raise Exception("Failed to get bind user.")
 
-            # 刷新 email
-            if email is not None:
-                bind_user.email = email
+        # 刷新 access_token
+        if access_token is not None:
+            bind_user.access_token = access_token
 
-            if application_id is not None:
-                bind_user.application_id = application_id
+        # 刷新 email
+        if email is not None:
+            bind_user.email = email
 
-            db.session.commit()
-            return user.id, bind_user.id
+        if application_id is not None:
+            bind_user.application_id = application_id
+
+        db.session.commit()
+        return user.id, bind_user.id
 
     new_user = User(
         id=ObjID.new_id(),
