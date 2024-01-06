@@ -43,16 +43,19 @@ def pull_github_repo(
             # 检查是否已经存在
             current_repo = Repo.query.filter_by(repo_id=repo["id"]).first()
 
-            new_repo = Repo(
-                id=ObjID.new_id(),
-                application_id=application_id,
-                owner_bind_id=None,  # TODO: 暂定不填写
-                repo_id=repo["id"],
-                name=repo["name"],
-                description=repo["description"],
-            )
-            db.session.add(new_repo)
-            db.session.flush()
+            if current_repo is None:
+                new_repo = Repo(
+                    id=ObjID.new_id(),
+                    application_id=application_id,
+                    owner_bind_id=None,  # TODO: 暂定不填写
+                    repo_id=repo["id"],
+                    name=repo["name"],
+                    description=repo["description"],
+                )
+                db.session.add(new_repo)
+                db.session.flush()
+
+                current_repo = new_repo
 
             # 拉取仓库成员，创建 RepoUser
             repo_users = github_app.get_repo_collaborators(repo["name"], org_name)
