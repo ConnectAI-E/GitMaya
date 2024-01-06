@@ -207,7 +207,13 @@ def create_chat_group_for_repo(
     name = f"{repo.name} 项目群"
     description = f"{repo.description}"
     # TODO 当前先使用发消息的人，后面查找这个项目的所有者...
-    owner_id = args[0]["event"]["sender"]["sender_id"]["open_id"]
+    try:
+        # parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
+        owner_id = args[1]["event"]["sender"]["sender_id"]["open_id"]
+    except Exception as e:
+        logging.error(e)
+        # card event
+        owner_id = args[0]["open_id"]
     CodeUser = aliased(BindUser)
     IMUser = aliased(BindUser)
     # user_id_list 使用这个项目绑定的人的列表，同时属于当前repo
