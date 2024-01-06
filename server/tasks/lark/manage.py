@@ -96,10 +96,17 @@ def send_detect_repo(repo_id, app_id, open_id=""):
         .first()
     )
     if repo:
-        bot, _ = get_bot_by_application_id(app_id)
+        bot, application = get_bot_by_application_id(app_id)
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+            )
+            .first()
+        )
         message = ManageRepoDetect(
             # TODO 这里需要使用team.name + repo_name拼接url
-            repo_url="https://github.com/ConnectAI-E/GitMaya",
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topic", []),
