@@ -272,7 +272,7 @@ def create_chat_group_for_repo(
     db.session.commit()
     content = "\n".join(
         [
-            "1. 成功创建名为「{name}」的新项目群",
+            f"1. 成功创建名为「{name}」的新项目群",
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
         ]
     )
