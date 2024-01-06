@@ -73,7 +73,15 @@ class GitMayaLarkParser(object):
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
         # TODO call task.delay
-        tasks.send_manage_manual.delay(*args, **kwargs)
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            if "p2p" == chat_type:
+                tasks.send_manage_manual.delay(*args, **kwargs)
+            else:
+                tasks.send_chat_manual.delay(*args, **kwargs)
+        except Exception as e:
+            logging.error(e)
         return "help", param, unkown
 
     def on_match(self, param, unkown, *args, **kwargs):
