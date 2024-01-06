@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from tasks.lark import *
+import tasks
 
 
 class GitMayaLarkParser(object):
@@ -73,11 +73,25 @@ class GitMayaLarkParser(object):
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
         # TODO call task.delay
-        send_manage_manual.delay(*args, **kwargs)
+        tasks.send_manage_manual.delay(*args, **kwargs)
         return "help", param, unkown
 
     def on_match(self, param, unkown, *args, **kwargs):
         logging.info("on_match %r %r", vars(param), unkown)
+        if not param.repo_url and not param.chat_name:
+            logging.error("return")
+            tasks.send_manage_fail_message.delay(
+                "repo_url and chat_name is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.create_chat_group_for_repo.delay(
+                param.repo_url,
+                param.chat_name,
+                *args,
+                **kwargs,
+            )
         return "match", param, unkown
 
     def on_new(self, param, unkown, *args, **kwargs):

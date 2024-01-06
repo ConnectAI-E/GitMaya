@@ -1,8 +1,20 @@
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import CodeApplication, IMApplication, Repo, Team, db
+from model.schema import (
+    BindUser,
+    CodeApplication,
+    IMApplication,
+    Repo,
+    RepoUser,
+    Team,
+    TeamMember,
+    db,
+)
+from sqlalchemy.orm import aliased
+from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual
 from utils.lark.manage_repo_detect import ManageRepoDetect
+from utils.lark.manage_success import ManageSuccess
 
 
 def get_bot_by_application_id(app_id):
@@ -95,3 +107,137 @@ def send_detect_repo(repo_id, app_id, open_id=""):
             receive_id_type="open_id",
         ).json()
     return False
+
+
+@celery.task()
+def send_manage_fail_message(content, app_id, message_id, *args, **kwargs):
+    """send new repo card message to user.
+
+    Args:
+        app_id: IMApplication.app_id.
+        message_id: lark message id.
+        content: error message
+    """
+    message = ManageFaild(content=content)
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def create_chat_group_for_repo(
+    repo_url, chat_name, app_id, message_id, *args, **kwargs
+):
+    """
+    user input:
+    /match repo_url chat_name
+
+    Args:
+        repo_url: repo_url.
+        chat_name: chat_name.
+        app_id: IMApplication.app_id.
+        message_id: lark message id.
+    """
+    bot, application = get_bot_by_application_id(app_id)
+    if not application:
+        return send_manage_fail_message("找不到对应的应用", app_id, message_id, *args, **kwargs)
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_manage_fail_message("找不到对应的项目", app_id, message_id, *args, **kwargs)
+
+    # TODO
+    repo_name = repo_url.split("/").pop()
+    repo = (
+        db.session.query(Repo)
+        .join(
+            CodeApplication,
+            Repo.application_id == CodeApplication.id,
+        )
+        .filter(
+            CodeApplication.team_id == team.id,
+            Repo.name == repo_name,
+        )
+        .first()
+    )
+    if not repo:
+        return send_manage_fail_message("找不到对应的项目", app_id, message_id, *args, **kwargs)
+
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.repo_id == repo.id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+    if chat_group:
+        return send_manage_fail_message(
+            "不允许重复创建项目群", app_id, message_id, *args, **kwargs
+        )
+
+    chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+    # TODO 这里是一个可以配置的模板
+    name = f"{repo.name} 项目群"
+    description = f"{repo.description}"
+    # TODO 当前先使用发消息的人，后面查找这个项目的所有者...
+    owner_id = args[0]["event"]["sender"]["sender_id"]["open_id"]
+    CodeUser = aliased(BindUser)
+    IMUser = aliased(BindUser)
+    # user_id_list 使用这个项目绑定的人的列表，同时属于当前repo
+    user_id_list = [
+        openid
+        for openid in db.session.query(IMUser.openid)
+        .join(
+            TeamMember,
+            TeamMember.im_user_id == IMUser.id,
+        )
+        .join(CodeUser, TeamMember.code_user_id == CodeUser.id)
+        .join(
+            RepoUser,
+            RepoUser.bind_user_id == CodeUser.id,
+        )
+        .filter(
+            TeamMember.team_id == team.id,
+            RepoUser.repo_id == repo.id,
+        )
+    ] + [owner_id]
+
+    result = bot.post(
+        chat_group_url,
+        json={
+            "name": name,
+            "description": description,
+            "edit_permission": "all_members",  # TODO all_members/only_owner
+            "set_bot_manager": True,  # 设置创建群的机器人为管理员
+            "owner_id": owner_id,
+            "user_id_list": user_id_list,
+        },
+    ).json()
+    chat_id = result.get("data", {}).get("chat_id")
+    if not chat_id:
+        content = f"创建项目群失败:\n\n{result.get('msg')}"
+        return send_manage_fail_message(content, app_id, message_id, *args, **kwargs)
+
+    chat_group_id = ObjID.new_id()
+    chat_group = ChatGroup(
+        id=chat_group_id,
+        repo_id=repo.id,
+        im_application_id=application.id,
+        chat_id=chat_id,
+        name=name,
+        description=description,
+        extra=result,
+    )
+    db.session.add(chat_group)
+    db.session.commit()
+    content = "\n".join(
+        [
+            "1. 成功创建名为「{name}」的新项目群",
+            # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
+        ]
+    )
+    return send_manage_success_message(content, app_id, message_id, *args, **kwargs)
