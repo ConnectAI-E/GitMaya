@@ -42,6 +42,10 @@ def on_card_action(bot, token, data, *args, **kwargs):
     # TODO 将action中的按钮，或者选择的东西，重新组织成 command 继续走parser的逻辑
     if "action" in data and "command" in data["action"]["value"]:
         command = data["action"]["value"]["command"]
+        suffix = data["action"]["value"].get("suffix")
+        # 将选择的直接拼接到后面
+        if suffix == "$option" and "option" in data:
+            command = command + data["option"]
         try:
             parser.parse_args(command, bot.app_id, message_id, content, *args, **kwargs)
         except Exception as e:
