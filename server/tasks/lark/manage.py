@@ -155,7 +155,9 @@ def create_chat_group_for_repo(
     """
     bot, application = get_bot_by_application_id(app_id)
     if not application:
-        return send_manage_fail_message("找不到对应的应用", app_id, message_id, *args, **kwargs)
+        return send_manage_fail_message(
+            "找不到对应的应用", app_id, message_id, *args, bot=bot, **kwargs
+        )
     team = (
         db.session.query(Team)
         .filter(
@@ -164,7 +166,9 @@ def create_chat_group_for_repo(
         .first()
     )
     if not team:
-        return send_manage_fail_message("找不到对应的项目", app_id, message_id, *args, **kwargs)
+        return send_manage_fail_message(
+            "找不到对应的项目", app_id, message_id, *args, bot=bot, **kwargs
+        )
 
     # TODO
     repo_name = repo_url.split("/").pop()
@@ -181,7 +185,9 @@ def create_chat_group_for_repo(
         .first()
     )
     if not repo:
-        return send_manage_fail_message("找不到对应的项目", app_id, message_id, *args, **kwargs)
+        return send_manage_fail_message(
+            "找不到对应的项目", app_id, message_id, *args, bot=bot, **kwargs
+        )
 
     chat_group = (
         db.session.query(ChatGroup)
@@ -193,7 +199,7 @@ def create_chat_group_for_repo(
     )
     if chat_group:
         return send_manage_fail_message(
-            "不允许重复创建项目群", app_id, message_id, *args, **kwargs
+            "不允许重复创建项目群", app_id, message_id, *args, bot=bot, **kwargs
         )
 
     chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
@@ -237,7 +243,9 @@ def create_chat_group_for_repo(
     chat_id = result.get("data", {}).get("chat_id")
     if not chat_id:
         content = f"创建项目群失败:\n\n{result.get('msg')}"
-        return send_manage_fail_message(content, app_id, message_id, *args, **kwargs)
+        return send_manage_fail_message(
+            content, app_id, message_id, *args, bot=bot, **kwargs
+        )
 
     chat_group_id = ObjID.new_id()
     chat_group = ChatGroup(
@@ -257,4 +265,6 @@ def create_chat_group_for_repo(
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
         ]
     )
-    return send_manage_success_message(content, app_id, message_id, *args, **kwargs)
+    return send_manage_success_message(
+        content, app_id, message_id, *args, bot=bot, **kwargs
+    )
