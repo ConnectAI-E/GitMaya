@@ -47,7 +47,9 @@ def on_card_action(bot, token, data, *args, **kwargs):
         if suffix == "$option" and "option" in data:
             command = command + data["option"]
         try:
-            parser.parse_args(command, bot.app_id, message_id, content, *args, **kwargs)
+            parser.parse_args(
+                command, bot.app_id, data["open_message_id"], data, *args, **kwargs
+            )
         except Exception as e:
             app.logger.exception(e)
     else:
