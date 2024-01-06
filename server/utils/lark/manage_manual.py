@@ -26,7 +26,7 @@ class ManageManual(FeishuMessageCard):
                     placeholder="",
                     value={
                         # /match_repo_id + select repo_id, with chat_id
-                        "command": "/match_repo_id",
+                        "command": f"/match {github_url}/{org_name}/{repo_name}",
                         "team_id": team_id,
                     },
                 )
