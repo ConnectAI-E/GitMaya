@@ -63,7 +63,7 @@ class ManageRepoDetect(FeishuMessageCard):
                 FeishuMessageButton(
                     "创建项目群",
                     type="primary",
-                    value={"action": "create:chat_group"},
+                    value={"command": f"/match {repo_url}"},
                 ),
                 FeishuMessageButton(
                     "在浏览器中打开",
