@@ -110,7 +110,7 @@ def send_detect_repo(repo_id, app_id, open_id=""):
 
 
 @celery.task()
-def send_manage_fail_message(content, app_id, message_id, *args, **kwargs):
+def send_manage_fail_message(content, app_id, message_id, *args, bot=None**kwargs):
     """send new repo card message to user.
 
     Args:
@@ -118,7 +118,24 @@ def send_manage_fail_message(content, app_id, message_id, *args, **kwargs):
         message_id: lark message id.
         content: error message
     """
+    if not bot:
+        bot, _ = get_bot_by_application_id(app_id)
     message = ManageFaild(content=content)
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_manage_success_message(content, app_id, message_id, *args, bot=None**kwargs):
+    """send new repo card message to user.
+
+    Args:
+        app_id: IMApplication.app_id.
+        message_id: lark message id.
+        content: success message
+    """
+    if not bot:
+        bot, _ = get_bot_by_application_id(app_id)
+    message = ManageSuccess(content=content)
     return bot.reply(message_id, message).json()
 
 
