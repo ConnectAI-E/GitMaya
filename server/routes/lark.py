@@ -44,8 +44,8 @@ def on_card_action(bot, token, data, *args, **kwargs):
         command = data["action"]["value"]["command"]
         suffix = data["action"]["value"].get("suffix")
         # 将选择的直接拼接到后面
-        if suffix == "$option" and "option" in data:
-            command = command + data["option"]
+        if suffix == "$option" and "option" in data["action"]:
+            command = command + data["action"]["option"]
         try:
             parser.parse_args(
                 command, bot.app_id, data["open_message_id"], data, *args, **kwargs
