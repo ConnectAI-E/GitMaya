@@ -1,3 +1,6 @@
+import json
+import logging
+
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from model.schema import ChatGroup, Repo, Team, db
