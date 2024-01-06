@@ -110,7 +110,7 @@ def send_detect_repo(repo_id, app_id, open_id=""):
 
 
 @celery.task()
-def send_manage_fail_message(content, app_id, message_id, *args, bot=None**kwargs):
+def send_manage_fail_message(content, app_id, message_id, *args, bot=None, **kwargs):
     """send new repo card message to user.
 
     Args:
@@ -125,7 +125,7 @@ def send_manage_fail_message(content, app_id, message_id, *args, bot=None**kwarg
 
 
 @celery.task()
-def send_manage_success_message(content, app_id, message_id, *args, bot=None**kwargs):
+def send_manage_success_message(content, app_id, message_id, *args, bot=None, **kwargs):
     """send new repo card message to user.
 
     Args:
