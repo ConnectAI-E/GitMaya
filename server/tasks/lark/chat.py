@@ -69,7 +69,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
             "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
-    message = ManageManual(
+    message = ChatManual(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
         repo_name=repo.name,
         actions=[],  # TODO 获取actions
