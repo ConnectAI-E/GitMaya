@@ -1,9 +1,13 @@
+import logging
+
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from model.schema import (
     BindUser,
+    ChatGroup,
     CodeApplication,
     IMApplication,
+    ObjID,
     Repo,
     RepoUser,
     Team,
@@ -202,6 +206,7 @@ def create_chat_group_for_repo(
             "不允许重复创建项目群", app_id, message_id, *args, bot=bot, **kwargs
         )
 
+    # 持有相同uuid的请求10小时内只可成功创建1个群聊
     chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
     # TODO 这里是一个可以配置的模板
     name = f"{repo.name} 项目群"
@@ -219,7 +224,7 @@ def create_chat_group_for_repo(
     # user_id_list 使用这个项目绑定的人的列表，同时属于当前repo
     user_id_list = [
         openid
-        for openid in db.session.query(IMUser.openid)
+        for openid, in db.session.query(IMUser.openid)
         .join(
             TeamMember,
             TeamMember.im_user_id == IMUser.id,
