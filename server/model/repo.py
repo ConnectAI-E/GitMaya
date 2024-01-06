@@ -63,7 +63,23 @@ def create_repo_from_github(
                 )
                 .first()
             )
+
+            # 根据 permission 创建 repo_user
+            permissions = repo_user["permissions"]
+            if permissions["admin"]:
+                permission = "admin"
+            elif permissions["maintain"]:
+                permission = "maintain"
+            elif permissions["push"]:
+                permission = "push"
+            else:
+                continue
+
             if current_repo_user is not None:
+                # # 更新权限
+                # current_repo_user.permission = permission
+                # db.session.add(current_repo_user)
+                # db.session.flush()
                 continue
 
             new_repo_user = RepoUser(
@@ -71,6 +87,7 @@ def create_repo_from_github(
                 application_id=application_id,
                 repo_id=current_repo.id,
                 bind_user_id=bind_user.id,
+                # permission=permission,
             )
             db.session.add(new_repo_user)
             db.session.flush()
