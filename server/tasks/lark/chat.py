@@ -94,7 +94,7 @@ def create_issue(
             result = bot.get(parent_message_url).json()
             if len(result["data"].get("items", [])) > 0:
                 parent_message = result["data"]["items"][0]
-                title = json.loads(parent_message["body"])["content"].get("text")
+                title = json.loads(parent_message["body"]["content"]).get("text")
     if not title:
         return send_manage_fail_message(
             "issue 标题为空", app_id, message_id, content, data, *args, bot=bot, **kwargs
