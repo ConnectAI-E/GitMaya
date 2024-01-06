@@ -20,14 +20,15 @@ class ManageManual(FeishuMessageCard):
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[
-                        FeishuMessageOption(value=repo_id, content=repo_name)
-                        for repo_id, repo_name in repos
+                        FeishuMessageOption(value=repo_name, content=repo_name)
+                        for _, repo_name in repos
                     ],
                     placeholder="",
                     value={
                         # /match_repo_id + select repo_id, with chat_id
-                        "command": f"/match {github_url}/{org_name}/{repo_name}",
-                        "team_id": team_id,
+                        # 这里直接使用前面选中的项目名字拼接到github_url后面，就与用户输入match指令一致了
+                        "command": f"/match {github_url}/{org_name}/",
+                        "suffix": "$option",
                     },
                 )
                 if len(repos) > 0
