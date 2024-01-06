@@ -78,7 +78,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-def send_chat_manual(
+def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
     bot, application = get_bot_by_application_id(app_id)
