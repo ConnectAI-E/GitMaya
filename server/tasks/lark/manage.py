@@ -1,7 +1,7 @@
 import logging
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot
+from connectai.lark.sdk import Bot, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -342,7 +342,8 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
             logging.info("debug pin_result %r", pin_result)
             first_message_result = bot.reply(
                 message_id,
-                FeishuTextMessage(repo_url),  # 第一条话题消息，直接放repo_url
+                # 第一条话题消息，直接放repo_url
+                FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
                 reply_in_thread=True,
             ).json()
             logging.info("debug first_message_result %r", first_message_result)
