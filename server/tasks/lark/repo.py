@@ -7,9 +7,11 @@ from model.schema import (
     BindUser,
     ChatGroup,
     CodeApplication,
+    ErrorMsg,
     IMApplication,
     ObjID,
     Repo,
+    SuccessMsg,
     Team,
     User,
     db,
@@ -57,10 +59,57 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-def send_repo_manual(app_id, message_id, repo_id, *args, **kwargs):
-    if not bot:
-        bot, _ = get_bot_by_application_id(app_id)
-    message = RepoManual()
+def send_repo_manual(app_id, message_id, data, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+
+    # TODO 从话题发送@GitMaya或/help进入repo_manual
+
+    # TODO get repo_id from chat_group
+
+    # 通过repo id查询name
+
+    chat_id = data["event"]["message"]["chat_id"]
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+    if not chat_group:
+        return send_repo_failed_tip(
+            ErrorMsg.REPO_CHAT_GROUP_NOT_FOUND,
+            app_id,
+            message_id,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == chat_group.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if repo:
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+            )
+            .first()
+        )
+        message = RepoManual(
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_name=repo.name,
+            repo_description=repo.description,
+            # repo_topic=repo.extra.get("topic", []),
+            visibility=repo.extra.get("visibility", "public"),
+        )
     return bot.reply(message_id, message).json()
 
 

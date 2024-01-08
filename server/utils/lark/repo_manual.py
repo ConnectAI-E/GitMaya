@@ -4,9 +4,9 @@ from base import *
 class RepoManual(FeishuMessageCard):
     def __init__(
         self,
-        repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        status="public",
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        visibility="public",
         statuses=["public", "private", "internal"],
     ):
         elements = [
@@ -20,12 +20,12 @@ class RepoManual(FeishuMessageCard):
                         FeishuMessageOption(value=status, content=status)
                         for status in statuses
                     ],
-                    placeholder=status,
+                    placeholder=visibility,
                     value={
                         "key": "value",
                     },
                 )
-                if len(statuses) > 0
+                if len(visibility) > 0
                 else None,
             ),
             FeishuMessageDiv(

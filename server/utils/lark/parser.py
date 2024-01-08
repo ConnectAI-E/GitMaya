@@ -4,6 +4,7 @@ from os import rename
 
 import tasks
 from base import listen_result
+from tasks.lark.repo import process_repo_action
 
 
 class GitMayaLarkParser(object):
@@ -71,7 +72,6 @@ class GitMayaLarkParser(object):
         parser_unarchive.set_defaults(func=self.on_unarchive)
 
         parser_insight = self.subparsers.add_parser("/insight")
-        parser_label.add_argument("url", nargs="?")
         parser_insight.set_defaults(func=self.on_insight)
 
         parser_close = self.subparsers.add_parser("/close")
