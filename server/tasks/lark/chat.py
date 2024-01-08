@@ -56,7 +56,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
         )
     bot, application = get_bot_by_application_id(app_id)
     if not application:
-        return send_manage_fail_message(
+        return send_chat_failed_tip(
             "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
@@ -68,7 +68,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
         .first()
     )
     if not team:
-        return send_manage_fail_message(
+        return send_chat_failed_tip(
             "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
@@ -86,7 +86,7 @@ def create_issue(
 ):
     bot, application = get_bot_by_application_id(app_id)
     if not application:
-        return send_manage_fail_message(
+        return send_chat_failed_tip(
             "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
     if not title:
@@ -99,7 +99,7 @@ def create_issue(
                 parent_message = result["data"]["items"][0]
                 title = json.loads(parent_message["body"]["content"]).get("text")
     if not title:
-        return send_manage_fail_message(
+        return send_chat_failed_tip(
             "issue 标题为空", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
