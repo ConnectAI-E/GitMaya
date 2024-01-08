@@ -1,6 +1,5 @@
-from flask import Blueprint, abort, jsonify, redirect, request, session
-
 from app import app
+from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (
     get_application_info_by_team_id,
     get_im_user_by_team_id,

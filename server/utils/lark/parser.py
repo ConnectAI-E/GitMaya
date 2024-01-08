@@ -34,7 +34,6 @@ class GitMayaLarkParser(object):
         parser_new.set_defaults(func=self.on_new)
 
         parser_view = self.subparsers.add_parser("/view")
-        parser_edit.add_argument("url", nargs="?")
         parser_view.set_defaults(func=self.on_view)
 
         parser_setting = self.subparsers.add_parser("/setting")

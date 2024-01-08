@@ -8,7 +8,7 @@ class RepoTipFailed(FeishuMessageCard):
     ):
         elements = [
             FeishuMessageDiv(
-                content=f"没有执行此操作的权限 \n\n({content})",
+                content=content,
                 tag="lark_md",
             ),
             GitMayaCardNote("GitMaya Repo Action"),

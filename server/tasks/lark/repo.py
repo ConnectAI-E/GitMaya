@@ -1,10 +1,9 @@
+from celery_app import app, celery
 import logging
 
 from connectai.lark.sdk import Bot
 from lark import get_bot_by_application_id
-from sqlalchemy import func, or_
 
-from celery_app import app, celery
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -16,6 +15,7 @@ from model.schema import (
     User,
     db,
 )
+from sqlalchemy import func, or_
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess

@@ -1,9 +1,8 @@
 import logging
 
-from connectai.lark.sdk import Bot
-from sqlalchemy import func, or_
 
 from celery_app import app, celery
+from connectai.lark.sdk import Bot
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -15,6 +14,7 @@ from model.schema import (
     User,
     db,
 )
+from sqlalchemy import func, or_
 from utils.lark.manage_manual import ManageManual
 
 
