@@ -4,7 +4,6 @@ from os import rename
 
 import tasks
 from base import listen_result
-from tasks.lark import *
 
 
 class GitMayaLarkParser(object):
