@@ -9,7 +9,7 @@ from utils.lark.chat_manual import ChatManual
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
 
-from .base import get_bot_by_application_id, with_lark_storage
+from .base import get_bot_by_application_id
 
 
 @celery.task()
@@ -28,7 +28,6 @@ def send_chat_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs)
 
 
 @celery.task()
-@with_lark_storage("chat_manual")
 def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     chat_id = data["event"]["message"]["chat_id"]
     chat_group = (
@@ -82,7 +81,6 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-@with_lark_storage("create_issue")
 def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
