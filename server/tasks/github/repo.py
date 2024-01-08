@@ -45,14 +45,14 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         app.logger.error(f"Failed to parse repository event: {e}")
         return []
 
-    github_app = GitHubAppRepo(event.installation.id)
+    github_app = GitHubAppRepo(str(event.installation.id))
 
     repo_info = github_app.get_repo_info(event.repository.id)
 
     code_application = (
         db.session.query(CodeApplication)
         .filter(
-            CodeApplication.installation_id == event.installation.id,
+            CodeApplication.installation_id == str(event.installation.id),
             CodeApplication.status == 0,
         )
         .first()
