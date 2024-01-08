@@ -2,8 +2,9 @@ import argparse
 import logging
 from os import rename
 
-from base import listen_result
 from tasks.lark import *
+
+from base import listen_result
 
 
 class GitMayaLarkParser(object):
