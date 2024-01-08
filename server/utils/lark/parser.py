@@ -169,6 +169,19 @@ class GitMayaLarkParser(object):
 
     def on_visit(self, param, unkown, *args, **kwargs):
         logging.info("on_visit %r %r", vars(param), unkown)
+        if not param.visibility:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "visibility is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_visit.delay(
+                param.visibility,
+                *args,
+                **kwargs,
+            )
         return "visit", param, unkown
 
     def on_access(self, param, unkown, *args, **kwargs):
@@ -177,17 +190,53 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.name:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "name is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_name.delay(
+                param.name,
+                *args,
+                **kwargs,
+            )
         return "rename", param, unkown
 
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.desc:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "desc is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_desc.delay(
+                param.desc,
+                *args,
+                **kwargs,
+            )
         return "edit", param, unkown
 
     def on_link(self, param, unkown, *args, **kwargs):
         logging.info("on_link %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.homepage:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "homepage is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_link.delay(
+                param.homepage,
+                *args,
+                **kwargs,
+            )
         return "link", param, unkown
 
     def on_label(self, param, unkown, *args, **kwargs):
