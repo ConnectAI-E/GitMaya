@@ -21,27 +21,11 @@ from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
 
-
-def get_bot_by_application_id(app_id):
-    application = (
-        db.session.query(IMApplication)
-        .filter(
-            IMApplication.app_id == app_id,
-        )
-        .first()
-    )
-    if application:
-        return (
-            Bot(
-                app_id=application.app_id,
-                app_secret=application.app_secret,
-            ),
-            application,
-        )
-    return None, None
+from .base import get_bot_by_application_id, with_lark_storage
 
 
 @celery.task()
+@with_lark_storage("manage_manual")
 def send_manage_manual(app_id, message_id, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
     if application:
@@ -152,6 +136,7 @@ def send_manage_success_message(content, app_id, message_id, *args, bot=None, **
 
 
 @celery.task()
+@with_lark_storage("create_chat_group")
 def create_chat_group_for_repo(
     repo_url, chat_name, app_id, message_id, *args, **kwargs
 ):
@@ -283,17 +268,19 @@ def create_chat_group_for_repo(
     1. 给操作的用户发成功的消息
     2. 给群发送repo 卡片消息，并pin
     """
-    # 这里可以再触发一个异步任务给群发卡片
-    send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
     content = "\n".join(
         [
             f"1. 成功创建名为「{name}」的新项目群",
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
         ]
     )
-    return send_manage_success_message(
-        content, app_id, message_id, *args, bot=bot, **kwargs
-    )
+    # 这里可以再触发一个异步任务给群发卡片，不过为了保存结果，就同步调用
+    result = send_repo_to_chat_group(repo.id, app_id, chat_id) + [
+        send_manage_success_message(
+            content, app_id, message_id, *args, bot=bot, **kwargs
+        )
+    ]
+    return result
 
 
 @celery.task()
@@ -347,5 +334,6 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
                 reply_in_thread=True,
             ).json()
             logging.info("debug first_message_result %r", first_message_result)
-        return result
+        # 一共有3个result需要存到imaction里面
+        return [result, pin_result, first_message_result]
     return False
