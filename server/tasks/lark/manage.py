@@ -329,9 +329,15 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
             visibility=repo.extra.get("visibility", "私有仓库"),
             # TODO 其他信息
         )
-        return bot.send(
+        result = bot.send(
             chat_id,
             message,
             receive_id_type="chat_id",
         ).json()
+        message_id = result.get("data", {}).get("message_id")
+        if message_id:
+            pin_url = f"{bot.host}/open-apis/im/v1/pins"
+            pin_result = bot.post(pin_url, json={"message_id": message_id}).json()
+            logging.info("debug pin_result %r", pin_result)
+        return result
     return False
