@@ -1,10 +1,10 @@
 from app import db
 from model.schema import BindUser, ObjID, Repo, RepoUser, User
-from utils.github.organization import GitHubAppOrg
+from utils.github.repo import GitHubAppRepo
 
 
 def create_repo_from_github(
-    repo: dict, org_name: str, application_id: str, github_app: GitHubAppOrg
+    repo: dict, org_name: str, application_id: str, github_app: GitHubAppRepo
 ) -> Repo:
     """Create repo from github
 
@@ -12,7 +12,7 @@ def create_repo_from_github(
         repo (dict): repo info from github
         org_name (str): organization name
         application_id (str): application id
-        github_app (GitHubAppOrg): github app instance
+        github_app (GitHubAppRepo): github app instance
 
     Returns:
         Repo: repo instance

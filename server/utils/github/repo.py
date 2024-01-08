@@ -1,9 +1,9 @@
 from app import db
 from model.schema import CodeApplication, Repo, Team
-from utils.github.bot import BaseGitHubApp
+from utils.github.bot import GitHubApp
 
 
-class GitHubAppRepo(BaseGitHubApp):
+class GitHubAppRepo(GitHubApp):
     def __init__(self, installation_id: str = None, user_id: str = None) -> None:
         super().__init__(installation_id=installation_id, user_id=user_id)
 
@@ -40,6 +40,23 @@ class GitHubAppRepo(BaseGitHubApp):
             f"https://api.github.com/repos/{team.name}/{repo.name}",
             "GET",
             "install_token",
+        )
+
+    def get_repo_collaborators(self, repo_name: str, owner_name: str) -> list | None:
+        """Get repo collaborators.
+
+        Args:
+            repo_name (str): The name of the repo.
+            owner_name (str): The name of the owner.
+
+        Returns:
+            list: The repo collaborators.
+        https://docs.github.com/zh/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
+            auth_type="install_token",
         )
 
     def create_issue(
