@@ -343,6 +343,7 @@ class PullRequest(Base):
 
 
 class GitObjectMessageIdRelation(db.Model):
+    __abstract__ = True
     __tablename__ = "git_object_message_id_relation"
     __table_args__ = {"info": dict(is_view=True)}
     repo_id = db.Column(ObjID(12), nullable=True, comment="repo.id")
@@ -373,14 +374,17 @@ app.json = CustomJsonProvider(app)
 def create():
     db.create_all()
     try:
-        result = db.engine.execute(
-            """
+        connection = db.session.connection()
+        result = connection.execute(
+            text(
+                """
 create view `git_object_message_id_relation` as select * from (
-select id as repo_id, null as issue_id, null as pull_request_id from `repo`
-union all(select null as repo_id, id as issue_id, null as pull_request_id from `issue`)
-union all(select null as repo_id, null as issue_id, id as pull_request_id from `pull_request`)
+select id as repo_id, null as issue_id, null as pull_request_id, message_id from `repo`
+union all(select null as repo_id, id as issue_id, null as pull_request_id, message_id from `issue`)
+union all(select null as repo_id, null as issue_id, id as pull_request_id, message_id from `pull_request`)
 ) as t
                                    """
+            )
         )
     except Exception as e:
         logging.error(e)
