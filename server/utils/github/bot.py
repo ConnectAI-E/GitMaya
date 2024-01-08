@@ -24,7 +24,7 @@ class BaseGitHubApp:
         self._user_token: str = None
 
     def base_github_rest_api(
-        self, url: str, method: str = "GET", auth_type: str = "jwt"
+        self, url: str, method: str = "GET", auth_type: str = "jwt", json: dict = None
     ) -> dict | list | None:
         """Base GitHub REST API.
 
@@ -60,6 +60,7 @@ class BaseGitHubApp:
                     "Authorization": f"Bearer {auth}",
                     "X-GitHub-Api-Version": "2022-11-28",
                 },
+                json=json,
             )
             return response.json()
 
