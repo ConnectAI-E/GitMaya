@@ -4,8 +4,17 @@ from connectai.lark.sdk import Bot
 from sqlalchemy import func, or_
 
 from celery_app import app, celery
-from model.schema import (BindUser, ChatGroup, CodeApplication, IMApplication,
-                          ObjID, Repo, Team, User, db)
+from model.schema import (
+    BindUser,
+    ChatGroup,
+    CodeApplication,
+    IMApplication,
+    ObjID,
+    Repo,
+    Team,
+    User,
+    db,
+)
 from utils.lark.manage_manual import ManageManual
 
 

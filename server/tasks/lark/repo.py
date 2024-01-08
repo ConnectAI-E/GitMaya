@@ -5,8 +5,17 @@ from lark import get_bot_by_application_id
 from sqlalchemy import func, or_
 
 from celery_app import app, celery
-from model.schema import (BindUser, ChatGroup, CodeApplication, IMApplication,
-                          ObjID, Repo, Team, User, db)
+from model.schema import (
+    BindUser,
+    ChatGroup,
+    CodeApplication,
+    IMApplication,
+    ObjID,
+    Repo,
+    Team,
+    User,
+    db,
+)
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess

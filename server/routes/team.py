@@ -1,12 +1,17 @@
 from flask import Blueprint, abort, jsonify, redirect, request, session
 
 from app import app
-from model.team import (get_application_info_by_team_id,
-                        get_im_user_by_team_id, get_team_by_id,
-                        get_team_list_by_user_id, get_team_member,
-                        is_team_admin, save_im_application, set_team_member)
-from tasks import (get_contact_by_lark_application, get_status_by_id,
-                   pull_github_members)
+from model.team import (
+    get_application_info_by_team_id,
+    get_im_user_by_team_id,
+    get_team_by_id,
+    get_team_list_by_user_id,
+    get_team_member,
+    is_team_admin,
+    save_im_application,
+    set_team_member,
+)
+from tasks import get_contact_by_lark_application, get_status_by_id, pull_github_members
 from utils.auth import authenticated
 
 bp = Blueprint("team", __name__, url_prefix="/api/team")
