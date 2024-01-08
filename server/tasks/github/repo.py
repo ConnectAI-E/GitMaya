@@ -140,6 +140,6 @@ def on_repository_created(event_dict: dict | list | None) -> list:
             visibility="Private" if repo_info.get("private") else "Public",
         )
 
-        task_ids.append(task)
+        task_ids.append(task.id)
 
     return task_ids
