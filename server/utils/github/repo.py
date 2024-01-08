@@ -1,9 +1,9 @@
 from app import db
 from model.schema import CodeApplication, Repo, Team
-from utils.github.bot import GitHubApp
+from utils.github.bot import BaseGitHubApp
 
 
-class GitHubAppRepo(GitHubApp):
+class GitHubAppRepo(BaseGitHubApp):
     def __init__(self, installation_id: str = None, user_id: str = None) -> None:
         super().__init__(installation_id=installation_id, user_id=user_id)
 
