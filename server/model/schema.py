@@ -212,6 +212,9 @@ class RepoUser(Base):
     bind_user_id = db.Column(
         ObjID(12), ForeignKey("bind_user.id"), nullable=True, comment="项目协作者"
     )
+    permission = db.Column(
+        db.String(128), nullable=True, comment="权限；admin 或 maintain 或 push"
+    )
 
 
 class CodeApplication(Base):

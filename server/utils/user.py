@@ -29,7 +29,7 @@ def register(code: str) -> str | None:
     user_info = get_user_info(access_token)
 
     # 查询 github_id 是否已经存在，若存在，则刷新 access_token，返回 user_id
-    github_id = user_info.get("id", None)
+    github_id = str(user_info.get("id", None))
 
     email = get_email(access_token)
 
@@ -134,7 +134,7 @@ def create_github_member(members: list, application_id: str, team_id: str) -> li
     for member in members:
         # 已存在的用户不会重复创建
         _, new_bind_user_id = create_github_user(
-            github_id=member["id"],
+            github_id=str(member["id"]),
             name=member["login"],
             email=member.get("email", None),
             avatar=member["avatar_url"],

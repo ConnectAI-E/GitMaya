@@ -1,3 +1,5 @@
+from app import db
+from model.schema import CodeApplication, Repo, Team
 from utils.github.bot import BaseGitHubApp
 
 
@@ -5,21 +7,56 @@ class GitHubAppRepo(BaseGitHubApp):
     def __init__(self, installation_id: str = None, user_id: str = None) -> None:
         super().__init__(installation_id=installation_id, user_id=user_id)
 
-    def get_repo(self, repo_onwer: str, repo_name: str) -> dict | None:
-        """Get repo
+    def get_repo_info(self, repo_id: str) -> dict | None:
+        """Get repo info by repo ID.
 
         Args:
-            repo_onwer (str): The repo owner.
-            repo_name (str): The repo name.
+            repo_id (str): The repo ID from GitHub.
 
         Returns:
-            dict: The repo info.
+            dict: Repo info.
+        """
+        # 检查 repo 是否存在，是否属于当前 app，如果不存在，返回 None
+        # 注意：这里的 repo_id 是 GitHub 的 repo_id，不是数据库中 id
+        repo = Repo.query.filter_by(repo_id=repo_id).first()
+        if not repo:
+            return None
+
+        team = (
+            db.session.query(Team)
+            .join(
+                CodeApplication,
+                CodeApplication.team_id == Team.id,
+            )
+            .filter(
+                CodeApplication.id == repo.application_id,
+            )
+            .first()
+        )
+        if not team:
+            return None
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{team.name}/{repo.name}",
+            "GET",
+            "install_token",
+        )
+
+    def get_repo_collaborators(self, repo_name: str, owner_name: str) -> list | None:
+        """Get repo collaborators.
+
+        Args:
+            repo_name (str): The name of the repo.
+            owner_name (str): The name of the owner.
+
+        Returns:
+            list: The repo collaborators.
+        https://docs.github.com/zh/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
         """
 
         return self.base_github_rest_api(
-            f"https://api.github.com/repos/{repo_onwer}/{repo_name}",
-            "GET",
-            "install_token",
+            f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
+            auth_type="install_token",
         )
 
     def create_issue(

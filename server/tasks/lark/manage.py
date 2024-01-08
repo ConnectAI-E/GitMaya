@@ -65,7 +65,9 @@ def send_manage_manual(app_id, message_id, *args, **kwargs):
 
 
 @celery.task()
-def send_detect_repo(repo_id, app_id, open_id=""):
+def send_detect_repo(
+    repo_id, app_id, open_id="", topics: list = [], visibility: str = "private"
+):
     """send new repo card message to user.
 
     Args:
@@ -94,8 +96,8 @@ def send_detect_repo(repo_id, app_id, open_id=""):
             repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
             repo_description=repo.description,
-            repo_topic=repo.extra.get("topic", []),
-            visibility=repo.extra.get("visibility", "私有仓库"),
+            repo_topic=topics,
+            visibility=visibility,
         )
         return bot.send(
             open_id,
