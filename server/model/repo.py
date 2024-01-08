@@ -1,4 +1,4 @@
-from app import db
+from app import app, db
 from model.schema import BindUser, ObjID, Repo, RepoUser, User
 from utils.github.repo import GitHubAppRepo
 
@@ -20,13 +20,13 @@ def create_repo_from_github(
 
     # 检查是否已经存在
     try:
-        current_repo = Repo.query.filter_by(repo_id=repo["id"]).first()
+        current_repo = Repo.query.filter_by(repo_id=str(repo["id"])).first()
 
         if current_repo is None:
             new_repo = Repo(
                 id=ObjID.new_id(),
                 application_id=application_id,
-                repo_id=repo["id"],
+                repo_id=str(repo["id"]),
                 name=repo["name"],
                 description=repo["description"],
             )
@@ -34,6 +34,8 @@ def create_repo_from_github(
             db.session.flush()
 
             current_repo = new_repo
+
+        app.logger.debug(f"Repo {current_repo.id} created")
 
         # 拉取仓库成员，创建 RepoUser
         repo_users = github_app.get_repo_collaborators(repo["name"], org_name)
@@ -43,7 +45,7 @@ def create_repo_from_github(
             bind_user = (
                 db.session.query(BindUser)
                 .filter(
-                    User.unionid == repo_user["id"],
+                    User.unionid == str(repo_user["id"]),
                     BindUser.platform == "github",
                     BindUser.application_id == application_id,
                     BindUser.user_id == User.id,
@@ -51,9 +53,10 @@ def create_repo_from_github(
                 .first()
             )
             if bind_user is None:
+                app.logger.debug(f"RepoUser {repo_user['login']} has no bind user")
                 continue
 
-            # 检查是否有 repo_user，有则跳过
+            # 检查是否有 repo_user
             current_repo_user = (
                 db.session.query(RepoUser)
                 .filter(
@@ -66,6 +69,9 @@ def create_repo_from_github(
 
             # 根据 permission 创建 repo_user
             permissions = repo_user["permissions"]
+            app.logger.debug(
+                f"RepoUser {repo_user['login']} permissions: {permissions}"
+            )
             if permissions["admin"]:
                 permission = "admin"
             elif permissions["maintain"]:
@@ -91,6 +97,8 @@ def create_repo_from_github(
             )
             db.session.add(new_repo_user)
             db.session.flush()
+
+            app.logger.debug(f"RepoUser {new_repo_user.id} created")
 
         db.session.commit()
 

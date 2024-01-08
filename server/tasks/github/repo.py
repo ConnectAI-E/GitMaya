@@ -90,6 +90,10 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         .all()
     )
 
+    if len(admin_github_bind_users) == 0:
+        app.logger.error(f"Repo {new_repo.id} has no github admin user")
+        return []
+
     # 从 github_bind_users 中筛选出 lark_bind_users
     admin_lark_bind_users = []
     for bind_user in admin_github_bind_users:
@@ -103,18 +107,15 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         )
         admin_lark_bind_users.append(lark_bind_user)
 
-    if len(admin_github_bind_users) == 0:
-        app.logger.error(f"Repo {new_repo.id} has no admin user")
+    if len(admin_lark_bind_users) == 0:
+        app.logger.error(f"Repo {new_repo.id} has no lark admin user")
         return []
 
     # 查找 im application
     im_application = (
         db.session.query(IMApplication)
-        .join(
-            Team,
-            IMApplication.team_id == Team.id,
-        )
         .filter(
+            IMApplication.team_id == team.id,
             IMApplication.status == 0,
         )
         .first()
