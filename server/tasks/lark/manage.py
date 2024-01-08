@@ -321,8 +321,9 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
             )
             .first()
         )
+        repo_url = (f"https://github.com/{team.name}/{repo.name}",)
         message = RepoInfo(
-            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_url=repo_url,
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topic", []),
@@ -339,5 +340,11 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
             pin_url = f"{bot.host}/open-apis/im/v1/pins"
             pin_result = bot.post(pin_url, json={"message_id": message_id}).json()
             logging.info("debug pin_result %r", pin_result)
+            first_message_result = bot.reply(
+                message_id,
+                FeishuTextMessage(repo_url),  # 第一条话题消息，直接放repo_url
+                reply_in_thread=True,
+            ).json()
+            logging.info("debug first_message_result %r", first_message_result)
         return result
     return False
