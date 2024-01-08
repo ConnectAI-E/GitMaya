@@ -212,9 +212,9 @@ class GitMayaLarkParser(object):
         try:
             raw_message = args[3]
             chat_id = raw_message["event"]["message"]["chat_id"]
-            url = tasks.get_repo_url_by_chat_id(chat_id)
 
-            webbrowser.open(f"{url}/pulse")
+            tasks.open_repo_insight.delay(chat_id)
+
         except Exception as e:
             logging.error(e)
         return "insight", param, unkown
@@ -229,7 +229,34 @@ class GitMayaLarkParser(object):
 
     def on_at_gitmaya(self, param, unkown, *args, **kwargs):
         logging.info("on_at_gitmaya %r %r", vars(param), unkown)
-        return "at_GitMaya", param, unkown
+
+        content = param.content.strip()
+
+        if content.startswith("/"):
+            # @GitMaya + /command，执行对应命令
+            commands = content[1:]
+            return self.parse_multiple_commands(commands, *args, **kwargs)
+
+        else:
+            # @GitMaya + 空白内容，返回对应帮助卡片
+            # TODO 发送话题对应manual卡片
+            try:
+                raw_message = args[3]
+                chat_type = raw_message["event"]["message"]["chat_type"]
+                thread_type = "repo"
+
+                if "p2p" == chat_type:
+                    tasks.send_chat_manual.delay(*args, **kwargs)
+
+                else:
+                    # TODO
+                    if "repo" == thread_type:
+                        tasks.send_repo_manual.delay(*args, **kwargs)
+
+            except Exception as e:
+                logging.error(e)
+
+            return "on_at_gitmaya", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
@@ -241,6 +268,14 @@ class GitMayaLarkParser(object):
             return param.func(param, unkown, *args, **kwargs)
         except Exception as e:
             logging.debug("error %r", e)
+
+    def parse_multiple_commands(self, commands, *args, **kwargs):
+        results = []
+        for command in commands.split(";"):
+            command = command.strip().replace("\n", "")
+            result = self.parse_args(command, *args, **kwargs)
+            results.extend(result)
+        return results
 
 
 if __name__ == "__main__":

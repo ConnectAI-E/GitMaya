@@ -53,6 +53,17 @@ def open_repo_url(chat_id):
 
 
 @celery.task()
+def open_repo_insight(chat_id):
+    try:
+        url = get_repo_url_by_chat_id(chat_id)
+        webbrowser.open(f"{url}/pulse")
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
 def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs):
     """send a new repo failed tip to user.
     Args:
