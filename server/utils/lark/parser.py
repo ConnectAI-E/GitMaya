@@ -277,29 +277,30 @@ class GitMayaLarkParser(object):
 
         content = param.content.strip()
 
-        if content.startswith("/"):
-            # @GitMaya + /command，执行对应命令
-            commands = content[1:]
-            return self.parse_multiple_commands(commands, *args, **kwargs)
+        # TODO @_user 得判断是否是机器人
+        # if content.startswith("/"):
+        #     # @GitMaya + /command，执行对应命令
+        #     commands = content[1:]
+        #     return self.parse_multiple_commands(commands, *args, **kwargs)
 
-        else:
-            # @GitMaya + 空白内容，返回对应帮助卡片
-            # TODO 发送话题对应manual卡片
-            try:
-                raw_message = args[3]
-                chat_type = raw_message["event"]["message"]["chat_type"]
-                thread_type = "repo"
+        # else:
+        #     # @GitMaya + 空白内容，返回对应帮助卡片
+        #     # TODO 发送话题对应manual卡片
+        #     try:
+        #         raw_message = args[3]
+        #         chat_type = raw_message["event"]["message"]["chat_type"]
+        #         thread_type = "repo"
 
-                if "p2p" == chat_type:
-                    tasks.send_chat_manual.delay(*args, **kwargs)
+        #         if "p2p" == chat_type:
+        #             tasks.send_chat_manual.delay(*args, **kwargs)
 
-                else:
-                    # TODO
-                    if "repo" == thread_type:
-                        tasks.send_repo_manual.delay(*args, **kwargs)
+        #         else:
+        #             # TODO
+        #             if "repo" == thread_type:
+        #                 tasks.send_repo_manual.delay(*args, **kwargs)
 
-            except Exception as e:
-                logging.error(e)
+        #     except Exception as e:
+        #         logging.error(e)
 
         return "on_at_gitmaya", param, unkown
 

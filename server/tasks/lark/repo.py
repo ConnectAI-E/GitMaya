@@ -195,9 +195,9 @@ def change_repo_visit(visibility, app_id, message_id, repo_id, *args, **kwargs):
     )
 
     if repo:
-        # TODO 修改 repo 访问权限, 调用github api，修改数据库和调用api要用事务
-        repo.visibility = True if visibility == "public" else False
-        db.session.commit()
+        # TODO 修改 repo 访问权限, 调用github api，修改数据库和调用api要用事务，db更新在github事件触发之后，天一处理
+        # repo.visibility = True if visibility == "public" else False
+        # db.session.commit()
 
         message = RepoTipSuccess(f"已成功修改 {repo.name} 仓库为 {visibility}")
         return bot.reply(message_id, message).json()
