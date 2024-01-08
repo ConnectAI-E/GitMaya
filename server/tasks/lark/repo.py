@@ -1,6 +1,6 @@
-from celery_app import app, celery
 import logging
 
+from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from lark import get_bot_by_application_id
 
