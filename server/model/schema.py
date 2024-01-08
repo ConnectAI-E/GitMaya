@@ -286,6 +286,7 @@ class IMAction(Base):
     action_type = db.Column(
         db.String(128), nullable=True, comment="action_type: 主要是github那边的动作等"
     )
+    message_id = db.Column(db.String(128), nullable=True, comment="message_id")
     content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"

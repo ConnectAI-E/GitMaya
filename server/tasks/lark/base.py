@@ -37,12 +37,20 @@ def with_lark_storage(event_type="message"):
             """
             event_id = None
             try:
-                message_id, content, raw_message = args[-3:]
-                if "om_" in message_id:
+                app_id, message_id, content, raw_message = args[-4:]
+                application = (
+                    db.session.query(IMApplication)
+                    .filter(
+                        IMApplication.app_id == app_id,
+                    )
+                    .first()
+                )
+                if "om_" in message_id and application:
                     event_id = ObjID.new_id()
                     db.session.add(
                         IMEvent(
                             id=event_id,
+                            application_id=application.id,
                             event_id=message_id,
                             event_type=event_type,  # TODO 这里要不只存parser里面的command算了
                             content=json.dumps(content)[:128],
@@ -60,11 +68,17 @@ def with_lark_storage(event_type="message"):
                 if event_id:
                     results = result if isinstance(result, list) else [result]
                     for action_result in results:
+                        message_id = (
+                            action_result.get("data")
+                            if isinstance(action_result, dict)
+                            else ""
+                        )
                         db.session.add(
                             IMAction(
                                 id=ObjID.new_id(),
                                 event_id=event_id,
-                                action_type=func.__name__,  # TODO 这里隐式的使用函数名字（task_name）
+                                message_id=message_id,
+                                action_type=func.__name__,
                                 content=json.dumps(action_result)[:128],
                                 extra=action_result,
                             )
