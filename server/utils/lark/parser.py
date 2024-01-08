@@ -1,11 +1,7 @@
 import argparse
 import logging
-from os import rename
-from tkinter import E
 
 import tasks
-from base import listen_result
-from exceptiongroup import catch
 from tasks.lark.repo import process_repo_action
 
 
@@ -256,7 +252,7 @@ class GitMayaLarkParser(object):
             except Exception as e:
                 logging.error(e)
 
-            return "on_at_gitmaya", param, unkown
+        return "on_at_gitmaya", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
@@ -271,11 +267,42 @@ class GitMayaLarkParser(object):
 
     def parse_multiple_commands(self, commands, *args, **kwargs):
         results = []
+        commands = commands.replace("\n", "").lstrip()
+
         for command in commands.split(";"):
-            command = command.strip().replace("\n", "")
+            # 判断命令是否合法
+            if command not in self.command_list:
+                tasks.send_manage_fail_message.delay(
+                    f"{command} 指令不存在！", *args, **kwargs
+                )
+                continue
+
             result = self.parse_args(command, *args, **kwargs)
             results.extend(result)
         return results
+
+    def __init__(self):
+        self.command_list = [
+            "/help",
+            "/man",
+            "/match",
+            "/issue",
+            "/new",
+            "/view",
+            "/setting",
+            "/visit",
+            "/access",
+            "/rename",
+            "/edit",
+            "/link",
+            "/label",
+            "/archive",
+            "/unarchive",
+            "/insight",
+            "/close",
+            "/reopen",
+            "@GitMaya",
+        ]
 
 
 if __name__ == "__main__":
