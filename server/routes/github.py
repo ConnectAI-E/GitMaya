@@ -2,9 +2,10 @@ import json
 import os
 
 from app import app
-from flask import Blueprint, make_response, redirect, request, session
+from flask import Blueprint, jsonify, make_response, redirect, request, session
 from model.team import create_code_application, create_team
 from tasks.github import pull_github_repo
+from tasks.github.repo import on_repository
 from utils.auth import authenticated
 from utils.github.application import verify_github_signature
 from utils.github.bot import BaseGitHubApp
@@ -123,13 +124,21 @@ try {
 def github_hook():
     """Receive GitHub webhook."""
 
-    x_github_event = request.headers.get("x-github-event", None)
+    x_github_event = request.headers.get("x-github-event", None).lower()
 
     app.logger.info(x_github_event)
 
-    app.logger.debug(request.json)
+    match x_github_event:
+        case "repository":
+            task = on_repository.delay(request.json)
+            return jsonify({"code": 0, "message": "ok", "task_id": task.id})
+        case _:
+            app.logger.info(f"Unhandled GitHub webhook event: {x_github_event}")
+            raise NotImplementedError(
+                f"Unhandled GitHub webhook event: {x_github_event}"
+            )
 
-    return "Receive Success!"
+    return jsonify({"code": 0, "message": "ok"})
 
 
 app.register_blueprint(bp)
