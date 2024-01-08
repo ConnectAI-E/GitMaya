@@ -1,7 +1,9 @@
 import argparse
 import logging
+from os import rename
 
 import tasks
+from base import listen_result
 
 
 class GitMayaLarkParser(object):
@@ -69,6 +71,7 @@ class GitMayaLarkParser(object):
         parser_unarchive.set_defaults(func=self.on_unarchive)
 
         parser_insight = self.subparsers.add_parser("/insight")
+        parser_label.add_argument("url", nargs="?")
         parser_insight.set_defaults(func=self.on_insight)
 
         parser_close = self.subparsers.add_parser("/close")
@@ -76,6 +79,9 @@ class GitMayaLarkParser(object):
 
         parser_reopen = self.subparsers.add_parser("/reopen")
         parser_reopen.set_defaults(func=self.on_reopen)
+
+        parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
+        parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
@@ -157,18 +163,22 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "rename", param, unkown
 
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "edit", param, unkown
 
     def on_link(self, param, unkown, *args, **kwargs):
         logging.info("on_link %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "link", param, unkown
 
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
@@ -181,6 +191,8 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
+        # 从卡片点击有参，命令进入无参
+
         return "insight", param, unkown
 
     def on_close(self, param, unkown, *args, **kwargs):
@@ -190,6 +202,10 @@ class GitMayaLarkParser(object):
     def on_reopen(self, param, unkown, *args, **kwargs):
         logging.info("on_reopen %r %r", vars(param), unkown)
         return "reopen", param, unkown
+
+    def on_at_gitmaya(self, param, unkown, *args, **kwargs):
+        logging.info("on_at_gitmaya %r %r", vars(param), unkown)
+        return "at_GitMaya", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
