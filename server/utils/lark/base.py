@@ -1,5 +1,4 @@
 from connectai.lark.sdk import *
-from connectai.src.connectai.connectai import bot
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
 
@@ -40,15 +39,15 @@ class GitMayaCardNote(FeishuMessageNote):
         )
 
 
-def listen_result(func):
-    def wrapper(*args, **kwargs):
-        result = func(*args, **kwargs)
+# def listen_result(func):
+#     def wrapper(*args, **kwargs):
+#         result = func(*args, **kwargs)
 
-        if result["result"] == "success":
-            message = RepoTipSuccess(result["text"])
-        elif result["result"] == "failed":
-            message = RepoTipFailed(result["text"])
+#         if result["result"] == "success":
+#             message = RepoTipSuccess(result["text"])
+#         elif result["result"] == "failed":
+#             message = RepoTipFailed(result["text"])
 
-        return bot.reply_text(result["message_id"], message).json()
+#         return bot.reply_text(result["message_id"], message).json()
 
-    return wrapper
+#     return wrapper
