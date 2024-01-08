@@ -48,6 +48,7 @@ def on_repository_created(event_dict: dict | list | None) -> list:
     github_app = GitHubAppRepo(str(event.installation.id))
 
     # repo_info = github_app.get_repo_info(event.repository.id)
+    repo_info = event.repository.model_dump()
 
     code_application = (
         db.session.query(CodeApplication)
@@ -68,7 +69,7 @@ def on_repository_created(event_dict: dict | list | None) -> list:
 
     # 创建 repo，同时创建配套的 repo_user
     new_repo = create_repo_from_github(
-        repo=event.repository,
+        repo=repo_info,
         org_name=team.name,
         application_id=code_application.id,
         github_app=github_app,

@@ -28,6 +28,8 @@ class Repository(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
+    topics: Optional[list[str]] = []
+    private: bool
 
 
 class RepoEvent(BaseEvent):
