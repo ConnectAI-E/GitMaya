@@ -111,7 +111,12 @@ class RepoInfo(FeishuMessageCard):
                 FeishuMessageButton(
                     "新建 Issue",
                     type="primary",
-                    value={"action": "create:chat_group"},
+                    multi_url={
+                        "url": f"{repo_url}/issues/new",
+                        "android_url": f"{repo_url}/issues/new",
+                        "ios_url": f"{repo_url}/issues/new",
+                        "pc_url": f"{repo_url}/issues/new",
+                    },
                 ),
                 FeishuMessageButton(
                     "打开 Repo Insight",
