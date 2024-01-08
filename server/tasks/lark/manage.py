@@ -312,9 +312,9 @@ def create_chat_group_for_repo(
     )
 
 
-# TODO 可能需要加到sdk中
-def pin(bot, message_id):
-    # https://open.feishu.cn/open-apis/im/v1/messages/:message_id
-    url = f"{bot.host}/open-apis/im/v1/pins"
-    body = {"message_id": message_id}
-    return bot.post(url, json=body)
+# # TODO 可能需要加到sdk中
+# def pin(bot, message_id):
+#     # https://open.feishu.cn/open-apis/im/v1/messages/:message_id
+#     url = f"{bot.host}/open-apis/im/v1/pins"
+#     body = {"message_id": message_id}
+#     return bot.post(url, json=body)
