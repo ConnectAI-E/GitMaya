@@ -182,57 +182,117 @@ def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
     return bot.reply(chat_group_id, message).json()
 
 
-def process_repo_action(
-    app_id, message_id, repo_id, action, param=None, *args, **kwargs
-):
-    """处理 Repo 操作"""
-    if not bot:
-        bot, _ = get_bot_by_application_id(app_id)
-    # 操作github
-    result = None
-    if action == "rename":
-        result = github_rename_repo(repo_id, param, *args, **kwargs)
-    elif action == "edit":
-        result = github_edit_repo(repo_id, param, *args, **kwargs)
-    elif action == "link":
-        result = github_link_repo(repo_id, param, *args, **kwargs)
-    elif action == "label":
-        result = github_label_repo(repo_id, param, *args, **kwargs)
+@celery.task()
+def change_repo_visit(visibility, app_id, message_id, repo_id, *args, **kwargs):
+    """修改 Repo 访问权限"""
+    bot, application = get_bot_by_application_id(app_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
+    )
 
-    if result and result["result"] == "success":
-        message = RepoTipSuccess(result["text"])
-    elif result and result["result"] == "failed":
-        message = RepoTipFailed(result["text"])
+    if repo:
+        # TODO 修改 repo 访问权限, 调用github api，修改数据库和调用api要用事务
+        repo.visibility = True if visibility == "public" else False
+        db.session.commit()
+
+        message = RepoTipSuccess(f"已成功修改 {repo.name} 仓库为 {visibility}")
+        return bot.reply(message_id, message).json()
+
     return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def rename_repo(app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_name(name, app_id, message_id, repo_id, param, *args, **kwargs):
     """修改 Repo 标题"""
-    return process_repo_action(
-        app_id, message_id, repo_id, "rename", param, *args, **kwargs
+    bot, application = get_bot_by_application_id(app_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
     )
+
+    if repo:
+        # TODO 修改 repo 标题, 调用github api，修改数据库和调用api要用事务
+        repo.name = name
+        db.session.commit()
+
+        message = RepoTipSuccess(f"已成功修改 {repo.name} 仓库标题为 {name}")
+        return bot.reply(message_id, message).json()
+
+    return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def edit_repo(app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_desc(desc, app_id, message_id, repo_id, param, *args, **kwargs):
     """编辑 Repo"""
-    return process_repo_action(
-        app_id, message_id, repo_id, "edit", param, *args, **kwargs
+    bot, application = get_bot_by_application_id(app_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
     )
+
+    if repo:
+        # TODO 修改 repo 描述, 调用github api，修改数据库和调用api要用事务
+        repo.description = desc
+        db.session.commit()
+
+        message = RepoTipSuccess(f"已成功修改 {repo.description} 仓库描述为 {desc}")
+        return bot.reply(message_id, message).json()
+
+    return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def link_repo(app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_link(homepage, app_id, message_id, repo_id, param, *args, **kwargs):
     """关联 Repo"""
-    return process_repo_action(
-        app_id, message_id, repo_id, "link", param, *args, **kwargs
+    bot, application = get_bot_by_application_id(app_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
     )
+
+    if repo:
+        # TODO 修改 repo 描述, 调用github api，修改数据库和调用api要用事务
+        repo.extra["homepage"] = homepage
+        db.session.commit()
+
+        message = RepoTipSuccess(f"已成功修改 {repo.description} 仓库主页为 {homepage}")
+        return bot.reply(message_id, message).json()
+
+    return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def label_repo(app_id, message_id, repo_id, param, *args, **kwargs):
+def label_repo(label, app_id, message_id, repo_id, param, *args, **kwargs):
     """标记 Repo"""
-    return process_repo_action(
-        app_id, message_id, repo_id, "label", param, *args, **kwargs
+    bot, application = get_bot_by_application_id(app_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
     )
+
+    # TODO label 应该要有新增修改删除
+    # if repo:
+    #     # TODO 修改 repo 描述, 调用github api，修改数据库和调用api要用事务
+    #     repo.extra["homepage"] = label
+    #     db.session.commit()
+
+    #     message = RepoTipSuccess(f"已成功修改 {repo.description} 仓库主页为 {homepage}")
+    #     return bot.reply(message_id, message).json()
+
+    return bot.reply(message_id, message).json()
