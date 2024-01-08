@@ -76,7 +76,7 @@ def on_repository_created(event_dict: dict | list | None) -> list:
     )
 
     # 查找 RepoUser 中具有 admin 权限的用户
-    admin_bind_users = (
+    admin_github_bind_users = (
         db.session.query(BindUser)
         .join(
             RepoUser,
@@ -85,11 +85,25 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         .filter(
             RepoUser.repo_id == new_repo.id,
             RepoUser.permission == "admin",
-            BindUser.platform == "lark",
+            BindUser.platform == "github",
         )
         .all()
     )
-    if len(admin_bind_users) == 0:
+
+    # 从 github_bind_users 中筛选出 lark_bind_users
+    admin_lark_bind_users = []
+    for bind_user in admin_github_bind_users:
+        lark_bind_user = (
+            db.session.query(BindUser)
+            .filter(
+                BindUser.platform == "lark",
+                BindUser.user_id == bind_user.user_id,
+            )
+            .first()
+        )
+        admin_lark_bind_users.append(lark_bind_user)
+
+    if len(admin_github_bind_users) == 0:
         app.logger.error(f"Repo {new_repo.id} has no admin user")
         return []
 
@@ -107,7 +121,7 @@ def on_repository_created(event_dict: dict | list | None) -> list:
     )
 
     task_ids = []
-    for bind_user in admin_bind_users:
+    for bind_user in admin_lark_bind_users:
         task = send_detect_repo.delay(
             repo_id=new_repo.id,
             app_id=im_application.app_id,

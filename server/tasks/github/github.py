@@ -2,6 +2,7 @@ from celery_app import celery
 from model.repo import create_repo_from_github
 from model.schema import CodeApplication, Team, db
 from utils.github.organization import GitHubAppOrg
+from utils.github.repo import GitHubAppRepo
 from utils.user import create_github_member
 
 
@@ -30,6 +31,8 @@ def pull_github_repo(
 
     # 拉取所有组织仓库，创建 Repo
     repos = github_app.get_org_repos(org_name)
+
+    github_app = GitHubAppRepo(installation_id)
     try:
         for repo in repos:
             create_repo_from_github(
