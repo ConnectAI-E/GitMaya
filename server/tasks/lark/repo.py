@@ -27,15 +27,32 @@ def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs)
         content (str): The error message to be sent.
         app_id (str): The ID of the IM application.
         message_id (str): The ID of the Lark message.
-        *args: Additional positional arguments.
         bot (Bot, optional): The bot instance. Defaults to None.
-        **kwargs: Additional keyword arguments.
     Returns:
         dict: The JSON response from the bot's reply method.
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipFailed(content=content)
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs):
+    """send new repo success tip to user.
+
+    Args:
+        content (str): The success message to be sent.
+        app_id (str): The ID of the IMApplication.
+        message_id (str): The ID of the lark message.
+        bot (Bot, optional): The bot instance. Defaults to None.
+
+    Returns:
+        dict: The JSON response from the bot's reply method.
+    """
+    if not bot:
+        bot, _ = get_bot_by_application_id(app_id)
+    message = RepoTipSuccess()(content=content)
     return bot.reply(message_id, message).json()
 
 
