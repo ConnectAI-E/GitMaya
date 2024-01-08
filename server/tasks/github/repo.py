@@ -8,7 +8,7 @@ from utils.github.repo import GitHubAppRepo
 
 
 @celery.task()
-def on_repository(data: dict) -> list[str]:
+def on_repository(data: dict) -> list:
     """Parse and handle repository event.
 
     Args:
@@ -26,19 +26,25 @@ def on_repository(data: dict) -> list[str]:
     action = event.action
     match action:
         case "created":
-            task = on_repository_created.delay(event)
+            task = on_repository_created.delay(event.model_dump())
             return [task.id]
         case _:
             app.logger.info(f"Unhandled repository event action: {action}")
-            raise NotImplementedError(f"Unhandled repository event action: {action}")
+            return []
 
 
 @celery.task()
-def on_repository_created(event: RepoEvent) -> list[str]:
+def on_repository_created(event_dict: dict | list | None) -> list:
     """Handle repository created event.
 
     Send message to Repo Owner and create chat group for repo.
     """
+    try:
+        event = RepoEvent(**event_dict)
+    except Exception as e:
+        app.logger.error(f"Failed to parse repository event: {e}")
+        return []
+
     github_app = GitHubAppRepo(event.installation.id)
 
     repo_info = github_app.get_repo_info(event.repository.id)
