@@ -1,6 +1,8 @@
 import argparse
 import logging
+from os import rename
 
+from base import listen_result
 from tasks.lark import *
 
 
@@ -25,6 +27,7 @@ class GitMayaLarkParser(object):
         parser_new.set_defaults(func=self.on_new)
 
         parser_view = self.subparsers.add_parser("/view")
+        parser_edit.add_argument("url", nargs="?")
         parser_view.set_defaults(func=self.on_view)
 
         parser_setting = self.subparsers.add_parser("/setting")
@@ -62,6 +65,7 @@ class GitMayaLarkParser(object):
         parser_unarchive.set_defaults(func=self.on_unarchive)
 
         parser_insight = self.subparsers.add_parser("/insight")
+        parser_label.add_argument("url", nargs="?")
         parser_insight.set_defaults(func=self.on_insight)
 
         parser_close = self.subparsers.add_parser("/close")
@@ -69,6 +73,9 @@ class GitMayaLarkParser(object):
 
         parser_reopen = self.subparsers.add_parser("/reopen")
         parser_reopen.set_defaults(func=self.on_reopen)
+
+        parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
+        parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
@@ -102,18 +109,22 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "rename", param, unkown
 
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "edit", param, unkown
 
     def on_link(self, param, unkown, *args, **kwargs):
         logging.info("on_link %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "link", param, unkown
 
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
+        process_repo_action.delay(*args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
@@ -126,6 +137,8 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
+        # 从卡片点击有参，命令进入无参
+
         return "insight", param, unkown
 
     def on_close(self, param, unkown, *args, **kwargs):
@@ -135,6 +148,10 @@ class GitMayaLarkParser(object):
     def on_reopen(self, param, unkown, *args, **kwargs):
         logging.info("on_reopen %r %r", vars(param), unkown)
         return "reopen", param, unkown
+
+    def on_at_gitmaya(self, param, unkown, *args, **kwargs):
+        logging.info("on_at_gitmaya %r %r", vars(param), unkown)
+        return "at_GitMaya", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
@@ -149,39 +166,17 @@ class GitMayaLarkParser(object):
 
 
 if __name__ == "__main__":
-    from pprint import pprint
+    import json
+    import os
 
-    commands = [
-        "/help",
-        "/man",
-        "/match",
-        "/match repo_url",
-        "/match repo_url chat_name",
-        "/new",
-        "/view",
-        "/setting",
-        "/visit public",
-        "/visit private",
-        "/visit internal",
-        "/access read @xxx",
-        "/access triage @xxx",
-        "/access write @xxx",
-        "/access maintain @xxx",
-        "/access admin @xxx",
-        "/rename new_name",
-        "/rename new name",
-        "/edit new_name",
-        "/link homepage",
-        "/label label1",
-        "/archive",
-        "/unarchive",
-        "/insight",
-        "/close",
-        "/reopen",
-        "unkown input",
-    ]
-    parser = GitMayaLarkParser()
+    import httpx
+    from dotenv import find_dotenv, load_dotenv
 
-    for command in commands:
-        result = parser.parse_args(command)
-        pprint((command, result))
+    load_dotenv(find_dotenv())
+    message = RepoManual()
+    print("message", json.dumps(message))
+    result = httpx.post(
+        os.environ.get("TEST_BOT_HOOK"),
+        json={"card": message, "msg_type": "interactive"},
+    ).json()
+    print("result", result)

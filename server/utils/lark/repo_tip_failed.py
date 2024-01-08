@@ -1,14 +1,14 @@
-from base import *
+from .base import *
 
 
 class RepoTipFailed(FeishuMessageCard):
     def __init__(
         self,
-        content="没有执行此操作的权限 \n\n(这里说明操作失败的原因)",
+        content="",
     ):
         elements = [
             FeishuMessageDiv(
-                content=content,
+                content=f"没有执行此操作的权限 \n\n({content})",
                 tag="lark_md",
             ),
             GitMayaCardNote("GitMaya Repo Action"),

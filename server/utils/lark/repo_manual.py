@@ -6,7 +6,7 @@ class RepoManual(FeishuMessageCard):
         self,
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        issue_id=16,
+        status="public",
         statuses=["public", "private", "internal"],
     ):
         elements = [
@@ -20,7 +20,7 @@ class RepoManual(FeishuMessageCard):
                         FeishuMessageOption(value=status, content=status)
                         for status in statuses
                     ],
-                    placeholder="public",
+                    placeholder=status,
                     value={
                         "key": "value",
                     },

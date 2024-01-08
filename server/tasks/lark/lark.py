@@ -64,6 +64,25 @@ def get_contact_by_bot(bot):
         page_token = result.get("data", {}).get("page_token", "")
 
 
+def get_bot_by_application_id(app_id):
+    application = (
+        db.session.query(IMApplication)
+        .filter(
+            IMApplication.app_id == app_id,
+        )
+        .first()
+    )
+    if application:
+        return (
+            Bot(
+                app_id=application.app_id,
+                app_secret=application.app_secret,
+            ),
+            application,
+        )
+    return None, None
+
+
 @celery.task()
 def get_contact_by_lark_application(application_id):
     """

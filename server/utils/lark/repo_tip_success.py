@@ -1,10 +1,10 @@
-from base import *
+from .base import *
 
 
 class RepoTipSuccess(FeishuMessageCard):
     def __init__(
         self,
-        content='1. 已修改 Pr 标题为 "sss"\n2. 已分配任务给 @xx\n3. 已合并 pr\n',
+        content="操作成功！",
     ):
         elements = [
             FeishuMessageDiv(
