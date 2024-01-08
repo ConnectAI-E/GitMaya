@@ -1,10 +1,11 @@
 import argparse
 import logging
-import webbrowser
 from os import rename
+from tkinter import E
 
 import tasks
 from base import listen_result
+from exceptiongroup import catch
 from tasks.lark.repo import process_repo_action
 
 
@@ -153,15 +154,15 @@ class GitMayaLarkParser(object):
             chat_type = raw_message["event"]["message"]["chat_type"]
             chat_id = raw_message["event"]["message"]["chat_id"]
             thread_type = "repo"
-            url = tasks.get_repo_url_by_chat_id(chat_id)
 
-            if "group" == chat_type:
+            if "p2p" == chat_type:
+                tasks.open_repo_url.delay(chat_id)
+
+            else:
+                # TODO
                 if "repo" == thread_type:
-                    url = tasks.get_repo_url_by_chat_id(chat_id)
+                    tasks.open_repo_url.delay(chat_id)
 
-                # TODO 区分话题 type
-
-            webbrowser.open(url)
         except Exception as e:
             logging.error(e)
         return "view", param, unkown
@@ -208,8 +209,14 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
-        # 从卡片点击有参，命令进入无参
+        try:
+            raw_message = args[3]
+            chat_id = raw_message["event"]["message"]["chat_id"]
+            url = tasks.get_repo_url_by_chat_id(chat_id)
 
+            webbrowser.open(f"{url}/pulse")
+        except Exception as e:
+            logging.error(e)
         return "insight", param, unkown
 
     def on_close(self, param, unkown, *args, **kwargs):

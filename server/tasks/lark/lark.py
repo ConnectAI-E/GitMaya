@@ -77,6 +77,31 @@ def get_bot_by_application_id(app_id):
     return None, None
 
 
+def get_repo_id_by_chat_group(chat_id):
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+
+    return chat_group
+
+
+def get_repo_name_by_repo_id(repo_id):
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    return repo.name
+
+
 @celery.task()
 def get_contact_by_lark_application(application_id):
     """

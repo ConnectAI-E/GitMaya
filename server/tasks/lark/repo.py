@@ -1,9 +1,10 @@
 import logging
+import webbrowser
 from email import message
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from lark import get_bot_by_application_id
+from lark import *
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -24,43 +25,11 @@ from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
 
 
-def get_repo_id_by_chat_group(chat_id):
-    chat_group = (
-        db.session.query(ChatGroup)
-        .filter(
-            ChatGroup.chat_id == chat_id,
-            ChatGroup.status == 0,
-        )
-        .first()
-    )
-
-    return chat_group
-
-
-def get_repo_name_by_repo_id(repo_id):
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == repo_id,
-            Repo.status == 0,
-        )
-        .first()
-    )
-    return repo.name
-
-
 @celery.task()
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
     chat_group = get_repo_id_by_chat_group(chat_id)
 
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == chat_group.repo_id,
-            Repo.status == 0,
-        )
-        .first()
-    )
+    repo = get_repo_name_by_repo_id(chat_group.repo_id)
     team = (
         db.session.query(Team)
         .filter(
@@ -70,6 +39,17 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
         .first()
     )
     return f"https://github.com/{team.name}/{repo.name}"
+
+
+@celery.task()
+def open_repo_url(chat_id):
+    try:
+        url = get_repo_url_by_chat_id(chat_id)
+        webbrowser.open(url)
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
 
 
 @celery.task()
