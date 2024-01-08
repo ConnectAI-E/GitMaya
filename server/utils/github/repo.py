@@ -7,7 +7,7 @@ class GitHubAppRepo(BaseGitHubApp):
     def __init__(self, installation_id: str = None, user_id: str = None) -> None:
         super().__init__(installation_id=installation_id, user_id=user_id)
 
-    def get_repo_info(self, repo_id) -> dict | None:
+    def get_repo_info(self, repo_id: str) -> dict | None:
         """Get repo info by repo ID.
 
         Args:

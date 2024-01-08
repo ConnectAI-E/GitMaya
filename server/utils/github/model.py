@@ -26,6 +26,8 @@ class BaseEvent(BaseModel):
 
 class Repository(BaseModel):
     id: int
+    name: str
+    description: Optional[str] = None
 
 
 class RepoEvent(BaseEvent):
