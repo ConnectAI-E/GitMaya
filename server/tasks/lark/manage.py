@@ -19,6 +19,7 @@ from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual
 from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
+from utils.lark.repo_info import RepoInfo
 
 
 def get_bot_by_application_id(app_id):
@@ -320,7 +321,6 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
             )
             .first()
         )
-        message = ManageRepoDetect()
         message = RepoInfo(
             repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
