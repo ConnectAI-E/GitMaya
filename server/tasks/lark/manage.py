@@ -277,6 +277,13 @@ def create_chat_group_for_repo(
     )
     db.session.add(chat_group)
     db.session.commit()
+    """
+    创建项目群之后，需要发两条消息：
+    1. 给操作的用户发成功的消息
+    2. 给群发送repo 卡片消息，并pin
+    """
+    # 这里可以再触发一个异步任务给群发卡片
+    send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
     content = "\n".join(
         [
             f"1. 成功创建名为「{name}」的新项目群",
@@ -286,3 +293,45 @@ def create_chat_group_for_repo(
     return send_manage_success_message(
         content, app_id, message_id, *args, bot=bot, **kwargs
     )
+
+
+@celery.task()
+def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
+    """send new repo card message to user.
+
+    Args:
+        repo_id: repo.id.
+        app_id: IMApplication.app_id.
+        chat_id: ChatGroup.chat_id.
+    """
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
+    )
+    if repo:
+        bot, application = get_bot_by_application_id(app_id)
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+            )
+            .first()
+        )
+        message = ManageRepoDetect()
+        message = RepoInfo(
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_name=repo.name,
+            repo_description=repo.description,
+            repo_topic=repo.extra.get("topic", []),
+            visibility=repo.extra.get("visibility", "私有仓库"),
+            # TODO 其他信息
+        )
+        return bot.send(
+            chat_id,
+            message,
+            receive_id_type="chat_id",
+        ).json()
+    return False
