@@ -16,7 +16,9 @@ class IssueCard(FeishuMessageCard):
     ):
         issue_url = f"{repo_url}/issues/{id}"
         template = "blue" if status == "已关闭" else "red"
-        users = " ".join([f"[@{name}]({url})" for name, url in assignees])
+        # 这里使用飞书的用户
+        # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
+        users = "".join([f"<at id={open_id}></at>" for open_id in assignees])
         action_button = (
             FeishuMessageButton(
                 "重新打开", type="primary", value={"action": f"reopen:{issue_url}"}
@@ -109,7 +111,7 @@ if __name__ == "__main__":
         title="优化 OpenAI 默认返回的表格在飞书对话中的呈现",
         description="💬  <font color='black'>**主要内容**</font>\n功能改善建议 🚀\n优化 OpenAI 默认返回的表格在飞书对话中的呈现。\n\n## 您的建议是什么？ 🤔\n\n当前问题1：当要求 OpenAI 使用表格对内容进行格式化返回时，默认会返回 Markdown 格式的文本形式，在飞书对话中显示会很混乱，特别是在手机上查看时。\n\n当前问题2：飞书对话默认不支持 Markdown 语法表格的可视化。\n\n功能预期：返回对话消息如果识别为包含表格内容，支持将内容输出至飞书多维表格，并在对话中返回相应链接。",
         status="待完成",
-        assignees=[("River", "https://github.com/Leizhenpeng")],
+        # assignees=[("River", "https://github.com/Leizhenpeng")],
         persons=os.environ.get("TEST_USER_OPEN_ID").split(","),
         tags=["bug", "doc"],
         updated="2022年12月23日 16:32",
@@ -124,7 +126,7 @@ if __name__ == "__main__":
         title="优化 OpenAI 默认返回的表格在飞书对话中的呈现",
         description="💬  <font color='black'>**主要内容**</font>\n功能改善建议 🚀\n优化 OpenAI 默认返回的表格在飞书对话中的呈现。\n\n## 您的建议是什么？ 🤔\n\n当前问题1：当要求 OpenAI 使用表格对内容进行格式化返回时，默认会返回 Markdown 格式的文本形式，在飞书对话中显示会很混乱，特别是在手机上查看时。\n\n当前问题2：飞书对话默认不支持 Markdown 语法表格的可视化。\n\n功能预期：返回对话消息如果识别为包含表格内容，支持将内容输出至飞书多维表格，并在对话中返回相应链接。",
         status="已关闭",
-        assignees=[("River", "https://github.com/Leizhenpeng")],
+        # assignees=[("River", "https://github.com/Leizhenpeng")],
         persons=os.environ.get("TEST_USER_OPEN_ID").split(","),
         tags=["bug", "doc"],
         updated="2022年12月23日 16:32",
