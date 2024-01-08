@@ -1,7 +1,14 @@
 from app import app, db
 from celery_app import celery
 from model.repo import create_repo_from_github
-from model.schema import BindUser, CodeApplication, IMApplication, RepoUser, Team
+from model.schema import (
+    BindUser,
+    CodeApplication,
+    IMApplication,
+    RepoUser,
+    Team,
+    TeamMember,
+)
 from tasks.lark.manage import send_detect_repo
 from utils.github.model import RepoEvent
 from utils.github.repo import GitHubAppRepo
@@ -95,17 +102,20 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         return []
 
     # 从 github_bind_users 中筛选出 lark_bind_users
-    admin_lark_bind_users = []
-    for bind_user in admin_github_bind_users:
-        lark_bind_user = (
-            db.session.query(BindUser)
-            .filter(
-                BindUser.platform == "lark",
-                BindUser.user_id == bind_user.user_id,
-            )
-            .first()
+    admin_lark_bind_users = (
+        db.session.query(BindUser)
+        .join(
+            TeamMember,
+            TeamMember.im_user_id == BindUser.id,
         )
-        admin_lark_bind_users.append(lark_bind_user)
+        .filter(
+            TeamMember.team_id == team.id,
+            TeamMember.code_user_id.in_([user.id for user in admin_github_bind_users]),
+            TeamMember.status == 0,
+            BindUser.status == 0,
+        )
+        .all()
+    )
 
     if len(admin_lark_bind_users) == 0:
         app.logger.error(f"Repo {new_repo.id} has no lark admin user")
@@ -116,7 +126,6 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         db.session.query(IMApplication)
         .filter(
             IMApplication.team_id == team.id,
-            IMApplication.status == 0,
         )
         .first()
     )
