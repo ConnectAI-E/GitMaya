@@ -69,7 +69,7 @@ def with_lark_storage(event_type="message"):
                     results = result if isinstance(result, list) else [result]
                     for action_result in results:
                         message_id = (
-                            action_result.get("data")
+                            action_result.get("data", {}).get("message_id", "")
                             if isinstance(action_result, dict)
                             else ""
                         )
