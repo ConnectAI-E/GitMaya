@@ -1,4 +1,5 @@
 import logging
+from math import log
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
@@ -14,6 +15,7 @@ from model.schema import (
     TeamMember,
     db,
 )
+from repo import send_repo_info
 from sqlalchemy.orm import aliased
 from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual
@@ -283,6 +285,36 @@ def create_chat_group_for_repo(
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
         ]
     )
+
+    # 新建群后自动发 Repo info，并且pin
+    try:
+        send_repo_info_data = send_repo_info(
+            repo.id,
+            app_id,
+            chat_group_id,
+            *args,
+            **kwargs,
+        )
+        logging.info("send_repo_info success")
+
+        repo_info_message_id = send_repo_info_data["data"]["message_id"]
+
+        bot.pin(bot, repo_info_message_id)
+        logging.info("pin_repo_info success")
+
+        # 创建群聊话题，并回复第一条内容(repo_url)
+
+    except Exception as e:
+        logging.error(e)
+
     return send_manage_success_message(
         content, app_id, message_id, *args, bot=bot, **kwargs
     )
+
+
+# TODO 可能需要加到sdk中
+def pin(bot, message_id):
+    # https://open.feishu.cn/open-apis/im/v1/messages/:message_id
+    url = f"{bot.host}/open-apis/im/v1/pins"
+    body = {"message_id": message_id}
+    return bot.post(url, json=body)

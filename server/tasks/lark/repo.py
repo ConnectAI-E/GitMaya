@@ -1,4 +1,5 @@
 import logging
+from email import message
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
@@ -17,9 +18,58 @@ from model.schema import (
     db,
 )
 from sqlalchemy import func, or_
+from utils.lark.repo_info import RepoInfo
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
+
+
+def get_repo_id_by_chat_group(chat_id):
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+
+    return chat_group
+
+
+def get_repo_name_by_repo_id(repo_id):
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    return repo.name
+
+
+@celery.task()
+def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
+    chat_group = get_repo_id_by_chat_group(chat_id)
+
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == chat_group.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == chat_group.team_id,
+            Team.status == 0,
+        )
+        .first()
+    )
+    return f"https://github.com/{team.name}/{repo.name}"
 
 
 @celery.task()
@@ -60,33 +110,22 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 @celery.task()
 def send_repo_manual(app_id, message_id, data, *args, **kwargs):
+    """
+    Send repository manual to a chat group.
+
+    Args:
+        app_id (int): The ID of the application.
+        message_id (int): The ID of the message.
+        data (dict): The data containing the event message and chat ID.
+
+    Returns:
+        dict: The JSON response from the bot.
+
+    """
     bot, application = get_bot_by_application_id(app_id)
 
-    # TODO 从话题发送@GitMaya或/help进入repo_manual
-
-    # TODO get repo_id from chat_group
-
-    # 通过repo id查询name
-
-    chat_id = data["event"]["message"]["chat_id"]
-    chat_group = (
-        db.session.query(ChatGroup)
-        .filter(
-            ChatGroup.chat_id == chat_id,
-            ChatGroup.status == 0,
-        )
-        .first()
-    )
-    if not chat_group:
-        return send_repo_failed_tip(
-            ErrorMsg.REPO_CHAT_GROUP_NOT_FOUND,
-            app_id,
-            message_id,
-            data,
-            *args,
-            bot=bot,
-            **kwargs,
-        )
+    # 通过chat_group查repo id
+    chat_group = get_repo_id_by_chat_group(data)
     repo = (
         db.session.query(Repo)
         .filter(
@@ -107,10 +146,49 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
             repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
             repo_description=repo.description,
-            # repo_topic=repo.extra.get("topic", []),
             visibility=repo.extra.get("visibility", "public"),
         )
     return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
+    )
+
+    if repo:
+        bot, application = get_bot_by_application_id(app_id)
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+            )
+            .first()
+        )
+        # TODO 获取 repo 信息
+        message = RepoInfo(
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_name=repo.name,
+            repo_description=repo.description,
+            repo_topic=repo.extra.get("topic", []),
+            open_issues_count=4,
+            stargazers_count=5,
+            forks_count=6,
+            visibility="私有仓库" if repo.extra.get("private") else "公开仓库",
+        )
+        return bot.send(
+            chat_group_id,
+            message,
+            receive_id_type="chat_id",
+        ).json()
+    return bot.reply(chat_group_id, message).json()
 
 
 def process_repo_action(
