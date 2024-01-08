@@ -7,17 +7,12 @@ class RepoInfo(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
         repo_description="aaaaaaaaaa",
+        repo_topic=[],
         visibility="私有仓库",
         updated="2022年12月23日 16:32",
-        issue_need_process_num=10,
-        issue_total_num=10,
-        pr_need_process_num=12,
-        pr_total_num=12,
-        fork_new_num=134,
-        fork_total_num=120,
-        star_new_num=2222,
-        star_total_num=123124,
-        repo_topic=[],
+        open_issues_count=0,
+        stargazers_count=1,
+        forks_count=2,
     ):
         elements = [
             FeishuMessageColumnSet(
@@ -70,7 +65,25 @@ class RepoInfo(FeishuMessageCard):
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**Issue 状态**\n<font color='green'>待处理 {issue_need_process_num} 条</font>\n累计 {issue_total_num} 条"
+                                # f"**Issue 状态**\n<font color='green'>待处理 {issue_need_process_num} 条</font>\n累计 {issue_total_num} 条"
+                                f"**Issue 状态**\n累计 {open_issues_count} 条"
+                            ),
+                            width="weighted",
+                            weight=1,
+                            vertical_align="top",
+                        ),
+                        # FeishuMessageColumn(
+                        #     FeishuMessageMarkdown(
+                        #         f"**Pr 状态**\n<font color='green'>待合并 {pr_need_process_num} 条</font>\n累计 {pr_total_num} 条",
+                        #     ),
+                        #     width="weighted",
+                        #     weight=1,
+                        #     vertical_align="top",
+                        # ),
+                        FeishuMessageColumn(
+                            FeishuMessageMarkdown(
+                                # f"**Fork 热度**\n<font color='green'>本周新增 {fork_new_num} 条</font>\n累计 {fork_total_num} 条",
+                                f"**Fork 热度**\n累计 {forks_count} 条",
                             ),
                             width="weighted",
                             weight=1,
@@ -78,23 +91,8 @@ class RepoInfo(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**Pr 状态**\n<font color='green'>待合并 {pr_need_process_num} 条</font>\n累计 {pr_total_num} 条",
-                            ),
-                            width="weighted",
-                            weight=1,
-                            vertical_align="top",
-                        ),
-                        FeishuMessageColumn(
-                            FeishuMessageMarkdown(
-                                f"**Fork 热度**\n<font color='green'>本周新增 {fork_new_num} 条</font>\n累计 {fork_total_num} 条",
-                            ),
-                            width="weighted",
-                            weight=1,
-                            vertical_align="top",
-                        ),
-                        FeishuMessageColumn(
-                            FeishuMessageMarkdown(
-                                f"**Star 热度**\n<font color='green'>本周新增 {star_new_num} 条</font>\n累计 {star_total_num} 条",
+                                # f"**Star 热度**\n<font color='green'>本周新增 {star_new_num} 条</font>\n累计 {star_total_num} 条",
+                                f"**Star 热度**\n累计 {stargazers_count} 条",
                             ),
                             width="auto",
                             weight=1,

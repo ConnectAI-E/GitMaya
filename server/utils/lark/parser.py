@@ -1,5 +1,6 @@
 import argparse
 import logging
+import webbrowser
 from os import rename
 
 import tasks
@@ -147,6 +148,22 @@ class GitMayaLarkParser(object):
 
     def on_view(self, param, unkown, *args, **kwargs):
         logging.info("on_view %r %r", vars(param), unkown)
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            chat_id = raw_message["event"]["message"]["chat_id"]
+            thread_type = "repo"
+            url = tasks.get_repo_url_by_chat_id(chat_id)
+
+            if "group" == chat_type:
+                if "repo" == thread_type:
+                    url = tasks.get_repo_url_by_chat_id(chat_id)
+
+                # TODO 区分话题 type
+
+            webbrowser.open(url)
+        except Exception as e:
+            logging.error(e)
         return "view", param, unkown
 
     def on_setting(self, param, unkown, *args, **kwargs):
