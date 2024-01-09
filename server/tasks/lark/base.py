@@ -88,7 +88,7 @@ def get_git_object_by_message_id(message_id):
             )
             .first()
         )
-        if not repo:
+        if repo:
             return repo.id, None, None
     except Exception as e:
         logging.error(f"repo:  {e}")
@@ -103,7 +103,7 @@ def get_git_object_by_message_id(message_id):
             )
             .first()
         )
-        if not issue:
+        if issue:
             return None, issue.id, None
     except Exception as e:
         logging.error(e)
@@ -119,7 +119,7 @@ def get_git_object_by_message_id(message_id):
             )
             .first()
         )
-        if not pr:
+        if pr:
             return None, None, pr.id
     except Exception as e:
         logging.error(f"pr:  {e}")
