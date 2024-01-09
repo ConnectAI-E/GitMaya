@@ -79,39 +79,43 @@ def get_bot_by_application_id(app_id):
 
 def get_git_object_by_message_id(message_id):
     logging.info("get_git_object_by_message_id 0", message_id)
-
     try:
         repo = (
-            db.session.query(
-                Repo.id.label("repo_id"),
-                None.label("issue_id"),
-                None.label("pull_request_id"),
-            )
+            db.session.query(Repo)
             .filter(
                 Repo.message_id == message_id,
             )
             .first()
         )
-        logging.info("get_git_object_by_message_id 1", repo.repo_id)
+        if not repo:
+            return repo.id, None, None
 
+        issue = (
+            db.session.query(Issue)
+            .filter(
+                Issue.message_id == message_id,
+            )
+            .first()
+        )
+        if not issue:
+            return None, issue.id, None
+
+        pr = (
+            db.session.query(PullRequest)
+            .filter(
+                PullRequest.message_id == message_id,
+            )
+            .first()
+        )
+        if not pr:
+            return None, None, pr.id
+
+        logging.info("get_git_object_by_message_id 1", obj)
     except Exception as e:
         logging.error(e)
         obj = None
 
-    repo, issue, pr = None, None, None
-    if obj:
-        if obj.repo_id:
-            repo = db.session.query(Repo).filter(Repo.id == obj.repo_id).first()
-        if obj.issue_id:
-            issue = db.session.query(Issue).filter(Issue.id == obj.issue_id).first()
-        if obj.pull_request_id:
-            pr = (
-                db.session.query(PullRequest)
-                .filter(PullRequest.id == obj.pull_request_id)
-                .first()
-            )
-
-    return repo, issue, pr
+    return None, None, None
 
 
 def with_lark_storage(event_type="message"):
