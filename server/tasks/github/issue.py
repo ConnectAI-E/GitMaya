@@ -1,7 +1,8 @@
 from app import app, db
 from celery_app import celery
-from model.schema import CodeApplication, Issue, ObjID, Repo, Team
+from model.schema import CodeApplication, Issue, ObjID, PullRequest, Repo, Team
 from tasks.lark.issue import send_issue_card, send_issue_comment
+from tasks.lark.pull_request import send_issue_card, send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
 from utils.github.repo import GitHubAppRepo
 
@@ -48,17 +49,30 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
     if repo:
-        issue = (
-            db.session.query(Issue)
-            .filter(
-                Issue.repo_id == repo.id,
-                Issue.issue_number == event.issue.number,
+        if hasattr(event.issue, "pull_request") and event.issue.pull_request:
+            pr = (
+                db.session.query(PullRequest)
+                .filter(
+                    PullRequest.repo_id == repo.id,
+                    PullRequest.pull_request_id == event.issue.number,
+                )
+                .first()
             )
-            .first()
-        )
-        if issue:
-            task = send_issue_comment.delay(issue.id, event.comment.body)
-            return [task.id]
+            if issue:
+                task = send_pull_request_comment.delay(pr.id, event.comment.body)
+                return [task.id]
+        else:
+            issue = (
+                db.session.query(Issue)
+                .filter(
+                    Issue.repo_id == repo.id,
+                    Issue.issue_number == event.issue.number,
+                )
+                .first()
+            )
+            if issue:
+                task = send_issue_comment.delay(issue.id, event.comment.body)
+                return [task.id]
 
     return []
 

@@ -146,3 +146,30 @@ def send_pull_request_card(pull_request_id):
                     logging.info("debug first_message_result %r", first_message_result)
                 return result
     return False
+
+
+@celery.task()
+def send_pull_request_comment(pull_request_id, comment):
+    """send new pull_request comment message to user.
+
+    Args:
+        pull_request_id: PullRequest.id.
+        comment: str
+    """
+    pr = db.session.query(PullRequest).filter(PullRequest.id == pull_request_id).first()
+    if pr:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == pr.repo_id,
+            )
+            .first()
+        )
+        if chat_group and pr.message_id:
+            bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            result = bot.reply(
+                pr.message_id,
+                FeishuTextMessage(comment),
+            ).json()
+            return result
+    return False

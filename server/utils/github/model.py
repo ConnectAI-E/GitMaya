@@ -44,6 +44,10 @@ class User(BaseModel):
     type: str
 
 
+class PRInIssue(BaseModel):
+    url: str
+
+
 class Issue(BaseModel):
     id: int
     number: int
@@ -55,6 +59,7 @@ class Issue(BaseModel):
     created_at: str
     updated_at: str
     assignee: Optional[User] = None
+    pull_request: Optional[PRInIssue] = None
 
 
 class IssueComment(BaseModel):
