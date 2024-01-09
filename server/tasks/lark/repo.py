@@ -17,7 +17,7 @@ from .base import *
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
     chat_group = get_repo_id_by_chat_group(chat_id)
 
-    repo = get_repo_name_by_repo_id(chat_group.repo_id)
+    repo_name = get_repo_name_by_repo_id(chat_group.repo_id)
     team = (
         db.session.query(Team)
         .filter(
@@ -26,7 +26,7 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
         )
         .first()
     )
-    return f"https://github.com/{team.name}/{repo.name}"
+    return f"https://github.com/{team.name}/{repo_name}"
 
 
 @celery.task()

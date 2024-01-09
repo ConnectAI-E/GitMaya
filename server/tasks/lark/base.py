@@ -55,6 +55,7 @@ def get_repo_name_by_repo_id(repo_id):
         )
         .first()
     )
+
     return repo.name
 
 
@@ -78,7 +79,7 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
-    logging.info("get_git_object_by_message_id 0", message_id)
+    logging.info(f"message_id: {message_id}")
     try:
         repo = (
             db.session.query(Repo)
@@ -91,6 +92,8 @@ def get_git_object_by_message_id(message_id):
             return repo.id, None, None
     except Exception as e:
         logging.error(f"repo:  {e}")
+
+    logging.info(f"repo.id:  {repo.id}")
 
     try:
         issue = (
@@ -105,6 +108,8 @@ def get_git_object_by_message_id(message_id):
     except Exception as e:
         logging.error(f"issue:  {e}")
 
+    logging.info(f"issue.id:  {issue.id}")
+
     try:
         pr = (
             db.session.query(PullRequest)
@@ -117,6 +122,8 @@ def get_git_object_by_message_id(message_id):
             return None, None, pr.id
     except Exception as e:
         logging.error(f"pr:  {e}")
+
+    logging.info(f"pr.id:  {pr.id}")
 
     return None, None, None
 
