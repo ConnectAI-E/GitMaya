@@ -83,52 +83,33 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
-    logging.info(f"info-get_git_object_by_message_id-message_id:  {message_id}")
-
-    try:
-        repo = (
-            db.session.query(Repo)
-            .filter(
-                Repo.message_id == message_id,
-            )
-            .first()
+    issue = (
+        db.session.query(Issue)
+        .filter(
+            Issue.message_id == message_id,
         )
-        if repo:
-            return repo.id, None, None
-    except Exception as e:
-        logging.error(f"repo:  {e}")
-
-    logging.info(f"repo.id:  {repo.id}")
-
-    try:
-        issue = (
-            db.session.query(Issue)
-            .filter(
-                Issue.message_id == message_id,
-            )
-            .first()
+        .first()
+    )
+    if issue:
+        return None, issue, None
+    pr = (
+        db.session.query(PullRequest)
+        .filter(
+            PullRequest.message_id == message_id,
         )
-        if issue:
-            return None, issue.id, None
-    except Exception as e:
-        logging.error(f"issue:  {issue}")
-
-    logging.info(f"issue.id:  {issue.id}")
-
-    try:
-        pr = (
-            db.session.query(PullRequest)
-            .filter(
-                PullRequest.message_id == message_id,
-            )
-            .first()
+        .first()
+    )
+    if pr:
+        return None, None, pr
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.message_id == message_id,
         )
-        if pr:
-            return None, None, pr.id
-    except Exception as e:
-        logging.error(f"pr:  {e}")
-
-    logging.info(f"pr.id:  {pr.id}")
+        .first()
+    )
+    if repo:
+        return repo, None, None
 
     return None, None, None
 
