@@ -1,6 +1,6 @@
 from app import app, db
 from celery_app import celery
-from model.schema import CodeApplication, Issue, ObjID, Repo, Team
+from model.schema import CodeApplication, ObjID, PullRequest, Repo, Team
 from tasks.lark.pull_request import send_pull_request_card
 from utils.github.model import PullRequestEvent
 from utils.github.repo import GitHubAppRepo
@@ -39,7 +39,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     Send PullRequest card message to Repo Owner.
     """
     try:
-        event = PullRequest(**event_dict)
+        event = PullRequestEvent(**event_dict)
     except Exception as e:
         app.logger.error(f"Failed to parse PullRequest event: {e}")
         return []
@@ -67,7 +67,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
     # 创建 pullrequest
-    new_pr = Issue(
+    new_pr = PullRequest(
         id=ObjID.new_id(),
         repo_id=repo.id,
         pull_request_number=pr_info.number,
