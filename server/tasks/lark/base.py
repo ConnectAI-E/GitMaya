@@ -92,6 +92,7 @@ def get_git_object_by_message_id(message_id):
     except Exception as e:
         logging.error(f"repo:  {e}")
 
+    try:
         issue = (
             db.session.query(Issue)
             .filter(
@@ -101,7 +102,10 @@ def get_git_object_by_message_id(message_id):
         )
         if not issue:
             return None, issue.id, None
+    except Exception as e:
+        logging.error(f"issue:  {e}")
 
+    try:
         pr = (
             db.session.query(PullRequest)
             .filter(
@@ -111,11 +115,8 @@ def get_git_object_by_message_id(message_id):
         )
         if not pr:
             return None, None, pr.id
-
-        logging.info("get_git_object_by_message_id 1", obj)
     except Exception as e:
-        logging.error(e)
-        obj = None
+        logging.error(f"pr:  {e}")
 
     return None, None, None
 
