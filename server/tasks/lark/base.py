@@ -79,6 +79,8 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
+    logging.info(f"info-get_git_object_by_message_id-message_id:  {message_id}")
+
     try:
         repo = (
             db.session.query(Repo)
