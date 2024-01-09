@@ -334,6 +334,7 @@ class Issue(Base):
         nullable=True,
         comment="哪一个repo_id",
     )
+    issue_id = db.Column(db.String(128), nullable=True, comment="github issue_id")
     title = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
@@ -349,6 +350,9 @@ class PullRequest(Base):
         ForeignKey("repo.id"),
         nullable=True,
         comment="哪一个repo_id",
+    )
+    pull_request_id = db.Column(
+        db.String(128), nullable=True, comment="github pull_request_id"
     )
     title = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
