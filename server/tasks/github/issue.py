@@ -7,6 +7,12 @@ from utils.github.repo import GitHubAppRepo
 
 
 @celery.task()
+def on_issue_comment(data: dict) -> list:
+    # TODO
+    pass
+
+
+@celery.task()
 def on_issue(data: dict) -> list:
     """Parse and handle issue event.
 
