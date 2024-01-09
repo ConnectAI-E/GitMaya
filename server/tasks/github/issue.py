@@ -58,7 +58,7 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
                 )
                 .first()
             )
-            if issue:
+            if pr:
                 task = send_pull_request_comment.delay(pr.id, event.comment.body)
                 return [task.id]
         else:
