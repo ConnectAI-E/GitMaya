@@ -57,6 +57,34 @@ class Issue(BaseModel):
     assignee: Optional[User] = None
 
 
+class Branch(BaseModel):
+    label: str
+    ref: str
+    sha: str
+
+
+class PullRequest(BaseModel):
+    id: int
+    number: int
+    title: str
+    body: Optional[str] = None
+    state: str  # open/closed
+    labels: Optional[list[Label]] = []
+    comments: int
+    created_at: str
+    updated_at: str
+    assignee: Optional[User] = None
+    base: Branch
+    head: Branch
+
+    comments: int
+    review_comments: int
+    commits: int
+    additions: int
+    deletions: int
+    changed_files: int
+
+
 class RepoEvent(BaseEvent):
     action: str
     repository: Repository
@@ -65,4 +93,10 @@ class RepoEvent(BaseEvent):
 class IssueEvent(BaseEvent):
     action: str
     issue: Issue
+    repository: Repository
+
+
+class PullRequestEvent(BaseEvent):
+    action: str
+    pull_request: PullRequest
     repository: Repository
