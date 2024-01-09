@@ -374,6 +374,10 @@ class GitObjectMessageIdRelation(db.Model):
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
 
 
+CodeUser = aliased(BindUser)
+IMUser = aliased(BindUser)
+
+
 class CustomJsonProvider(DefaultJSONProvider):
     @staticmethod
     def default(value):

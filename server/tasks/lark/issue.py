@@ -3,7 +3,16 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
-from model.schema import ChatGroup, CodeApplication, Issue, Repo, Team, db
+from model.schema import (
+    ChatGroup,
+    CodeApplication,
+    CodeUser,
+    IMUser,
+    Issue,
+    Repo,
+    Team,
+    db,
+)
 from utils.github.repo import GitHubAppRepo
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp
@@ -246,37 +255,48 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
     team = (
         db.session.query(Team)
-        .filter(
-            Team.id == application.team_id,
+        .join(
+            CodeApplication,
+            CodeApplication.team_id == Team.id,
         )
-        .first()
-    )
-    if not team:
-        return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
-        )
-
-    code_application = (
-        db.session.query(CodeApplication)
         .filter(
             CodeApplication.id == repo.application_id,
         )
         .first()
     )
-    if not code_application:
+    if not team:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
-    github_app = GitHubAppRepo(code_application.installation_id)
+    openid = data["event"]["sender"]["sender_id"]["open_id"]
+    code_user_id = (
+        db.session.query(CodeUser.user_id)
+        .join(
+            TeamMember,
+            TeamMember.code_user_id == CodeUser.id,
+        )
+        .join(
+            IMUser,
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(
+            IMUser.openid == openid,
+            TeamMember.team_id == team_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    github_app = GitHubAppRepo(user_id=code_user_id)
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, {"body": content["text"]}
     )
     if "id" in response:
         return send_issue_success_tip(
-            "同步消息成功", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         return send_issue_failed_tip(
-            "同步消息失败", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )

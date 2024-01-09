@@ -102,9 +102,10 @@ class GitMayaLarkParser(object):
         parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
         parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
-    def on_comment(self, param, unkown, *args, **kwargs):
-        logging.info("on_comment %r %r", vars(param), unkown)
+    def on_comment(self, text, *args, **kwargs):
+        logging.info("on_comment %r", text)
         try:
+            raw_message = args[3]
             root_id = raw_message["event"]["message"].get("root_id")
             if root_id:
                 repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
@@ -364,14 +365,12 @@ class GitMayaLarkParser(object):
 
     def parse_args(self, command, *args, **kwargs):
         try:
-            # TODO
-            # command = command.replace("@_user_1", "")
-            # command = command.replace("@_user_2", "")
             argv = [a.replace("@_user", "at_user") for a in command.split(" ") if a]
             param, unkown = self.parser.parse_known_args(argv)
             return param.func(param, unkown, *args, **kwargs)
         except Exception as e:
             logging.debug("error %r", e)
+            raise e
 
     def parse_multiple_commands(self, commands, *args, **kwargs):
         results = []
