@@ -4,8 +4,8 @@
 [metadata]
 groups = ["default"]
 strategy = ["cross_platform"]
-lock_version = "4.4.1"
-content_hash = "sha256:4a2579175a694b9f1c0b3e7225b49423730ed1bc7481fb45eb0773523627ccf3"
+lock_version = "4.4"
+content_hash = "sha256:a7da2811fd8ca929ed4d25ee3d234f721d39336f9ef41247498d432541056f20"
 
 [[package]]
 name = "amqp"
@@ -90,7 +90,7 @@ files = [
 
 [[package]]
 name = "ca-lark-oauth"
-version = "0.0.5"
+version = "0.0.6"
 requires_python = ">=3.8"
 summary = "lark(feishu) oauth webhook"
 dependencies = [
@@ -98,12 +98,12 @@ dependencies = [
     "flask",
 ]
 files = [
-    {file = "ca-lark-oauth-0.0.5.tar.gz", hash = "sha256:dc6b7c583642b3139716b2fd430d53b777d71a867483687c3f128f5992bd802f"},
+    {file = "ca-lark-oauth-0.0.6.tar.gz", hash = "sha256:3f1f83433b31948708adf1b2fb1a6a9c4fc96b6a4e68a2c752048b3ea6c37bf1"},
 ]
 
 [[package]]
 name = "ca-lark-sdk"
-version = "0.0.15"
+version = "0.0.16"
 requires_python = ">=3.8"
 summary = "lark(feishu) client"
 dependencies = [
@@ -111,12 +111,12 @@ dependencies = [
     "pycryptodome",
 ]
 files = [
-    {file = "ca-lark-sdk-0.0.15.tar.gz", hash = "sha256:b4633eb4ccd6e8c8e4abb165b773d3026edf875ef70975884f6351405f6553cc"},
+    {file = "ca-lark-sdk-0.0.16.tar.gz", hash = "sha256:4167e2b22da4e6589af5b7131b6002d6f9635661b04266250ab1dcb42b146967"},
 ]
 
 [[package]]
 name = "ca-lark-webhook"
-version = "0.0.4"
+version = "0.0.5"
 requires_python = ">=3.8"
 summary = "lark(feishu) client"
 dependencies = [
@@ -124,7 +124,7 @@ dependencies = [
     "flask",
 ]
 files = [
-    {file = "ca-lark-webhook-0.0.4.tar.gz", hash = "sha256:1ce7d6f92e61a12e434dada2fb12a2d6a18420576caa72db82afbbfaaa7ca3ce"},
+    {file = "ca-lark-webhook-0.0.5.tar.gz", hash = "sha256:afd7ff7b42296f255c63691000ff098ae469690b7ce17b9639db171f0e4b3743"},
 ]
 
 [[package]]
@@ -745,7 +745,7 @@ version = "2.0.25"
 requires_python = ">=3.7"
 summary = "Database Abstraction Library"
 dependencies = [
-    "greenlet!=0.4.17; platform_machine == \"win32\" or platform_machine == \"WIN32\" or platform_machine == \"AMD64\" or platform_machine == \"amd64\" or platform_machine == \"x86_64\" or platform_machine == \"ppc64le\" or platform_machine == \"aarch64\"",
+    "greenlet!=0.4.17; platform_machine == \"aarch64\" or (platform_machine == \"ppc64le\" or (platform_machine == \"x86_64\" or (platform_machine == \"amd64\" or (platform_machine == \"AMD64\" or (platform_machine == \"win32\" or platform_machine == \"WIN32\")))))",
     "typing-extensions>=4.6.0",
 ]
 files = [
