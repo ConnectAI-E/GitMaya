@@ -3,8 +3,18 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import ChatGroup, Repo, Team, db
+from model.schema import (
+    ChatGroup,
+    CodeApplication,
+    CodeUser,
+    IMUser,
+    Repo,
+    Team,
+    TeamMember,
+    db,
+)
 from sqlalchemy.orm import aliased
+from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
@@ -126,7 +136,7 @@ def create_issue(
     code_application = (
         db.session.query(CodeApplication)
         .filter(
-            CodeApplication.id == chat_group.application_id,
+            CodeApplication.id == repo.application_id,
         )
         .first()
     )
