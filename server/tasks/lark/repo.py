@@ -88,7 +88,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-@with_lark_storage("repo_manual")
+# @with_lark_storage("repo_manual")
 def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
@@ -102,42 +102,42 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
         dict: The JSON response from the bot.
 
     """
-    try:
-        bot, application = get_bot_by_application_id(app_id)
+    # try:
+    bot, application = get_bot_by_application_id(app_id)
 
-        # 通过chat_group查repo id
-        chat_id = data["event"]["message"]["chat_id"]
-        logging.info(f"chat_id: {chat_id}")
+    # 通过chat_group查repo id
+    chat_id = data["event"]["message"]["chat_id"]
+    logging.info(f"chat_id: {chat_id}")
 
-        chat_group = get_repo_id_by_chat_group(chat_id)
-        logging.info(f"chat_group: {chat_group}")
+    chat_group = get_repo_id_by_chat_group(chat_id)
+    logging.info(f"chat_group: {chat_group}")
 
-        repo = (
-            db.session.query(Repo)
-            .filter(
-                Repo.id == chat_group.repo_id,
-                Repo.status == 0,
-            )
-            .first()
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == chat_group.repo_id,
+            Repo.status == 0,
         )
-        logging.info(f"repo: {repo}")
+        .first()
+    )
+    logging.info(f"repo: {repo}")
 
-        if repo:
-            team = (
-                db.session.query(Team)
-                .filter(
-                    Team.id == application.team_id,
-                )
-                .first()
-            )
-            message = RepoManual(
-                repo_url=f"https://github.com/{team.name}/{repo.name}",
-                repo_name=repo.name,
-                repo_description=repo.description,
-                visibility=repo.extra.get("visibility", "public"),
-            )
-    except Exception as e:
-        logging.error(e)
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    message = RepoManual(
+        repo_url=f"https://github.com/{team.name}/{repo.name}",
+        repo_name=repo.name,
+        repo_description=repo.description,
+        visibility=repo.extra.get("visibility", "public"),
+    )
+
+    # except Exception as e:
+    #     logging.error(e)
 
     return bot.reply(message_id, message).json()
 
