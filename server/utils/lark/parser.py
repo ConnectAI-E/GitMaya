@@ -2,6 +2,8 @@ import argparse
 import logging
 
 import tasks
+from tasks.lark.base import get_git_object_by_message_id
+from tasks.lark.repo import send_repo_manual
 
 
 class GitMayaLarkParser(object):
@@ -113,13 +115,13 @@ class GitMayaLarkParser(object):
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
                 # 判断 pr/issue/repo
-                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                repo, issue, pr = get_git_object_by_message_id(root_id)
                 logging.error(
                     f"info---on_help---get_git_object_by_message_id: {repo} {issue} {pr}"
                 )
 
-                if True:
-                    tasks.send_repo_manual.delay(*args, **kwargs)
+                if repo:
+                    send_repo_manual.delay(*args, **kwargs)
                 # elif issue:
                 #     tasks.send_issue_manual.delay(*args, **kwargs)
                 # elif pr:
