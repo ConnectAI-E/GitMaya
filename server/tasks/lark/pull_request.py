@@ -211,6 +211,8 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
                     base=pr.extra.get("base", {}),
                     head=pr.extra.get("head", {}),
                     status=status,
+                    assignees=pr.extra.get("assignees", []),
+                    labels=pr.extra.get("labels", []),
                     updated=pr.modified.strftime("%Y-%m-%d %H:%M:%S"),
                 )
                 result = bot.update(pr.message_id, message).json()
