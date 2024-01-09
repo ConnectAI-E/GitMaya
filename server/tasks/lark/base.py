@@ -82,7 +82,11 @@ def get_git_object_by_message_id(message_id):
 
     try:
         obj = (
-            db.session.query(GitObjectMessageIdRelation)
+            db.session.query(
+                GitObjectMessageIdRelation.repo_id,
+                GitObjectMessageIdRelation.issue_id,
+                GitObjectMessageIdRelation.pull_request_id,
+            )
             .filter(
                 GitObjectMessageIdRelation.message_id == message_id,
             )
@@ -94,9 +98,7 @@ def get_git_object_by_message_id(message_id):
         obj = None
 
     repo, issue, pr = None, None, None
-    logging.info("get_git_object_by_message_id 2", obj)
     if obj:
-        logging.info("get_git_object_by_message_id 3", obj.repo_id)
         if obj.repo_id:
             repo = db.session.query(Repo).filter(Repo.id == obj.repo_id).first()
         if obj.issue_id:
