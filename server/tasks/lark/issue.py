@@ -3,7 +3,8 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
-from model.schema import ChatGroup, Issue, Repo, Team, db
+from model.schema import ChatGroup, CodeApplication, Issue, Repo, Team, db
+from utils.github.repo import GitHubAppRepo
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp
 from utils.lark.issue_tip_failed import IssueTipFailed
@@ -220,3 +221,62 @@ def update_issue_card(issue_id: str):
                 return result.json()
 
     return False
+
+
+@celery.task()
+def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
+    root_id = data["event"]["message"]["root_id"]
+    _, issue, _ = get_git_object_by_message_id(root_id)
+    if not issue:
+        return send_issue_failed_tip(
+            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == issue.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return send_issue_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.application_id,
+        )
+        .first()
+    )
+    if not code_application:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    github_app = GitHubAppRepo(code_application.installation_id)
+    response = github_app.create_issue_comment(
+        team.name, repo.name, issue.issue_number, {"body": content["text"]}
+    )
+    if "id" in response:
+        return send_issue_success_tip(
+            "同步消息成功", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+    else:
+        return send_issue_failed_tip(
+            "同步消息失败", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
