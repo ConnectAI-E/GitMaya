@@ -98,8 +98,22 @@ class GitMayaLarkParser(object):
         parser_reopen = self.subparsers.add_parser("/reopen")
         parser_reopen.set_defaults(func=self.on_reopen)
 
+        # TODO 这里实际上拿到的信息是 @_user_1，需要检查是不是当前机器人
         parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
         parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
+
+    def on_comment(self, param, unkown, *args, **kwargs):
+        logging.info("on_comment %r %r", vars(param), unkown)
+        try:
+            root_id = raw_message["event"]["message"].get("root_id")
+            if root_id:
+                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                if issue:
+                    tasks.create_issue_comment.delay(*args, **kwargs)
+                elif pr:
+                    tasks.create_pull_request_comment.delay(*args, **kwargs)
+        except Exception as e:
+            logging.error(e)
 
     def on_help(self, param, unkown, *args, **kwargs):
         logging.info("on_help %r %r", vars(param), unkown)
