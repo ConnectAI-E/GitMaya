@@ -114,7 +114,7 @@ class GitMayaLarkParser(object):
             else:
                 # 判断 pr/issue/repo
                 repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
-                logging.error(
+                logging.info(
                     f"info---on_help---get_git_object_by_message_id: {repo} {issue} {pr}"
                 )
 

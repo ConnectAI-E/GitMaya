@@ -79,7 +79,6 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
-    logging.info(f"message_id: {message_id}")
     try:
         repo = (
             db.session.query(Repo)
@@ -106,7 +105,6 @@ def get_git_object_by_message_id(message_id):
         if issue:
             return None, issue.id, None
     except Exception as e:
-        logging.error(e)
         logging.error(f"issue:  {issue}")
 
     logging.info(f"issue.id:  {issue.id}")
