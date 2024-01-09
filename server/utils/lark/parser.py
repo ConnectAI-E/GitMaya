@@ -96,10 +96,10 @@ class GitMayaLarkParser(object):
                 topic_type, topic_id = get_topic_type_by_message_id(root_id)
                 if "repo" == topic_type:
                     tasks.send_repo_manual.delay(*args, **kwargs)
-                elif "issue" == topic_type:
-                    tasks.send_issue_manual.delay(*args, **kwargs)
-                elif "pull_request" == topic_type:
-                    tasks.send_pr_manual.delay(*args, **kwargs)
+                # elif "issue" == topic_type:
+                #     tasks.send_issue_manual.delay(*args, **kwargs)
+                # elif "pull_request" == topic_type:
+                #     tasks.send_pr_manual.delay(*args, **kwargs)
                 else:
                     tasks.send_chat_manual.delay(*args, **kwargs)
 
@@ -161,14 +161,22 @@ class GitMayaLarkParser(object):
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
             chat_id = raw_message["event"]["message"]["chat_id"]
-            thread_type = "repo"
+            root_id = raw_message["event"]["message"]["root_id"]
 
             if "p2p" == chat_type:
                 tasks.open_repo_url.delay(chat_id)
 
             else:
-                # TODO
-                if "repo" == thread_type:
+                topic_type, topic_id = get_topic_type_by_message_id(root_id)
+
+                # repo/chat 打开repo主页，私聊打开个人主页
+                if "repo" == topic_type:
+                    tasks.open_repo_url.delay(chat_id)
+                # elif "issue" == topic_type:
+                #     tasks.open_issue_url.delay(topic_id)
+                # elif "pull_request" == topic_type:
+                #     tasks.open_pull_request_url.delay(topic_id)
+                else:
                     tasks.open_repo_url.delay(chat_id)
 
         except Exception as e:
