@@ -144,7 +144,7 @@ def send_issue_card(issue_id):
 
 
 @celery.task()
-def send_issue_comment(issue_id, comment):
+def send_issue_comment(issue_id, comment, user_name: str):
     """send new issue comment message to user.
 
     Args:
@@ -164,7 +164,7 @@ def send_issue_comment(issue_id, comment):
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
             result = bot.reply(
                 issue.message_id,
-                FeishuTextMessage(comment),
+                FeishuTextMessage(f"@{user_name}: {comment}"),
             ).json()
             return result
     return False
@@ -194,12 +194,19 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
+
+                status = issue.extra.get("state", "opened")
+                if status == "closed":
+                    status = "已关闭"
+                else:
+                    status = "待完成"
+
                 message = IssueCard(
                     repo_url=repo_url,
                     id=issue.issue_number,
                     title=issue.title,
                     description=issue.description,
-                    status=issue.extra.get("state", "opened"),
+                    status=status,
                     assignees=issue.extra.get("assignees", []),
                     tags=issue.extra.get("labels", []),
                     updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),

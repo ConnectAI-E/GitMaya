@@ -1,9 +1,8 @@
 from app import app, db
 from celery_app import celery
-from model.schema import CodeApplication, ObjID, PullRequest, Repo, Team
-from tasks.lark.pull_request import send_pull_request_card
+from model.schema import ObjID, PullRequest, Repo
+from tasks.lark.pull_request import send_pull_request_card, update_pull_request_card
 from utils.github.model import PullRequestEvent
-from utils.github.repo import GitHubAppRepo
 
 
 @celery.task()
@@ -28,6 +27,7 @@ def on_pull_request(data: dict) -> list:
             task = on_pull_request_opened.delay(event.model_dump())
             return [task.id]
         case _:
+            task = on_pull_request_updated.delay(event.model_dump())
             app.logger.info(f"Unhandled PullRequest event action: {action}")
             return []
 
@@ -44,26 +44,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         app.logger.error(f"Failed to parse PullRequest event: {e}")
         return []
 
-    github_app = GitHubAppRepo(str(event.installation.id))
-
     pr_info = event.pull_request
-
-    code_application = (
-        db.session.query(CodeApplication)
-        .filter(
-            CodeApplication.installation_id == str(event.installation.id),
-            CodeApplication.status == 0,
-        )
-        .first()
-    )
-
-    team = (
-        db.session.query(Team)
-        .filter(
-            Team.id == code_application.team_id,
-        )
-        .first()
-    )
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
     # 创建 pullrequest
@@ -81,3 +62,36 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     task = send_pull_request_card.delay(new_pr.id)
 
     return [task.id]
+
+
+@celery.task()
+def on_pull_request_updated(event_dict: dict) -> list:
+    """Handle PullRequest updated event.
+
+    Send PullRequest card message to Repo Owner.
+    """
+    try:
+        event = PullRequestEvent(**event_dict)
+    except Exception as e:
+        app.logger.error(f"Failed to parse PullRequest event: {e}")
+        return []
+
+    repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    pr = (
+        db.session.query(PullRequest)
+        .filter(PullRequest.repo_id == repo.id)
+        .filter(PullRequest.pull_request_number == event.pull_request.number)
+        .first()
+    )
+    if pr:
+        pr.title = event.pull_request.title
+        pr.description = event.pull_request.body
+        pr.extra = event.pull_request.model_dump()
+        db.session.commit()
+
+        task = update_pull_request_card.delay(pr.id)
+
+        return [task.id]
+    else:
+        app.logger.error(f"Failed to find PullRequest: {event.pull_request.number}")
+        return []
