@@ -109,7 +109,7 @@ def send_issue_card(issue_id):
         )
         repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
         if chat_group and repo:
-            bot, application = get_bot_by_application_id(chat_group.application_id)
+            bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 message = IssueCard(

@@ -58,25 +58,6 @@ def get_contact_by_bot(bot):
         page_token = result.get("data", {}).get("page_token", "")
 
 
-def get_bot_by_application_id(app_id):
-    application = (
-        db.session.query(IMApplication)
-        .filter(
-            IMApplication.app_id == app_id,
-        )
-        .first()
-    )
-    if application:
-        return (
-            Bot(
-                app_id=application.app_id,
-                app_secret=application.app_secret,
-            ),
-            application,
-        )
-    return None, None
-
-
 def get_repo_id_by_chat_group(chat_id):
     chat_group = (
         db.session.query(ChatGroup)
