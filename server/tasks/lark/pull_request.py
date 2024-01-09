@@ -149,7 +149,7 @@ def send_pull_request_card(pull_request_id):
 
 
 @celery.task()
-def send_pull_request_comment(pull_request_id, comment):
+def send_pull_request_comment(pull_request_id, comment, user_name: str):
     """send new pull_request comment message to user.
 
     Args:
@@ -169,7 +169,53 @@ def send_pull_request_comment(pull_request_id, comment):
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
             result = bot.reply(
                 pr.message_id,
-                FeishuTextMessage(comment),
+                FeishuTextMessage(f"@{user_name}: {comment}"),
             ).json()
             return result
+    return False
+
+
+@celery.task()
+def update_pull_request_card(pr_id: str) -> bool | dict:
+    """Update PullRequest card message.
+
+    Args:
+        pr_id (str): PullRequest.id.
+    Returns:
+        bool | dict: True or False or FeishuMessage
+    """
+
+    pr = db.session.query(PullRequest).filter(PullRequest.id == pr_id).first()
+    if pr:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == pr.repo_id,
+            )
+            .first()
+        )
+        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
+        if chat_group and repo:
+            bot, application = get_bot_by_application_id(chat_group.im_application_id)
+            team = db.session.query(Team).filter(Team.id == application.team_id).first()
+            if application and team:
+                repo_url = f"https://{team.name}/{repo.name}"
+
+                status = pr.extra.get("state", "待完成")
+
+                message = PullCard(
+                    repo_url=repo_url,
+                    id=pr.pull_request_number,
+                    title=pr.title,
+                    description=pr.description,
+                    base=pr.extra.get("base", {}),
+                    head=pr.extra.get("head", {}),
+                    status=status,
+                    assignees=pr.extra.get("assignees", []),
+                    labels=pr.extra.get("labels", []),
+                    updated=pr.modified.strftime("%Y-%m-%d %H:%M:%S"),
+                )
+                result = bot.update(pr.message_id, message).json()
+                return result
+
     return False

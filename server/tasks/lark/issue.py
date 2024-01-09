@@ -144,7 +144,7 @@ def send_issue_card(issue_id):
 
 
 @celery.task()
-def send_issue_comment(issue_id, comment):
+def send_issue_comment(issue_id, comment, user_name: str):
     """send new issue comment message to user.
 
     Args:
@@ -164,7 +164,59 @@ def send_issue_comment(issue_id, comment):
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
             result = bot.reply(
                 issue.message_id,
-                FeishuTextMessage(comment),
+                FeishuTextMessage(f"@{user_name}: {comment}"),
             ).json()
             return result
+    return False
+
+
+@celery.task()
+def update_issue_card(issue_id: str):
+    """Update issue card message.
+
+    Args:
+        issue_id (str): Issue.id.
+    """
+
+    issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
+    if issue:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == issue.repo_id,
+            )
+            .first()
+        )
+        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
+
+        if chat_group and repo:
+            bot, application = get_bot_by_application_id(chat_group.im_application_id)
+            team = db.session.query(Team).filter(Team.id == application.team_id).first()
+            if application and team:
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
+
+                status = issue.extra.get("state", "opened")
+                if status == "closed":
+                    status = "已关闭"
+                else:
+                    status = "待完成"
+
+                message = IssueCard(
+                    repo_url=repo_url,
+                    id=issue.issue_number,
+                    title=issue.title,
+                    description=issue.description,
+                    status=status,
+                    assignees=issue.extra.get("assignees", []),
+                    tags=issue.extra.get("labels", []),
+                    updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
+                )
+
+                result = bot.update(
+                    message_id=issue.message_id,
+                    content=message,
+                )
+
+                return result.json()
+
     return False
