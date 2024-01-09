@@ -35,7 +35,7 @@ def register(code: str) -> str | None:
 
     new_user_id, _ = create_github_user(
         github_id=github_id,
-        name=user_info.get("name", None),
+        name=user_info.get("login", None),
         email=email,
         avatar=user_info.get("avatar_url", None),
         access_token=access_token,
