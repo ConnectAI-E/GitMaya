@@ -299,7 +299,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
     github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
     response = github_app.create_issue_comment(
-        team.name, repo.name, issue.issue_number, {"body": content["text"]}
+        team.name, repo.name, issue.issue_number, content["text"]
     )
     if "id" in response:
         return send_issue_success_tip(
