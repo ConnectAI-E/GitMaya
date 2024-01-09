@@ -53,44 +53,6 @@ def open_repo_insight(chat_id):
 
 
 @celery.task()
-def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
-    chat_group = get_repo_id_by_chat_group(chat_id)
-
-    repo = get_repo_name_by_repo_id(chat_group.repo_id)
-    team = (
-        db.session.query(Team)
-        .filter(
-            Team.id == chat_group.team_id,
-            Team.status == 0,
-        )
-        .first()
-    )
-    return f"https://github.com/{team.name}/{repo.name}"
-
-
-@celery.task()
-def open_repo_url(chat_id):
-    try:
-        url = get_repo_url_by_chat_id(chat_id)
-        webbrowser.open(url)
-        return True
-    except Exception as e:
-        logging.error(e)
-    return False
-
-
-@celery.task()
-def open_repo_insight(chat_id):
-    try:
-        url = get_repo_url_by_chat_id(chat_id)
-        webbrowser.open(f"{url}/pulse")
-        return True
-    except Exception as e:
-        logging.error(e)
-    return False
-
-
-@celery.task()
 def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs):
     """send a new repo failed tip to user.
     Args:
@@ -128,7 +90,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 @celery.task()
 # @with_lark_storage("repo_manual")
-def send_repo_manual(app_id, message_id, data, *args, **kwargs):
+def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
 
@@ -141,39 +103,43 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
         dict: The JSON response from the bot.
 
     """
-    bot, application = get_bot_by_application_id(app_id)
+    try:
+        bot, application = get_bot_by_application_id(app_id)
 
-    # 通过chat_group查repo id
-    chat_id = data["event"]["message"]["chat_id"]
-    logging.info(f"chat_id: {chat_id}")
+        # 通过chat_group查repo id
+        chat_id = data["event"]["message"]["chat_id"]
+        logging.info(f"chat_id: {chat_id}")
 
-    chat_group = get_repo_id_by_chat_group(chat_id)
-    logging.info(f"chat_group: {chat_group}")
+        chat_group = get_repo_id_by_chat_group(chat_id)
+        logging.info(f"chat_group: {chat_group}")
 
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == chat_group.repo_id,
-            Repo.status == 0,
-        )
-        .first()
-    )
-    logging.info(f"repo: {repo}")
-
-    if repo:
-        team = (
-            db.session.query(Team)
+        repo = (
+            db.session.query(Repo)
             .filter(
-                Team.id == application.team_id,
+                Repo.id == chat_group.repo_id,
+                Repo.status == 0,
             )
             .first()
         )
-        message = RepoManual(
-            repo_url=f"https://github.com/{team.name}/{repo.name}",
-            repo_name=repo.name,
-            repo_description=repo.description,
-            visibility=repo.extra.get("visibility", "public"),
-        )
+        logging.info(f"repo: {repo}")
+
+        if repo:
+            team = (
+                db.session.query(Team)
+                .filter(
+                    Team.id == application.team_id,
+                )
+                .first()
+            )
+            message = RepoManual(
+                repo_url=f"https://github.com/{team.name}/{repo.name}",
+                repo_name=repo.name,
+                repo_description=repo.description,
+                visibility=repo.extra.get("visibility", "public"),
+            )
+    except Exception as e:
+        logging.error(e)
+
     return bot.reply(message_id, message).json()
 
 
