@@ -89,6 +89,8 @@ def get_git_object_by_message_id(message_id):
         )
         if not repo:
             return repo.id, None, None
+    except Exception as e:
+        logging.error(f"repo:  {e}")
 
         issue = (
             db.session.query(Issue)
