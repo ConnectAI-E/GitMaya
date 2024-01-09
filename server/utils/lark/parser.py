@@ -2,6 +2,7 @@ import argparse
 import logging
 
 import tasks
+from tasks.lark.base import get_topic_type_by_message_id
 from tasks.lark.repo import process_repo_action
 
 
@@ -87,10 +88,21 @@ class GitMayaLarkParser(object):
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
+            root_id = raw_message["event"]["message"]["root_id"]
             if "p2p" == chat_type:
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
-                tasks.send_chat_manual.delay(*args, **kwargs)
+                # 判断 pr/issue/repo
+                topic_type, topic_id = get_topic_type_by_message_id(root_id)
+                if "repo" == topic_type:
+                    tasks.send_repo_manual.delay(*args, **kwargs)
+                elif "issue" == topic_type:
+                    tasks.send_issue_manual.delay(*args, **kwargs)
+                elif "pull_request" == topic_type:
+                    tasks.send_pr_manual.delay(*args, **kwargs)
+                else:
+                    tasks.send_chat_manual.delay(*args, **kwargs)
+
         except Exception as e:
             logging.error(e)
         return "help", param, unkown

@@ -24,6 +24,8 @@ from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
 
+from .base import *
+
 
 @celery.task()
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
@@ -100,6 +102,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
+@with_lark_storage("repo_manual")
 def send_repo_manual(app_id, message_id, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
@@ -183,6 +186,7 @@ def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
 
 
 @celery.task()
+@with_lark_storage("change_repo_visit")
 def change_repo_visit(visibility, app_id, message_id, repo_id, *args, **kwargs):
     """修改 Repo 访问权限"""
     bot, application = get_bot_by_application_id(app_id)
@@ -206,6 +210,7 @@ def change_repo_visit(visibility, app_id, message_id, repo_id, *args, **kwargs):
 
 
 @celery.task()
+@with_lark_storage("change_repo_name")
 def change_repo_name(name, app_id, message_id, repo_id, param, *args, **kwargs):
     """修改 Repo 标题"""
     bot, application = get_bot_by_application_id(app_id)
@@ -229,6 +234,7 @@ def change_repo_name(name, app_id, message_id, repo_id, param, *args, **kwargs):
 
 
 @celery.task()
+@with_lark_storage("change_repo_desc")
 def change_repo_desc(desc, app_id, message_id, repo_id, param, *args, **kwargs):
     """编辑 Repo"""
     bot, application = get_bot_by_application_id(app_id)
@@ -252,6 +258,7 @@ def change_repo_desc(desc, app_id, message_id, repo_id, param, *args, **kwargs):
 
 
 @celery.task()
+@with_lark_storage("change_repo_link")
 def change_repo_link(homepage, app_id, message_id, repo_id, param, *args, **kwargs):
     """关联 Repo"""
     bot, application = get_bot_by_application_id(app_id)
@@ -275,6 +282,7 @@ def change_repo_link(homepage, app_id, message_id, repo_id, param, *args, **kwar
 
 
 @celery.task()
+@with_lark_storage("change_repo_label")
 def label_repo(label, app_id, message_id, repo_id, param, *args, **kwargs):
     """标记 Repo"""
     bot, application = get_bot_by_application_id(app_id)
