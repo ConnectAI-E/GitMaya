@@ -66,6 +66,44 @@ def open_repo_insight(chat_id):
 
 
 @celery.task()
+def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
+    chat_group = get_repo_id_by_chat_group(chat_id)
+
+    repo = get_repo_name_by_repo_id(chat_group.repo_id)
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == chat_group.team_id,
+            Team.status == 0,
+        )
+        .first()
+    )
+    return f"https://github.com/{team.name}/{repo.name}"
+
+
+@celery.task()
+def open_repo_url(chat_id):
+    try:
+        url = get_repo_url_by_chat_id(chat_id)
+        webbrowser.open(url)
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
+def open_repo_insight(chat_id):
+    try:
+        url = get_repo_url_by_chat_id(chat_id)
+        webbrowser.open(f"{url}/pulse")
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
 def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs):
     """send a new repo failed tip to user.
     Args:
