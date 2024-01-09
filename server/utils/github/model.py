@@ -57,6 +57,11 @@ class Issue(BaseModel):
     assignee: Optional[User] = None
 
 
+class IssueComment(BaseModel):
+    id: int
+    body: str
+
+
 class Branch(BaseModel):
     label: str
     ref: str
@@ -93,6 +98,13 @@ class RepoEvent(BaseEvent):
 class IssueEvent(BaseEvent):
     action: str
     issue: Issue
+    repository: Repository
+
+
+class IssueCommentEvent(BaseEvent):
+    action: str
+    issue: Issue
+    comment: IssueComment
     repository: Repository
 
 

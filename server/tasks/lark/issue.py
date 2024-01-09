@@ -141,3 +141,30 @@ def send_issue_card(issue_id):
                     logging.info("debug first_message_result %r", first_message_result)
                 return result
     return False
+
+
+@celery.task()
+def send_issue_comment(issue_id, comment):
+    """send new issue comment message to user.
+
+    Args:
+        issue_id: Issue.id.
+        comment: str
+    """
+    issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
+    if issue:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == issue.repo_id,
+            )
+            .first()
+        )
+        if chat_group and issue.message_id:
+            bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            result = bot.reply(
+                issue.message_id,
+                FeishuTextMessage(comment),
+            ).json()
+            return result
+    return False
