@@ -15,22 +15,21 @@ from model.schema import (
     db,
 )
 
-
-def get_topic_type_by_message_id(message_id):
-    """根据message_id获取话题类型和话题id(root_id)"""
-    results = (
-        db.session.query(GitObjectMessageIdRelation)
-        .filter(GitObjectMessageIdRelation.message_id == message_id)
-        .first()
-    )
-    # 判断results的repo_id,issue_id,pul_request_id 是否为否空来判断topic_tupe
-    topic_type = None
-    if results.repo_id:
-        return "repo", results.repo_id
-    elif results.issue_id:
-        return "issue", results.issue_id
-    elif results.pull_request_id:
-        return "pull_request", results.pull_request_id
+# def get_topic_type_by_message_id(message_id):
+#     """根据message_id获取话题类型和话题id(root_id)"""
+#     results = (
+#         db.session.query(GitObjectMessageIdRelation)
+#         .filter(GitObjectMessageIdRelation.message_id == message_id)
+#         .first()
+#     )
+#     # 判断results的repo_id,issue_id,pul_request_id 是否为否空来判断topic_tupe
+#     topic_type = None
+#     if results.repo_id:
+#         return "repo", results.repo_id
+#     elif results.issue_id:
+#         return "issue", results.issue_id
+#     elif results.pull_request_id:
+#         return "pull_request", results.pull_request_id
 
 
 def get_bot_by_application_id(app_id):
