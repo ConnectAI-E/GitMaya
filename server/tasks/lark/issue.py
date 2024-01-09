@@ -2,6 +2,7 @@ import json
 import logging
 
 from celery_app import app, celery
+from connectai.lark.sdk import FeishuTextMessage
 from model.schema import ChatGroup, Issue, Repo, Team, db
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp

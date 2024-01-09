@@ -1,6 +1,6 @@
 from app import app, db
 from celery_app import celery
-from model.schema import CodeApplication, Issue, Team
+from model.schema import CodeApplication, Issue, ObjID, Repo, Team
 from tasks.lark.issue import send_issue_card
 from utils.github.model import IssueEvent
 from utils.github.repo import GitHubAppRepo
@@ -71,16 +71,14 @@ def on_issue_opened(event_dict: dict | list | None) -> list:
         .first()
     )
 
-    repo = (
-        db.session.query(Repo).filter(Repo.repo_id == event.issue.repository.id).first()
-    )
+    repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
     # 创建 issue
     new_issue = Issue(
         id=ObjID.new_id(),
         repo_id=repo.id,
         issue_number=issue_info.number,
         title=issue_info.title,
-        description=issue_info.description,
+        description=issue_info.body,
         extra=issue_info.model_dump(),
     )
     db.session.add(new_issue)
