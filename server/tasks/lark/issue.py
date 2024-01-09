@@ -257,7 +257,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     code_application = (
         db.session.query(CodeApplication)
         .filter(
-            CodeApplication.id == repo.id,
+            CodeApplication.id == repo.application_id,
         )
         .first()
     )
@@ -269,7 +269,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     team = (
         db.session.query(Team)
         .filter(
-            Team.id == code_application.id,
+            Team.id == code_application.team_id,
         )
         .first()
     )
@@ -291,7 +291,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
         )
         .filter(
             IMUser.openid == openid,
-            TeamMember.team_id == team_id,
+            TeamMember.team_id == team.id,
         )
         .limit(1)
         .scalar()
