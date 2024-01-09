@@ -56,6 +56,8 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
+    logging.info("get_git_object_by_message_id 0", message_id)
+
     try:
         obj = (
             db.session.query(GitObjectMessageIdRelation)
