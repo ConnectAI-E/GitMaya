@@ -173,3 +173,39 @@ class GitHubAppRepo(BaseGitHubApp):
             "user_token",
             json={"names": topics},
         )
+
+    def add_repo_collaborator(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        username: str,
+        permission: str = "pull",
+    ) -> dict | None:
+        """Add repo collaborator
+
+        Note that username should be included in the organization.
+        The GitHub API **DO** supports adding a collaborator who
+        is not a member of the organization, but here we restrict
+        members only.
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            username (str): The username.
+            permission (str): The permission. Defaults to "pull".
+
+        Returns:
+            dict: The repo info
+        """
+        res = self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/collaborators/{username}",
+            "PUT",
+            "user_token",
+            json={"permission": permission},
+            raw=True,
+        )
+
+        if res.status_code == 204:
+            return {"status": "success"}
+        else:
+            return {"status": "failed", "message": res.json()["message"]}
