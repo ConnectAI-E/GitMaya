@@ -4,9 +4,9 @@ from base import *
 class RepoManual(FeishuMessageCard):
     def __init__(
         self,
-        repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        status="public",
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        visibility="public",
         statuses=["public", "private", "internal"],
     ):
         elements = [
@@ -20,22 +20,23 @@ class RepoManual(FeishuMessageCard):
                         FeishuMessageOption(value=status, content=status)
                         for status in statuses
                     ],
-                    placeholder=status,
+                    placeholder=visibility,
                     value={
                         "key": "value",
                     },
                 )
-                if len(statuses) > 0
+                if len(visibility) > 0
                 else None,
             ),
             FeishuMessageDiv(
                 content="** 🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",
                 tag="lark_md",
             ),
-            FeishuMessageDiv(
-                content="** 📑 修改 Repo 标题**\n*话题下回复「/rename + 新 Repo 名称」 *",
-                tag="lark_md",
-            ),
+            # repo 标题有问题，先不开放
+            # FeishuMessageDiv(
+            #     content="** 📑 修改 Repo 标题**\n*话题下回复「/rename + 新 Repo 名称」 *",
+            #     tag="lark_md",
+            # ),
             FeishuMessageDiv(
                 content="** 📝 修改 Repo 描述**\n*话题下回复「/edit + 新 Repo 描述」 *",
                 tag="lark_md",
