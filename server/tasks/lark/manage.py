@@ -1,4 +1,5 @@
 import logging
+from math import log
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot, FeishuTextMessage
@@ -14,6 +15,8 @@ from model.schema import (
     TeamMember,
     db,
 )
+
+# from repo import send_repo_info
 from sqlalchemy.orm import aliased
 from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual
@@ -21,11 +24,10 @@ from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
 
-from .base import get_bot_by_application_id, with_lark_storage
+from .base import get_bot_by_application_id
 
 
 @celery.task()
-@with_lark_storage("manage_manual")
 def send_manage_manual(app_id, message_id, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
     if application:
@@ -138,7 +140,6 @@ def send_manage_success_message(content, app_id, message_id, *args, bot=None, **
 
 
 @celery.task()
-@with_lark_storage("create_chat_group")
 def create_chat_group_for_repo(
     repo_url, chat_name, app_id, message_id, *args, **kwargs
 ):
@@ -326,6 +327,9 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
         ).json()
         message_id = result.get("data", {}).get("message_id")
         if message_id:
+            # save message_id
+            repo.message_id = message_id
+            db.session.commit()
             pin_url = f"{bot.host}/open-apis/im/v1/pins"
             pin_result = bot.post(pin_url, json={"message_id": message_id}).json()
             logging.info("debug pin_result %r", pin_result)

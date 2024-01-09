@@ -1,9 +1,7 @@
 import argparse
 import logging
-from os import rename
 
 import tasks
-from base import listen_result
 
 
 class GitMayaLarkParser(object):
@@ -13,6 +11,27 @@ class GitMayaLarkParser(object):
         )
         self.subparsers = self.parser.add_subparsers()
         self.init_subparsers()
+        self.command_list = [
+            "/help",
+            "/man",
+            "/match",
+            "/issue",
+            "/new",
+            "/view",
+            "/setting",
+            "/visit",
+            "/access",
+            "/rename",
+            "/edit",
+            "/link",
+            "/label",
+            "/archive",
+            "/unarchive",
+            "/insight",
+            "/close",
+            "/reopen",
+            "@GitMaya",
+        ]
 
     def init_subparsers(self):
         parser_help = self.subparsers.add_parser("/help")
@@ -71,7 +90,6 @@ class GitMayaLarkParser(object):
         parser_unarchive.set_defaults(func=self.on_unarchive)
 
         parser_insight = self.subparsers.add_parser("/insight")
-        parser_label.add_argument("url", nargs="?")
         parser_insight.set_defaults(func=self.on_insight)
 
         parser_close = self.subparsers.add_parser("/close")
@@ -89,10 +107,21 @@ class GitMayaLarkParser(object):
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
+            root_id = raw_message["event"]["message"]["root_id"]
             if "p2p" == chat_type:
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
-                tasks.send_chat_manual.delay(*args, **kwargs)
+                # 判断 pr/issue/repo
+                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
+                if "repo" == topic_type:
+                    tasks.send_repo_manual.delay(*args, **kwargs)
+                # elif "issue" == topic_type:
+                #     tasks.send_issue_manual.delay(*args, **kwargs)
+                # elif "pull_request" == topic_type:
+                #     tasks.send_pr_manual.delay(*args, **kwargs)
+                else:
+                    tasks.send_chat_manual.delay(*args, **kwargs)
+
         except Exception as e:
             logging.error(e)
         return "help", param, unkown
@@ -147,6 +176,30 @@ class GitMayaLarkParser(object):
 
     def on_view(self, param, unkown, *args, **kwargs):
         logging.info("on_view %r %r", vars(param), unkown)
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            chat_id = raw_message["event"]["message"]["chat_id"]
+            root_id = raw_message["event"]["message"]["root_id"]
+
+            if "p2p" == chat_type:
+                tasks.open_repo_url.delay(chat_id)
+
+            else:
+                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
+
+                # repo/chat 打开repo主页，私聊打开个人主页
+                if "repo" == topic_type:
+                    tasks.open_repo_url.delay(chat_id)
+                # elif "issue" == topic_type:
+                #     tasks.open_issue_url.delay(topic_id)
+                # elif "pull_request" == topic_type:
+                #     tasks.open_pull_request_url.delay(topic_id)
+                else:
+                    tasks.open_repo_url.delay(chat_id)
+
+        except Exception as e:
+            logging.error(e)
         return "view", param, unkown
 
     def on_setting(self, param, unkown, *args, **kwargs):
@@ -155,6 +208,19 @@ class GitMayaLarkParser(object):
 
     def on_visit(self, param, unkown, *args, **kwargs):
         logging.info("on_visit %r %r", vars(param), unkown)
+        if not param.visibility:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "visibility is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_visit.delay(
+                param.visibility,
+                *args,
+                **kwargs,
+            )
         return "visit", param, unkown
 
     def on_access(self, param, unkown, *args, **kwargs):
@@ -163,22 +229,58 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.name:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "name is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_name.delay(
+                param.name,
+                *args,
+                **kwargs,
+            )
         return "rename", param, unkown
 
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.desc:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "desc is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_desc.delay(
+                param.desc,
+                *args,
+                **kwargs,
+            )
         return "edit", param, unkown
 
     def on_link(self, param, unkown, *args, **kwargs):
         logging.info("on_link %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        if not param.homepage:
+            logging.error("return")
+            tasks.send_repo_failed_tip.delay(
+                "homepage is empty",
+                *args,
+                **kwargs,
+            )
+        else:
+            tasks.change_repo_link.delay(
+                param.homepage,
+                *args,
+                **kwargs,
+            )
         return "link", param, unkown
 
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        # process_repo_action.delay(*args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
@@ -191,8 +293,14 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
-        # 从卡片点击有参，命令进入无参
+        try:
+            raw_message = args[3]
+            chat_id = raw_message["event"]["message"]["chat_id"]
 
+            tasks.open_repo_insight.delay(chat_id)
+
+        except Exception as e:
+            logging.error(e)
         return "insight", param, unkown
 
     def on_close(self, param, unkown, *args, **kwargs):
@@ -205,7 +313,35 @@ class GitMayaLarkParser(object):
 
     def on_at_gitmaya(self, param, unkown, *args, **kwargs):
         logging.info("on_at_gitmaya %r %r", vars(param), unkown)
-        return "at_GitMaya", param, unkown
+
+        content = param.content.strip()
+
+        # TODO @_user 得判断是否是机器人
+        # if content.startswith("/"):
+        #     # @GitMaya + /command，执行对应命令
+        #     commands = content[1:]
+        #     return self.parse_multiple_commands(commands, *args, **kwargs)
+
+        # else:
+        #     # @GitMaya + 空白内容，返回对应帮助卡片
+        #     # TODO 发送话题对应manual卡片
+        #     try:
+        #         raw_message = args[3]
+        #         chat_type = raw_message["event"]["message"]["chat_type"]
+        #         thread_type = "repo"
+
+        #         if "p2p" == chat_type:
+        #             tasks.send_chat_manual.delay(*args, **kwargs)
+
+        #         else:
+        #             # TODO
+        #             if "repo" == thread_type:
+        #                 tasks.send_repo_manual.delay(*args, **kwargs)
+
+        #     except Exception as e:
+        #         logging.error(e)
+
+        return "on_at_gitmaya", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
@@ -217,6 +353,22 @@ class GitMayaLarkParser(object):
             return param.func(param, unkown, *args, **kwargs)
         except Exception as e:
             logging.debug("error %r", e)
+
+    def parse_multiple_commands(self, commands, *args, **kwargs):
+        results = []
+        commands = commands.replace("\n", "").lstrip()
+
+        for command in commands.split(";"):
+            # 判断命令是否合法
+            if command not in self.command_list:
+                tasks.send_manage_fail_message.delay(
+                    f"{command} 指令不存在！", *args, **kwargs
+                )
+                continue
+
+            result = self.parse_args(command, *args, **kwargs)
+            results.extend(result)
+        return results
 
 
 if __name__ == "__main__":
