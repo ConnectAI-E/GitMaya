@@ -32,6 +32,88 @@ class Repository(BaseModel):
     private: bool
 
 
+class Label(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+
+
+class User(BaseModel):
+    id: int
+    login: str
+    type: str
+
+
+class PRInIssue(BaseModel):
+    url: str
+
+
+class Issue(BaseModel):
+    id: int
+    number: int
+    title: str
+    body: Optional[str] = None
+    state: str  # open/closed
+    labels: Optional[list[Label]] = []
+    comments: int
+    created_at: str
+    updated_at: str
+    assignee: Optional[User] = None
+    pull_request: Optional[PRInIssue] = None
+
+
+class IssueComment(BaseModel):
+    id: int
+    body: str
+
+
+class Branch(BaseModel):
+    label: str
+    ref: str
+    sha: str
+
+
+class PullRequest(BaseModel):
+    id: int
+    number: int
+    title: str
+    body: Optional[str] = None
+    state: str  # open/closed
+    labels: Optional[list[Label]] = []
+    comments: int
+    created_at: str
+    updated_at: str
+    assignee: Optional[User] = None
+    base: Branch
+    head: Branch
+
+    comments: int
+    review_comments: int
+    commits: int
+    additions: int
+    deletions: int
+    changed_files: int
+
+
 class RepoEvent(BaseEvent):
     action: str
+    repository: Repository
+
+
+class IssueEvent(BaseEvent):
+    action: str
+    issue: Issue
+    repository: Repository
+
+
+class IssueCommentEvent(BaseEvent):
+    action: str
+    issue: Issue
+    comment: IssueComment
+    repository: Repository
+
+
+class PullRequestEvent(BaseEvent):
+    action: str
+    pull_request: PullRequest
     repository: Repository

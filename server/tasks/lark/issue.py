@@ -2,6 +2,7 @@ import json
 import logging
 
 from celery_app import app, celery
+from connectai.lark.sdk import FeishuTextMessage
 from model.schema import ChatGroup, Issue, Repo, Team, db
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp
@@ -109,11 +110,12 @@ def send_issue_card(issue_id):
         )
         repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
         if chat_group and repo:
-            bot, application = get_bot_by_application_id(chat_group.application_id)
+            bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
                 message = IssueCard(
-                    repo_url=f"https://github.com/{team.name}/{repo.name}",
+                    repo_url=repo_url,
                     id=issue.issue_number,
                     title=issue.title,
                     description=issue.description,
@@ -122,7 +124,47 @@ def send_issue_card(issue_id):
                     tags=[],
                     updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                return bot.send(
+                result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
+                message_id = result.get("data", {}).get("message_id")
+                if message_id:
+                    # save message_id
+                    issue.message_id = message_id
+                    db.session.commit()
+                    first_message_result = bot.reply(
+                        message_id,
+                        # 第一条话题消息，直接放repo_url
+                        FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
+                        reply_in_thread=True,
+                    ).json()
+                    logging.info("debug first_message_result %r", first_message_result)
+                return result
+    return False
+
+
+@celery.task()
+def send_issue_comment(issue_id, comment):
+    """send new issue comment message to user.
+
+    Args:
+        issue_id: Issue.id.
+        comment: str
+    """
+    issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
+    if issue:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == issue.repo_id,
+            )
+            .first()
+        )
+        if chat_group and issue.message_id:
+            bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            result = bot.reply(
+                issue.message_id,
+                FeishuTextMessage(comment),
+            ).json()
+            return result
     return False

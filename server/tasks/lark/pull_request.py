@@ -2,6 +2,7 @@ import json
 import logging
 
 from celery_app import app, celery
+from connectai.lark.sdk import FeishuTextMessage
 from model.schema import ChatGroup, PullRequest, Repo, Team, db
 from utils.lark.pr_card import PullCard
 from utils.lark.pr_manual import PrManual
@@ -113,19 +114,62 @@ def send_pull_request_card(pull_request_id):
         )
         repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
         if chat_group and repo:
-            bot, application = get_bot_by_application_id(chat_group.application_id)
+            bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
                 message = PullCard(
-                    repo_url=f"https://github.com/{team.name}/{repo.name}",
-                    id=pr.pull_request_id,
+                    repo_url=repo_url,
+                    id=pr.pull_request_number,
                     title=pr.title,
                     description=pr.description,
+                    base=pr.extra.get("base", {}),
+                    head=pr.extra.get("head", {}),
                     # TODO
                     status="待完成",
                     updated=pr.modified.strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                return bot.send(
+                result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
+                message_id = result.get("data", {}).get("message_id")
+                if message_id:
+                    # save message_id
+                    pr.message_id = message_id
+                    db.session.commit()
+                    first_message_result = bot.reply(
+                        message_id,
+                        # TODO 第一条话题消息，直接放repo_url
+                        FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
+                        reply_in_thread=True,
+                    ).json()
+                    logging.info("debug first_message_result %r", first_message_result)
+                return result
+    return False
+
+
+@celery.task()
+def send_pull_request_comment(pull_request_id, comment):
+    """send new pull_request comment message to user.
+
+    Args:
+        pull_request_id: PullRequest.id.
+        comment: str
+    """
+    pr = db.session.query(PullRequest).filter(PullRequest.id == pull_request_id).first()
+    if pr:
+        chat_group = (
+            db.session.query(ChatGroup)
+            .filter(
+                ChatGroup.repo_id == pr.repo_id,
+            )
+            .first()
+        )
+        if chat_group and pr.message_id:
+            bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            result = bot.reply(
+                pr.message_id,
+                FeishuTextMessage(comment),
+            ).json()
+            return result
     return False
