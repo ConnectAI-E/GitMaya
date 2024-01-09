@@ -8,7 +8,10 @@ from model.schema import (
     IMAction,
     IMApplication,
     IMEvent,
+    Issue,
     ObjID,
+    PullRequest,
+    Repo,
     db,
 )
 
@@ -47,6 +50,30 @@ def get_bot_by_application_id(app_id):
             application,
         )
     return None, None
+
+
+def get_git_object_by_message_id(message_id):
+    obj = (
+        db.session.query(GitObjectMessageIdRelation)
+        .filter(
+            GitObjectMessageIdRelation.message_id == message_id,
+        )
+        .first()
+    )
+    repo, issue, pr = None, None, None
+    if obj:
+        if obj.repo_id:
+            repo = db.session.query(Repo).filter(Repo.id == obj.repo_id).first()
+        if obj.issue_id:
+            issue = db.session.query(Issue).filter(Issue.id == obj.issue_id).first()
+        if obj.pull_request_id:
+            pr = (
+                db.session.query(PullRequest)
+                .filter(PullRequest.id == obj.pull_request_id)
+                .first()
+            )
+
+    return repo, issue, pr
 
 
 def with_lark_storage(event_type="message"):
