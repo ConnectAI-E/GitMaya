@@ -88,7 +88,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-# @with_lark_storage("repo_manual")
+@with_lark_storage("repo_manual")
 def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
