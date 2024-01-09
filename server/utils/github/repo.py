@@ -115,3 +115,61 @@ class GitHubAppRepo(BaseGitHubApp):
             "user_token",
             json={"body": body},
         )
+
+    def update_repo(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        description: str = None,
+        homepage: str = None,
+        private: bool = None,
+        archived: bool = None,
+    ) -> dict | None:
+        """Update GitHub repo Info
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            description (str): The repo description.
+            homepage (str): The repo homepage.
+            private (bool): The repo private.
+            archived (bool): The repo archived.
+
+        Returns:
+            dict: The repo info.
+        """
+
+        json = {}
+
+        for arg in [description, homepage, private, archived]:
+            if arg is None:
+                continue
+            json.update({arg.__name__: arg})
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}",
+            "PATCH",
+            "user_token",
+            json=json,
+        )
+
+    def replace_topics(
+        self, repo_onwer: str, repo_name: str, topics: list[str]
+    ) -> dict | None:
+        """Replace topics
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            topics (list[str]): The repo topics.
+
+        Returns:
+            dict: The repo info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/topics",
+            "PUT",
+            "user_token",
+            json={"names": topics},
+        )
