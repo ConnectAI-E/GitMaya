@@ -2,8 +2,6 @@ import argparse
 import logging
 
 import tasks
-from tasks.lark.base import get_topic_type_by_message_id
-from tasks.lark.repo import process_repo_action
 
 
 class GitMayaLarkParser(object):
@@ -13,6 +11,27 @@ class GitMayaLarkParser(object):
         )
         self.subparsers = self.parser.add_subparsers()
         self.init_subparsers()
+        self.command_list = [
+            "/help",
+            "/man",
+            "/match",
+            "/issue",
+            "/new",
+            "/view",
+            "/setting",
+            "/visit",
+            "/access",
+            "/rename",
+            "/edit",
+            "/link",
+            "/label",
+            "/archive",
+            "/unarchive",
+            "/insight",
+            "/close",
+            "/reopen",
+            "@GitMaya",
+        ]
 
     def init_subparsers(self):
         parser_help = self.subparsers.add_parser("/help")
@@ -93,7 +112,7 @@ class GitMayaLarkParser(object):
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
                 # 判断 pr/issue/repo
-                topic_type, topic_id = get_topic_type_by_message_id(root_id)
+                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
                 if "repo" == topic_type:
                     tasks.send_repo_manual.delay(*args, **kwargs)
                 # elif "issue" == topic_type:
@@ -167,7 +186,7 @@ class GitMayaLarkParser(object):
                 tasks.open_repo_url.delay(chat_id)
 
             else:
-                topic_type, topic_id = get_topic_type_by_message_id(root_id)
+                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
 
                 # repo/chat 打开repo主页，私聊打开个人主页
                 if "repo" == topic_type:
@@ -261,7 +280,7 @@ class GitMayaLarkParser(object):
 
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
-        process_repo_action.delay(*args, **kwargs)
+        # process_repo_action.delay(*args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
@@ -350,29 +369,6 @@ class GitMayaLarkParser(object):
             result = self.parse_args(command, *args, **kwargs)
             results.extend(result)
         return results
-
-    def __init__(self):
-        self.command_list = [
-            "/help",
-            "/man",
-            "/match",
-            "/issue",
-            "/new",
-            "/view",
-            "/setting",
-            "/visit",
-            "/access",
-            "/rename",
-            "/edit",
-            "/link",
-            "/label",
-            "/archive",
-            "/unarchive",
-            "/insight",
-            "/close",
-            "/reopen",
-            "@GitMaya",
-        ]
 
 
 if __name__ == "__main__":
