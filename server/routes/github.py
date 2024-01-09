@@ -145,9 +145,7 @@ def github_hook():
             return jsonify({"code": 0, "message": "ok", "task_id": task.id})
         case _:
             app.logger.info(f"Unhandled GitHub webhook event: {x_github_event}")
-            raise NotImplementedError(
-                f"Unhandled GitHub webhook event: {x_github_event}"
-            )
+            return jsonify({"code": -1, "message": "Unhandled GitHub webhook event."})
 
     return jsonify({"code": 0, "message": "ok"})
 
