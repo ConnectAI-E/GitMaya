@@ -5,20 +5,7 @@ from email import message
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
 from lark import *
-from model.schema import (
-    BindUser,
-    ChatGroup,
-    CodeApplication,
-    ErrorMsg,
-    IMApplication,
-    ObjID,
-    Repo,
-    SuccessMsg,
-    Team,
-    User,
-    db,
-)
-from sqlalchemy import func, or_
+from model.schema import Repo, Team, db
 from utils.lark.repo_info import RepoInfo
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
