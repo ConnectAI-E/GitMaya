@@ -11,6 +11,7 @@ from app import app, db
 from flask.cli import with_appcontext
 from flask.json.provider import DefaultJSONProvider
 from sqlalchemy import BINARY, ForeignKey, String, text
+from sqlalchemy.orm import aliased
 
 
 class ErrorMsg(Enum):
