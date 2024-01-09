@@ -110,7 +110,9 @@ class PrManual(FeishuMessageCard):
                     value={
                         "key": "value",  # TODO
                     },
-                ),
+                )
+                if len(tags)
+                else None,
             ),
             FeishuMessageDiv(
                 content="** 📑 修改 Pr 标题**\n*话题下回复「 /rename + 新 Pr 标题 」 *",
