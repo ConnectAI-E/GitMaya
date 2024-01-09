@@ -125,7 +125,20 @@ def send_pull_request_card(pull_request_id):
                     status="待完成",
                     updated=pr.modified.strftime("%Y-%m-%d %H:%M:%S"),
                 )
-                return bot.send(
+                result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
+                message_id = result.get("data", {}).get("message_id")
+                if message_id:
+                    # save message_id
+                    issue.message_id = message_id
+                    db.session.commit()
+                    first_message_result = bot.reply(
+                        message_id,
+                        # TODO 第一条话题消息，直接放repo_url
+                        FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
+                        reply_in_thread=True,
+                    ).json()
+                    logging.info("debug first_message_result %r", first_message_result)
+                return result
     return False
