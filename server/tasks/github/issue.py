@@ -4,7 +4,6 @@ from model.schema import Issue, ObjID, PullRequest, Repo
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
-from utils.github.repo import GitHubAppRepo
 
 
 @celery.task()
@@ -45,8 +44,6 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
         app.logger.error(f"Failed to parse issue event: {e}")
         return []
 
-    github_app = GitHubAppRepo(str(event.installation.id))
-
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
     if repo:
         if hasattr(event.issue, "pull_request") and event.issue.pull_request:
@@ -59,7 +56,9 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
                 .first()
             )
             if pr:
-                task = send_pull_request_comment.delay(pr.id, event.comment.body)
+                task = send_pull_request_comment.delay(
+                    pr.id, event.comment.body, event.sender.login
+                )
                 return [task.id]
         else:
             issue = (
@@ -71,7 +70,9 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
                 .first()
             )
             if issue:
-                task = send_issue_comment.delay(issue.id, event.comment.body)
+                task = send_issue_comment.delay(
+                    issue.id, event.comment.body, event.sender.login
+                )
                 return [task.id]
 
     return []
@@ -100,7 +101,7 @@ def on_issue(data: dict) -> list:
             return [task.id]
         # TODO: 区分已关闭的 Issue
         case _:
-            task = on_issue_changed.delay(event.model_dump())
+            task = on_issue_updated.delay(event.model_dump())
             # app.logger.info(f"Unhandled issue event action: {action}")
             return [task.id]
 
@@ -144,7 +145,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
 
 
 @celery.task()
-def on_issue_changed(event_dict: dict) -> list:
+def on_issue_updated(event_dict: dict) -> list:
     try:
         event = IssueEvent(**event_dict)
     except Exception as e:

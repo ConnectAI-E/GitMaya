@@ -12,6 +12,7 @@ class PullCard(FeishuMessageCard):
         description="",
         persons=[],
         assignees=[],
+        status="待合并",
         updated="2022年12月23日 16:32",
     ):
         pr_url = f"{repo_url}/pulls/{id}"
@@ -34,7 +35,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🚧 <font color='grey'>**状态** </font>\n**<font color='Red'>待合并 </font>**",
+                                f"🚧 <font color='grey'>**状态** </font>\n**<font color='Red'>{status} </font>**",
                                 text_align="left",
                             ),
                             width="weighted",
