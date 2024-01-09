@@ -123,6 +123,8 @@ def send_pull_request_card(pull_request_id):
                     id=pr.pull_request_number,
                     title=pr.title,
                     description=pr.description,
+                    base=pr.extra.get("base", {}),
+                    head=pr.extra.get("head", {}),
                     # TODO
                     status="待完成",
                     updated=pr.modified.strftime("%Y-%m-%d %H:%M:%S"),
