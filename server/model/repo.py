@@ -34,8 +34,13 @@ def create_repo_from_github(
             db.session.flush()
 
             current_repo = new_repo
-
-        app.logger.debug(f"Repo {current_repo.id} created")
+            app.logger.debug(f"Repo {current_repo.id} created")
+        else:
+            # 更新 repo 信息
+            # 暂不支持更新 repo 名称
+            current_repo.description = repo["description"]
+            db.session.add(current_repo)
+            db.session.flush()
 
         # 拉取仓库成员，创建 RepoUser
         repo_users = github_app.get_repo_collaborators(repo["name"], org_name)
