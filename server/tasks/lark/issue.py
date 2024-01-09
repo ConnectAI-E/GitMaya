@@ -207,9 +207,9 @@ def update_issue_card(issue_id: str):
 
                 result = bot.update(
                     message_id=issue.message_id,
-                    message=message,
+                    content=message,
                 )
 
-                return result
+                return result.json()
 
     return False
