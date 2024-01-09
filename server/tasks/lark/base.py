@@ -4,6 +4,7 @@ from functools import wraps
 
 from connectai.lark.sdk import Bot
 from model.schema import (
+    ChatGroup,
     GitObjectMessageIdRelation,
     IMAction,
     IMApplication,
@@ -30,6 +31,31 @@ from model.schema import (
 #         return "issue", results.issue_id
 #     elif results.pull_request_id:
 #         return "pull_request", results.pull_request_id
+
+
+def get_repo_id_by_chat_group(chat_id):
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+
+    return chat_group
+
+
+def get_repo_name_by_repo_id(repo_id):
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    return repo.name
 
 
 def get_bot_by_application_id(app_id):

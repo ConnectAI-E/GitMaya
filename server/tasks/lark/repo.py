@@ -11,7 +11,6 @@ from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
 
 from .base import *
-from .lark import *
 
 
 @celery.task()
