@@ -56,13 +56,19 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
-    obj = (
-        db.session.query(GitObjectMessageIdRelation)
-        .filter(
-            GitObjectMessageIdRelation.message_id == message_id,
+    try:
+        obj = (
+            db.session.query(GitObjectMessageIdRelation)
+            .filter(
+                GitObjectMessageIdRelation.message_id == message_id,
+            )
+            .first()
         )
-        .first()
-    )
+        logging.info("get_git_object_by_message_id", obj)
+    except Exception as e:
+        logging.error(e)
+        obj = None
+
     repo, issue, pr = None, None, None
     if obj:
         if obj.repo_id:
