@@ -51,7 +51,9 @@ class IssueManualHelp(FeishuMessageCard):
                     value={
                         "key": "value",  # TODO
                     },
-                ),
+                )
+                if len(tags)
+                else None,
             ),
             FeishuMessageDiv(
                 content="** 🔝 置顶 Issue**\n*话题下回复「/pin」/「/unpin」 *",
