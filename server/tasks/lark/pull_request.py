@@ -117,8 +117,9 @@ def send_pull_request_card(pull_request_id):
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
                 message = PullCard(
-                    repo_url=f"https://github.com/{team.name}/{repo.name}",
+                    repo_url=repo_url,
                     id=pr.pull_request_id,
                     title=pr.title,
                     description=pr.description,

@@ -113,8 +113,9 @@ def send_issue_card(issue_id):
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
                 message = IssueCard(
-                    repo_url=f"https://github.com/{team.name}/{repo.name}",
+                    repo_url=repo_url,
                     id=issue.issue_number,
                     title=issue.title,
                     description=issue.description,
