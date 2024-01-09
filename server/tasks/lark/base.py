@@ -64,13 +64,15 @@ def get_git_object_by_message_id(message_id):
             )
             .first()
         )
-        logging.info("get_git_object_by_message_id", obj)
+        logging.info("get_git_object_by_message_id 1", obj)
     except Exception as e:
         logging.error(e)
         obj = None
 
     repo, issue, pr = None, None, None
+    logging.info("get_git_object_by_message_id 2", obj)
     if obj:
+        logging.info("get_git_object_by_message_id 3", obj.repo_id)
         if obj.repo_id:
             repo = db.session.query(Repo).filter(Repo.id == obj.repo_id).first()
         if obj.issue_id:

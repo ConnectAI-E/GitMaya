@@ -127,6 +127,7 @@ class GitMayaLarkParser(object):
                 # elif pr:
                 #     tasks.send_pr_manual.delay(*args, **kwargs)
                 else:
+                    send_repo_manual.delay(*args, **kwargs)
                     tasks.send_chat_manual.delay(*args, **kwargs)
 
         except Exception as e:
