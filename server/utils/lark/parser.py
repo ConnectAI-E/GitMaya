@@ -108,7 +108,7 @@ class GitMayaLarkParser(object):
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
             root_id = raw_message["event"]["message"]["root_id"]
-            logging.error(f"info---on_help---root_id: {root_id}")
+            # logging.error(f"info---on_help---root_id: {root_id}")
             if "p2p" == chat_type:
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
@@ -125,8 +125,7 @@ class GitMayaLarkParser(object):
                 # elif pr:
                 #     tasks.send_pr_manual.delay(*args, **kwargs)
                 else:
-                    tasks.send_repo_manual.delay(*args, **kwargs)
-                    # tasks.send_chat_manual.delay(*args, **kwargs)
+                    tasks.send_chat_manual.delay(*args, **kwargs)
 
         except Exception as e:
             logging.error(e)
