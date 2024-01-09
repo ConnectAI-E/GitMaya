@@ -15,6 +15,7 @@ from model.schema import (
     Repo,
     db,
 )
+from sqlalchemy import or_
 
 # def get_topic_type_by_message_id(message_id):
 #     """根据message_id获取话题类型和话题id(root_id)"""
@@ -63,7 +64,10 @@ def get_bot_by_application_id(app_id):
     application = (
         db.session.query(IMApplication)
         .filter(
-            IMApplication.app_id == app_id,
+            or_(
+                IMApplication.app_id == app_id,
+                IMApplication.id == app_id,
+            )
         )
         .first()
     )
