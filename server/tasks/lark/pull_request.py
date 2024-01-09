@@ -133,7 +133,7 @@ def send_pull_request_card(pull_request_id):
                 message_id = result.get("data", {}).get("message_id")
                 if message_id:
                     # save message_id
-                    issue.message_id = message_id
+                    pr.message_id = message_id
                     db.session.commit()
                     first_message_result = bot.reply(
                         message_id,
