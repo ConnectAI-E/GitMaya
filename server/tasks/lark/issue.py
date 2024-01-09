@@ -81,7 +81,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
 
     message = IssueManualHelp(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
-        issue_id=issue.issue_id,
+        issue_id=issue.issue_number,
         # TODO 这里需要找到真实的值
         persons=[],
         assignees=[],
@@ -114,7 +114,7 @@ def send_issue_card(issue_id):
             if application and team:
                 message = IssueCard(
                     repo_url=f"https://github.com/{team.name}/{repo.name}",
-                    id=issue.issue_id,
+                    id=issue.issue_number,
                     title=issue.title,
                     description=issue.description,
                     status="待完成",
