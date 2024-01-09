@@ -1,7 +1,7 @@
 from app import app, db
 from celery_app import celery
 from model.schema import CodeApplication, Issue, ObjID, PullRequest, Repo, Team
-from tasks.lark.issue import send_issue_card, send_issue_comment
+from tasks.lark.issue import send_issue_comment
 from tasks.lark.pull_request import send_issue_card, send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
 from utils.github.repo import GitHubAppRepo
