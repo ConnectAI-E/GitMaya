@@ -183,11 +183,8 @@ def create_issue(
     response = github_app.create_issue(
         team.name, repo.name, title, "", assignees, labels
     )
-    if "id" in response:
-        return send_issue_success_tip(
-            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
+    if "id" not in response:
+        return send_chat_failed_tip(
+            "创建issue失败", app_id, message_id, content, data, *args, **kwargs
         )
-    else:
-        return send_issue_failed_tip(
-            "同步消息失败", app_id, message_id, content, data, *args, **kwargs
-        )
+    return response
