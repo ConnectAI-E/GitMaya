@@ -5,6 +5,7 @@ from app import app
 from flask import Blueprint, jsonify, make_response, redirect, request, session
 from model.team import create_code_application, create_team
 from tasks.github import pull_github_repo
+from tasks.github.issue import on_issue, on_issue_comment
 from tasks.github.repo import on_repository
 from utils.auth import authenticated
 from utils.github.application import verify_github_signature
@@ -131,6 +132,12 @@ def github_hook():
     match x_github_event:
         case "repository":
             task = on_repository.delay(request.json)
+            return jsonify({"code": 0, "message": "ok", "task_id": task.id})
+        case "issues":
+            task = on_issue.delay(request.json)
+            return jsonify({"code": 0, "message": "ok", "task_id": task.id})
+        case "issue_comment":
+            task = on_issue_comment.delay(request.json)
             return jsonify({"code": 0, "message": "ok", "task_id": task.id})
         case _:
             app.logger.info(f"Unhandled GitHub webhook event: {x_github_event}")

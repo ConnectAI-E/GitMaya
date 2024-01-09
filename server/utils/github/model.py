@@ -32,6 +32,37 @@ class Repository(BaseModel):
     private: bool
 
 
+class Label(BaseModel):
+    id: int
+    name: str
+    description: Optional[str] = None
+
+
+class User(BaseModel):
+    id: int
+    login: str
+    type: str
+
+
+class Issue(BaseModel):
+    id: int
+    number: str
+    title: str
+    body: Optional[str] = None
+    state: str  # open/closed
+    labels: Optional[list[Label]] = []
+    comments: int
+    created_at: str
+    updated_at: str
+    assignee: Optional[User]
+
+
 class RepoEvent(BaseEvent):
     action: str
+    repository: Repository
+
+
+class IssueEvent(BaseEvent):
+    action: str
+    issue: Issue
     repository: Repository
