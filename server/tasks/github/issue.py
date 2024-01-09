@@ -54,7 +54,7 @@ def on_issue_comment_created(event_dict: dict | list | None) -> list:
                 db.session.query(PullRequest)
                 .filter(
                     PullRequest.repo_id == repo.id,
-                    PullRequest.pull_request_id == event.issue.number,
+                    PullRequest.pull_request_number == event.issue.number,
                 )
                 .first()
             )
