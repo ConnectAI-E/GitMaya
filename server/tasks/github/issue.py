@@ -52,8 +52,7 @@ def on_issue_opened(event_dict: dict | list | None) -> list:
 
     github_app = GitHubAppRepo(str(event.installation.id))
 
-    repo_info = event.issue.model_dump()
-    issue_info = event.issue.model_dump()
+    issue_info = event.issue
 
     code_application = (
         db.session.query(CodeApplication)
@@ -72,7 +71,9 @@ def on_issue_opened(event_dict: dict | list | None) -> list:
         .first()
     )
 
-    repo = db.session.query(Repo).filter(Repo.repo_id == repo_info.id).first()
+    repo = (
+        db.session.query(Repo).filter(Repo.repo_id == event.issue.repository.id).first()
+    )
     # 创建 issue
     new_issue = Issue(
         id=ObjID.new_id(),
@@ -80,7 +81,7 @@ def on_issue_opened(event_dict: dict | list | None) -> list:
         issue_number=issue_info.number,
         title=issue_info.title,
         description=issue_info.description,
-        extra=issue_info,
+        extra=issue_info.model_dump(),
     )
     db.session.add(new_issue)
     db.session.commit()

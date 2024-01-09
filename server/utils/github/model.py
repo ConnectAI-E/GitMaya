@@ -46,7 +46,7 @@ class User(BaseModel):
 
 class Issue(BaseModel):
     id: int
-    number: str
+    number: int
     title: str
     body: Optional[str] = None
     state: str  # open/closed
@@ -54,7 +54,7 @@ class Issue(BaseModel):
     comments: int
     created_at: str
     updated_at: str
-    assignee: Optional[User]
+    assignee: Optional[User] = None
 
 
 class RepoEvent(BaseEvent):
