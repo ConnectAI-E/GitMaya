@@ -59,63 +59,6 @@ class GitHubAppRepo(BaseGitHubApp):
             auth_type="install_token",
         )
 
-    def create_issue(
-        self,
-        repo_onwer: str,
-        repo_name: str,
-        title: str,
-        body: str,
-        assignees: list[str],
-        labels: list[str],
-    ) -> dict | None:
-        """Create issue
-
-        Args:
-            repo_onwer (str): The repo owner.
-            repo_name (str): The repo name.
-            title (str): The issue title.
-            body (str): The issue body.
-            assignees (list[str]): The issue assignees.
-            labels (list[str]): The issue labels.
-
-        Returns:
-            dict: The issue info.
-        """
-
-        return self.base_github_rest_api(
-            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues",
-            "POST",
-            "user_token",
-            json={
-                "title": title,
-                "body": body,
-                "assignees": assignees,
-                "labels": labels,
-            },
-        )
-
-    def create_issue_comment(
-        self, repo_onwer: str, repo_name: str, issue_number: int, body: str
-    ) -> dict | None:
-        """Create issue comment
-
-        Args:
-            repo_onwer (str): The repo owner.
-            repo_name (str): The repo name.
-            issue_number (int): The issue number.
-            body (str): The comment body.
-
-        Returns:
-            dict: The comment info.
-        """
-
-        return self.base_github_rest_api(
-            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}/comments",
-            "POST",
-            "user_token",
-            json={"body": body},
-        )
-
     def update_repo(
         self,
         repo_onwer: str,
@@ -209,3 +152,96 @@ class GitHubAppRepo(BaseGitHubApp):
             return {"status": "success"}
         else:
             return {"status": "failed", "message": res.json()["message"]}
+
+    def create_issue(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        title: str,
+        body: str,
+        assignees: list[str] = None,
+        labels: list[str] = None,
+    ) -> dict | None:
+        """Create issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            title (str): The issue title.
+            body (str): The issue body.
+            assignees (list[str]): The issue assignees.
+            labels (list[str]): The issue labels.
+
+        Returns:
+            dict: The issue info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues",
+            "POST",
+            "user_token",
+            json={
+                "title": title,
+                "body": body,
+                "assignees": assignees,
+                "labels": labels,
+            },
+        )
+
+    def create_issue_comment(
+        self, repo_onwer: str, repo_name: str, issue_number: int, body: str
+    ) -> dict | None:
+        """Create issue comment
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            issue_number (int): The issue number.
+            body (str): The comment body.
+
+        Returns:
+            dict: The comment info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}/comments",
+            "POST",
+            "user_token",
+            json={"body": body},
+        )
+
+    def update_issue(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        issue_number: int,
+        title: str = None,
+        body: str = None,
+        state: str = None,
+        state_reason: str = None,
+        assignees: list[str] = None,
+        labels: list[str] = None,
+    ) -> dict | None:
+        """Reopen issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            issue_number (int): The issue number.
+
+        Returns:
+            dict: The issue info.
+        """
+
+        json = {}
+        for arg in [title, body, state, state_reason, assignees, labels]:
+            if arg is None:
+                continue
+            json.update({arg.__name__: arg})
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
+            "PATCH",
+            "user_token",
+            json=json,
+        )
