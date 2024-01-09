@@ -11,6 +11,7 @@ from model.schema import (
     Issue,
     Repo,
     Team,
+    TeamMember,
     db,
 )
 from utils.github.repo import GitHubAppRepo
@@ -253,14 +254,22 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
         )
 
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.id,
+        )
+        .first()
+    )
+    if not code_application:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
     team = (
         db.session.query(Team)
-        .join(
-            CodeApplication,
-            CodeApplication.team_id == Team.id,
-        )
         .filter(
-            CodeApplication.id == repo.application_id,
+            Team.id == code_application.id,
         )
         .first()
     )
@@ -288,7 +297,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
         .scalar()
     )
 
-    github_app = GitHubAppRepo(user_id=code_user_id)
+    github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, {"body": content["text"]}
     )
