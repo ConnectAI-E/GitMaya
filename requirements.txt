@@ -8,9 +8,9 @@ async-timeout==4.0.3; python_full_version <= "3.11.2"
 billiard==4.2.0
 blinker==1.7.0
 bson==0.5.10
-ca-lark-oauth==0.0.5
-ca-lark-sdk==0.0.15
-ca-lark-webhook==0.0.4
+ca-lark-oauth==0.0.6
+ca-lark-sdk==0.0.16
+ca-lark-webhook==0.0.5
 celery==5.3.6
 certifi==2023.11.17
 cffi==1.16.0
