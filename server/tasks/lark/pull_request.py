@@ -300,11 +300,8 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
     response = github_app.create_issue_comment(
         team.name, repo.name, pr.pull_request_number, content["text"]
     )
-    if "id" in response:
-        return send_pull_request_success_tip(
-            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
-        )
-    else:
+    if "id" not in response:
         return send_pull_request_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
+    return response
