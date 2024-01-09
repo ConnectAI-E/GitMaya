@@ -127,7 +127,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-@with_lark_storage("repo_manual")
+# @with_lark_storage("repo_manual")
 def send_repo_manual(app_id, message_id, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
@@ -144,7 +144,12 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
 
     # 通过chat_group查repo id
-    chat_group = get_repo_id_by_chat_group(data)
+    chat_id = data["event"]["message"]["chat_id"]
+    logging.info(f"chat_id: {chat_id}")
+
+    chat_group = get_repo_id_by_chat_group(chat_id)
+    logging.info(f"chat_group: {chat_group}")
+
     repo = (
         db.session.query(Repo)
         .filter(
@@ -153,6 +158,8 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
         )
         .first()
     )
+    logging.info(f"repo: {repo}")
+
     if repo:
         team = (
             db.session.query(Team)
