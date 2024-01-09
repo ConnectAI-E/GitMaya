@@ -120,7 +120,7 @@ def send_pull_request_card(pull_request_id):
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
                 message = PullCard(
                     repo_url=repo_url,
-                    id=pr.pull_request_id,
+                    id=pr.pull_request_number,
                     title=pr.title,
                     description=pr.description,
                     # TODO
