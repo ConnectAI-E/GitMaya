@@ -112,12 +112,13 @@ class GitMayaLarkParser(object):
                 tasks.send_manage_manual.delay(*args, **kwargs)
             else:
                 # 判断 pr/issue/repo
-                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
-                if "repo" == topic_type:
+                (repo, issue, pr) = tasks.get_git_object_by_message_id(root_id)
+
+                if repo:
                     tasks.send_repo_manual.delay(*args, **kwargs)
-                # elif "issue" == topic_type:
+                # elif issue:
                 #     tasks.send_issue_manual.delay(*args, **kwargs)
-                # elif "pull_request" == topic_type:
+                # elif pr:
                 #     tasks.send_pr_manual.delay(*args, **kwargs)
                 else:
                     tasks.send_chat_manual.delay(*args, **kwargs)
