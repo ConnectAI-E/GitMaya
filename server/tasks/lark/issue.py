@@ -320,3 +320,15 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+def close_issue(app_id, message_id, content, data, *args, **kwargs):
+    # TODO
+    pass
+
+
+@celery.task()
+def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
+    # TODO
+    pass

@@ -2,6 +2,7 @@ import argparse
 import logging
 
 import tasks
+from utils.constant import TopicType
 
 
 class GitMayaLarkParser(object):
@@ -114,11 +115,11 @@ class GitMayaLarkParser(object):
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
                     if repo:
-                        topic = "repo"
+                        topic = TopicType.REPO
                     elif issue:
-                        topic = "issue"
+                        topic = TopicType.ISSUE
                     elif pr:
-                        topic = "pull_request"
+                        topic = TopicType.PULL_REQUEST
         except Exception as e:
             logging.error(e)
         return chat_type, topic
@@ -126,9 +127,9 @@ class GitMayaLarkParser(object):
     def on_comment(self, text, *args, **kwargs):
         logging.info("on_comment %r", text)
         _, topic = self._get_topic_by_args(*args)
-        if topic == "issue":
+        if topic == TopicType.ISSUE:
             tasks.create_issue_comment.delay(*args, **kwargs)
-        elif topic == "pull_request":
+        elif topic == TopicType.PULL_REQUEST:
             tasks.create_pull_request_comment.delay(*args, **kwargs)
 
     def on_help(self, param, unkown, *args, **kwargs):
@@ -137,11 +138,11 @@ class GitMayaLarkParser(object):
         if "p2p" == chat_type:
             tasks.send_manage_manual.delay(*args, **kwargs)
         else:
-            if "repo" == topic:
+            if TopicType.REPO == topic:
                 tasks.send_repo_manual.delay(*args, **kwargs)
-            elif "issue" == topic:
+            elif TopicType.ISSUE == topic:
                 tasks.send_issue_manual.delay(*args, **kwargs)
-            elif "pull_request" == topic:
+            elif TopicType.PULL_REQUEST == topic:
                 tasks.send_pull_request_manual.delay(*args, **kwargs)
             else:
                 tasks.send_chat_manual.delay(*args, **kwargs)
@@ -330,10 +331,20 @@ class GitMayaLarkParser(object):
 
     def on_close(self, param, unkown, *args, **kwargs):
         logging.info("on_close %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.close_issue.delay(*args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.close_pull_request.delay(*args, **kwargs)
         return "close", param, unkown
 
     def on_reopen(self, param, unkown, *args, **kwargs):
         logging.info("on_reopen %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.close_issue.delay(*args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.close_pull_request.delay(*args, **kwargs)
         return "reopen", param, unkown
 
     def on_at_gitmaya(self, param, unkown, *args, **kwargs):

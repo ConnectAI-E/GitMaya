@@ -305,3 +305,15 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
+    # TODO
+    pass
+
+
+@celery.task()
+def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
+    # TODO
+    pass
