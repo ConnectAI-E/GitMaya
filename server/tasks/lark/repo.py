@@ -306,7 +306,7 @@ def change_repo_collaborator(
             IMUser.id == TeamMember.im_user_id,
         )
         .filter(
-            TeamMember.team_id == team_id,
+            TeamMember.team_id == team.id,
             IMUser.openid == openid,
             CodeUser.platform == "github",
         )
