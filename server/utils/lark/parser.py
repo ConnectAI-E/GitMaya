@@ -111,6 +111,7 @@ class GitMayaLarkParser(object):
 
         # TODO 这里实际上拿到的信息是 @_user_1，需要检查是不是当前机器人
         parser_at_bot = self.subparsers.add_parser("at_user_1")
+        parser_at_bot.add_argument("command", nargs="*")
         parser_at_bot.set_defaults(func=self.on_at_bot)
 
     def _get_topic_by_args(self, *args):
@@ -396,7 +397,9 @@ class GitMayaLarkParser(object):
         user_key = raw_message["event"]["message"]["mention"][0]["key"]
         logging.info(f"user_id: {user_id}")
         logging.info(f"user_key: {user_key}")
+        # command = param.command
         content = args[2].split(" ", 1)
+
         # 判断机器人
         if user_key == "@_user_1" and user_id is None:
             command = content[1] if len(content) > 1 else None

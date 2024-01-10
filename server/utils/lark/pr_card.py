@@ -96,12 +96,22 @@ class PullCard(FeishuMessageCard):
                 FeishuMessageButton(
                     "查看 File Changed",
                     type="plain_text",
-                    value={"action": f"{pr_url}/files"},
+                    multi_url={
+                        "url": f"{pr_url}/files",
+                        "android_url": f"{pr_url}/files",
+                        "ios_url": f"{pr_url}/files",
+                        "pc_url": f"{pr_url}/files",
+                    },
                 ),
                 FeishuMessageButton(
                     "Commits Log",
                     type="plain_text",
-                    value={"action": f"{pr_url}/commits"},
+                    multi_url={
+                        "url": f"{pr_url}/commits",
+                        "android_url": f"{pr_url}/commits",
+                        "ios_url": f"{pr_url}/commits",
+                        "pc_url": f"{pr_url}/commits",
+                    },
                 ),
                 FeishuMessageButton(
                     "AI Explain",
