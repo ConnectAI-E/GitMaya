@@ -254,7 +254,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
         openid = data["event"]["sender"]["sender_id"]["open_id"]
     except Exception as e:
         message_id = content["open_message_id"]
-        bot, _ = tasks.get_bot_by_application_id(app_id)
+        bot, _ = get_bot_by_application_id(app_id)
         messages = bot.get(f"{bot.host}/open-apis/im/v1/messages/{message_id}").json()
         message = messages.get("data", {}).get("items", [])[0]
         root_id = message.get("root_id", message["message_id"])
