@@ -129,10 +129,10 @@ class GitMayaLarkParser(object):
                     root_id = raw_message["event"]["message"].get("root_id")
                 except Exception as e:
                     logging.error(e)
-                    message_id = raw_message["open_message_id"]
+                    message_id = args[2]["open_message_id"]
                     bot, _ = tasks.get_bot_by_application_id(args[0])
                     messages = bot.get(
-                        "{bot.host}/open-apis/im/v1/messages/{message_id}"
+                        f"{bot.host}/open-apis/im/v1/messages/{message_id}"
                     ).json()
                     root_id = messages.get("data", {}).get("items", [])[0]["root_id"]
 
