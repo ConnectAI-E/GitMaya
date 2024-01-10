@@ -63,7 +63,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
     if len(assignees):
         assignees = [
             openid
-            for openid in db.session.query(IMUser.openid)
+            for openid, in db.session.query(IMUser.openid)
             .join(TeamMember, TeamMember.im_user_id == IMUser.id)
             .join(
                 CodeUser,
@@ -78,7 +78,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
     if len(reviewers):
         reviewers = [
             openid
-            for openid in db.session.query(IMUser.openid)
+            for openid, in db.session.query(IMUser.openid)
             .join(TeamMember, TeamMember.im_user_id == IMUser.id)
             .join(
                 CodeUser,
