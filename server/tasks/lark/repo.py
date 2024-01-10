@@ -10,9 +10,6 @@ from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
 
-from GitMaya.server.tasks.lark import issue
-from GitMaya.server.utils.lark import issue_card
-
 from .base import *
 
 
