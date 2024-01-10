@@ -443,7 +443,7 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
         team.name,
         repo.name,
         pr.pull_request_number,
-        body=body,
+        body=desc,
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
