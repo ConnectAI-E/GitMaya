@@ -161,7 +161,11 @@ def create_issue(
     # 这里连三个表查询，所以一次性都查出来
     code_users = {
         openid: (code_user_id, code_user_name)
-        for openid, code_user_id, code_user_name in db.session.query(CodeUser.name)
+        for openid, code_user_id, code_user_name in db.session.query(
+            IMUser.openid,
+            CodeUser.user_id,
+            CodeUser.name,
+        )
         .join(
             TeamMember,
             TeamMember.code_user_id == CodeUser.id,
@@ -170,7 +174,7 @@ def create_issue(
             IMUser,
             IMUser.id == TeamMember.im_user_id,
         )
-        .filter(IMUser.open_id.in_([openid] + users))
+        .filter(IMUser.openid.in_([openid] + users))
         .all()
     }
     # 当前操作的用户

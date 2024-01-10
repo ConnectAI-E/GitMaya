@@ -53,6 +53,52 @@ def send_issue_success_tip(content, app_id, message_id, *args, bot=None, **kwarg
     return bot.reply(message_id, message).json()
 
 
+def gen_issue_card_by_issue(issue, repo_url, maunal=False):
+    assignees = issue.extra.get("assignees", [])
+    if len(assignees):
+        assignees = [
+            openid
+            for openid, in db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                CodeUser.name.in_([i["login"] for i in assignees]),
+            )
+            .all()
+        ]
+    tags = [i["name"] for i in issue.extra.get("labels", [])]
+
+    if maunal:
+        return IssueManualHelp(
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            issue_id=issue.issue_number,
+            # TODO 这里需要找到真实的值
+            # persons=[],
+            assignees=assignees,
+            tags=tags,
+        )
+
+    status = issue.extra.get("state", "opened")
+    if status == "closed":
+        status = "已关闭"
+    else:
+        status = "待完成"
+
+    return IssueCard(
+        repo_url=repo_url,
+        id=issue.issue_number,
+        title=issue.title,
+        description=issue.description,
+        status=status,
+        assignees=issue.extra.get("assignees", []),
+        tags=issue.extra.get("labels", []),
+        updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
+    )
+
+
 @celery.task()
 def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     root_id = data["event"]["message"]["root_id"]
@@ -91,14 +137,8 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
             "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
-    message = IssueManualHelp(
-        repo_url=f"https://github.com/{team.name}/{repo.name}",
-        issue_id=issue.issue_number,
-        # TODO 这里需要找到真实的值
-        persons=[],
-        assignees=[],
-        tags=[],
-    )
+    repo_url = f"https://github.com/{team.name}/{repo.name}"
+    message = gen_issue_card_by_issue(issue, repo_url, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -125,16 +165,7 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = IssueCard(
-                    repo_url=repo_url,
-                    id=issue.issue_number,
-                    title=issue.title,
-                    description=issue.description,
-                    status="待完成",
-                    assignees=[],
-                    tags=[],
-                    updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
-                )
+                message = gen_issue_card_by_issue(issue, repo_url)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -205,24 +236,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-
-                status = issue.extra.get("state", "opened")
-                if status == "closed":
-                    status = "已关闭"
-                else:
-                    status = "待完成"
-
-                message = IssueCard(
-                    repo_url=repo_url,
-                    id=issue.issue_number,
-                    title=issue.title,
-                    description=issue.description,
-                    status=status,
-                    assignees=issue.extra.get("assignees", []),
-                    tags=issue.extra.get("labels", []),
-                    updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
-                )
-
+                message = gen_issue_card_by_issue(issue, repo_url)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
