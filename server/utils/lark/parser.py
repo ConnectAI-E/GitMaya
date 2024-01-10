@@ -134,7 +134,8 @@ class GitMayaLarkParser(object):
                     messages = bot.get(
                         f"{bot.host}/open-apis/im/v1/messages/{message_id}"
                     ).json()
-                    root_id = messages.get("data", {}).get("items", [])[0]["root_id"]
+                    message = messages.get("data", {}).get("items", [])[0]
+                    root_id = message.get("root_id", message["message_id"])
 
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
