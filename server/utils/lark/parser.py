@@ -344,7 +344,9 @@ class GitMayaLarkParser(object):
         for label in param.labels:
             labels = labels + label.split(",")
         chat_type, topic = self._get_topic_by_args(*args)
-        if TopicType.ISSUE == topic:
+        if TopicType.REPO == topic:
+            tasks.change_repo_label.delay(labels, *args, **kwargs)
+        elif TopicType.ISSUE == topic:
             tasks.change_issue_label.delay(labels, *args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
             tasks.change_pull_request_label.delay(labels, *args, **kwargs)
@@ -352,10 +354,16 @@ class GitMayaLarkParser(object):
 
     def on_archive(self, param, unkown, *args, **kwargs):
         logging.info("on_archive %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_archive.delay(True, *args, **kwargs)
         return "archive", param, unkown
 
     def on_unarchive(self, param, unkown, *args, **kwargs):
         logging.info("on_unarchive %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_archive.delay(False, *args, **kwargs)
         return "unarchive", param, unkown
 
     def on_insight(self, param, unkown, *args, **kwargs):
