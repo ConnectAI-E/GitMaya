@@ -5,7 +5,9 @@ from celery_app import app, celery
 from model.schema import (
     BindUser,
     CodeApplication,
+    CodeUser,
     IMApplication,
+    IMUser,
     Repo,
     Team,
     TeamMember,
