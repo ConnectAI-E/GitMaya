@@ -3,8 +3,15 @@ import webbrowser
 from email import message
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot
-from model.schema import BindUser, Repo, Team, TeamMember, db
+from model.schema import (
+    BindUser,
+    CodeApplication,
+    IMApplication,
+    Repo,
+    Team,
+    TeamMember,
+    db,
+)
 from utils.lark.repo_info import RepoInfo
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
@@ -196,9 +203,8 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
 
     return bot.reply(message_id, message).json()
 
-
-@celery.task()
-def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
+    # @celery.task()
+    # def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
 
     repo = (
@@ -383,10 +389,18 @@ def update_repo_info(repo_id: str) -> dict | None:
         .first()
     )
 
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.application_id,
+        )
+        .first()
+    )
+
     team = (
         db.session.query(Team)
         .filter(
-            Team.id == repo.team_id,
+            Team.id == code_application.team_id,
         )
         .first()
     )
@@ -400,7 +414,7 @@ def update_repo_info(repo_id: str) -> dict | None:
     )
 
     if repo:
-        bot, application = get_bot_by_application_id(im_application.app_id)
+        bot, _ = get_bot_by_application_id(im_application.app_id)
 
         message = RepoInfo(
             repo_url=f"https://github.com/{team.name}/{repo.name}",
