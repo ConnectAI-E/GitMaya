@@ -111,6 +111,7 @@ def _get_github_app(app_id, message_id, content, data):
         )
         .first()
     )
+
     if not code_application:
         return send_repo_failed_tip(
             "找不到对应的应用", app_id, message_id, content, data, *args, **kwargs
