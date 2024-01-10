@@ -247,8 +247,7 @@ def update_issue_card(issue_id: str):
     return False
 
 
-@celery.task()
-def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
+def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     root_id = data["event"]["message"]["root_id"]
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
@@ -277,7 +276,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     )
     if not code_application:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+            "找不到对应的应用", app_id, message_id, content, data, *args, **kwargs
         )
 
     team = (
@@ -312,6 +311,14 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     )
 
     github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
+    return github_app, team, repo, issue
+
+
+@celery.task()
+def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, content["text"]
     )
@@ -324,11 +331,45 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
 @celery.task()
 def close_issue(app_id, message_id, content, data, *args, **kwargs):
-    # TODO
-    pass
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        title=issue.title,
+        body=issue.description,
+        state="closed",
+        state_reason="",
+        assignees=issue.extra.get("assignees", []),
+        labels=issue.extra.get("labels", []),
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
 
 
 @celery.task()
 def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
-    # TODO
-    pass
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        title=issue.title,
+        body=issue.description,
+        state="opened",
+        state_reason="",
+        assignees=issue.extra.get("assignees", []),
+        labels=issue.extra.get("labels", []),
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
