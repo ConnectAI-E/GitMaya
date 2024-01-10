@@ -54,7 +54,7 @@ class RepoManual(FeishuMessageCard):
                 content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
-                    f"{'Archive' if archived else 'UnArchive'} Repo",
+                    f"{'UnArchive' if archived else 'Archive'} Repo",
                     tag="lark_md",
                     type="primary" if archived else "danger",
                     value={"command": "/unarchive" if archived else "/archive"},
