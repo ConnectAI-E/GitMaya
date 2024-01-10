@@ -211,7 +211,7 @@ def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-def change_repo_desc(desc, app_id, message_id, content, data, *args, **kwargs):
+def change_repo_desc(description, app_id, message_id, content, data, *args, **kwargs):
     """编辑 Repo"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
@@ -254,7 +254,7 @@ def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs)
         repo.name,
         label,
     )
-    if "id" not in response:
+    if "names" not in response:
         return send_repo_failed_tip(
             "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
         )
