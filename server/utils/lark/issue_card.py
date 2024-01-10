@@ -51,7 +51,7 @@ class IssueCard(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(tags)}*",
+                                f"🏷 <font color='grey'>**标签** </font>\n{'、'.join(tags)}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -74,7 +74,10 @@ class IssueCard(FeishuMessageCard):
                     *[FeishuMessageOption(value=open_id) for open_id in persons],
                     placeholder="",
                     value={
-                        "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
+                        # /match_repo_id + select repo_id, with chat_id
+                        # 这里直接使用前面选中的项目名字拼接到github_url后面，就与用户输入match指令一致了
+                        "command": f"/assign ",
+                        "suffix": "$option",
                     },
                 ),
                 FeishuMessageButton(
