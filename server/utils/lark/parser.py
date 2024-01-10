@@ -268,7 +268,7 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
-        name = " ".join(param.title)
+        title = " ".join(param.title)
         chat_type, topic = self._get_topic_by_args(*args)
         if TopicType.REPO == topic:
             tasks.change_repo_name.delay(title, *args, **kwargs)
@@ -281,6 +281,9 @@ class GitMayaLarkParser(object):
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
         desc = " ".join(param.desc)
+        # 移除第一个换行字符
+        if "\n" == desc[0]:
+            desc = desc[1:]
         chat_type, topic = self._get_topic_by_args(*args)
         if TopicType.REPO == topic:
             tasks.change_repo_desc.delay(desc, *args, **kwargs)
@@ -390,8 +393,8 @@ class GitMayaLarkParser(object):
     def parse_args(self, command, *args, **kwargs):
         try:
             # edit可能是多行的，第一行可能没有空格
-            if "/edit" == command[:4]:
-                command = "/edit " + command[4:]
+            if "/edit" == command[:5]:
+                command = "/edit " + command[5:]
             argv = [a.replace("@_user", "at_user") for a in command.split(" ") if a]
             param, unkown = self.parser.parse_known_args(argv)
             return param.func(param, unkown, *args, **kwargs)

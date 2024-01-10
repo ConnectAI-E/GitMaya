@@ -384,6 +384,24 @@ def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs
 
 
 @celery.task()
+def change_issue_label(labels, app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        labels=labels,
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
 def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
