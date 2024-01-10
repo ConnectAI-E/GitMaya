@@ -382,7 +382,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
-        issue.extra.update(state="closed")
+        issue.extra.update(state="opened")
         message = gen_issue_card_by_issue(issue, repo_url, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
