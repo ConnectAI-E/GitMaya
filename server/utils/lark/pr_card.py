@@ -14,6 +14,7 @@ class PullCard(FeishuMessageCard):
         assignees=[],
         reviewers=[],
         status="待合并",
+        merged=False,
         labels=[],
         updated="2022年12月23日 16:32",
     ):
@@ -87,11 +88,17 @@ class PullCard(FeishuMessageCard):
                 background_style="grey",
             ),
             FeishuMessageAction(
-                FeishuMessageButton(
-                    "合并 PR", type="primary", value={"action": f"merge:{pr_url}"}
+                FeishuMessageButton("已合并", type="default", value={"value": ""})
+                if merged
+                else FeishuMessageButton(
+                    "合并 PR", type="primary", value={"command": f"/merge"}
                 ),
                 FeishuMessageButton(
-                    "关闭 PR", type="danger", value={"action": f"close:{pr_url}"}
+                    "重新打开 PR", type="primary", value={"command": f"/reopen"}
+                )
+                if status == "已关闭"
+                else FeishuMessageButton(
+                    "关闭 PR", type="danger", value={"command": f"/close"}
                 ),
                 FeishuMessageButton(
                     "查看 File Changed",
@@ -106,12 +113,16 @@ class PullCard(FeishuMessageCard):
                 FeishuMessageButton(
                     "AI Explain",
                     type="plain_text",
+                    value={
+                        "command": f"/explain",
+                    },
                 ),
                 FeishuMessageSelectPerson(
                     *[FeishuMessageOption(value=open_id) for open_id in persons],
                     placeholder="修改负责人",
                     value={
-                        "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
+                        "command": f"/assign ",
+                        "suffix": "$option",
                     },
                 ),
                 FeishuMessageButton(
