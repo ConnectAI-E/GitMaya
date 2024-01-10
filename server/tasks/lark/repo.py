@@ -284,6 +284,7 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
         archived=True if repo.extra.get("archived") else False,
     )
     # 卡片有一个archive按钮，可以更新状态
+    bot, _ = get_bot_by_application_id(im_application.app_id)
     bot.update(message_id=message_id, content=message)
     return response
 
