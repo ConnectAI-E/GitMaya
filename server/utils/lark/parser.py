@@ -342,9 +342,9 @@ class GitMayaLarkParser(object):
         logging.info("on_reopen %r %r", vars(param), unkown)
         _, topic = self._get_topic_by_args(*args)
         if TopicType.ISSUE == topic:
-            tasks.close_issue.delay(*args, **kwargs)
+            tasks.reopen_issue.delay(*args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
-            tasks.close_pull_request.delay(*args, **kwargs)
+            tasks.reopen_pull_request.delay(*args, **kwargs)
         return "reopen", param, unkown
 
     def on_at_gitmaya(self, param, unkown, *args, **kwargs):

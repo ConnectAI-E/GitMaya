@@ -232,8 +232,7 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
     return False
 
 
-@celery.task()
-def create_pull_request_comment(app_id, message_id, content, data, *args, **kwargs):
+def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     root_id = data["event"]["message"]["root_id"]
     _, _, pr = get_git_object_by_message_id(root_id)
     if not pr:
@@ -297,6 +296,14 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
     )
 
     github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
+    return github_app, team, repo, pr
+
+
+@celery.task()
+def create_pull_request_comment(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, pr = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
     response = github_app.create_issue_comment(
         team.name, repo.name, pr.pull_request_number, content["text"]
     )
@@ -309,11 +316,35 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 @celery.task()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    # TODO
-    pass
+    github_app, team, repo, pr = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        state="closed",
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
 
 
 @celery.task()
 def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    # TODO
-    pass
+    github_app, team, repo, pr = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        state="opened",
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
