@@ -89,6 +89,7 @@ class GitMayaLarkParser(object):
         parser_link.set_defaults(func=self.on_link)
 
         # /label [label1] [label2]
+        # /label [label1,label2]
         parser_label = self.subparsers.add_parser("/label")
         parser_label.add_argument("labels", nargs="*")
         parser_label.set_defaults(func=self.on_label)
@@ -313,11 +314,15 @@ class GitMayaLarkParser(object):
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
         # process_repo_action.delay(*args, **kwargs)
+        # 支持空格分隔label也支持逗号分隔
+        labels = []
+        for label in param.labels:
+            labels = labels + label.split(",")
         chat_type, topic = self._get_topic_by_args(*args)
         if TopicType.ISSUE == topic:
-            tasks.change_issue_label.delay(param.labels, *args, **kwargs)
+            tasks.change_issue_label.delay(labels, *args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
-            tasks.change_pull_request_label.delay(param.labels, *args, **kwargs)
+            tasks.change_pull_request_label.delay(labels, *args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
