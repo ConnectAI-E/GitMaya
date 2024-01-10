@@ -76,7 +76,13 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 def _get_github_app(app_id, message_id, content, data):
     # 通过chat_group查repo id
-    chat_id = data["event"]["message"]["chat_id"]
+    try:
+        chat_id = data["event"]["message"]["chat_id"]
+    except KeyError as e:
+        logging.error(e)
+        # card event
+        chat_id = content["open_chat_id"]
+
     logging.info(f"chat_id: {chat_id}")
 
     chat_group = get_repo_id_by_chat_group(chat_id)
