@@ -83,7 +83,7 @@ def _get_github_app(app_id, message_id, content, data):
         logging.error(e)
         # card event
         chat_id = content["open_chat_id"]
-        open_id = content["open_id"]
+        openid = content["open_id"]
 
     logging.info(f"chat_id: {chat_id}")
 
