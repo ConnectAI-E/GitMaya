@@ -226,17 +226,21 @@ class GitMayaLarkParser(object):
         # /assign [@user_1] [@user_2]
         try:
             raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
+            chat_type = raw_message.get("event", {}).get("message", {}).get("chat_type")
             mentions = {
                 m["key"].replace("@_user", "at_user"): m
-                for m in raw_message["event"]["message"].get("mentions", [])
+                for m in raw_message.get("event", {})
+                .get("message", {})
+                .get("mentions", [])
             }
             # 只有群聊才是指定的repo
-            if "group" == chat_type:
+            if "p2p" != chat_type:
                 users = []
                 for user in param.users:
                     if "at_user" in user and user in mentions:
                         users.append(mentions[user]["id"]["open_id"])
+                    elif "ou_" == user[:3]:
+                        users.append(user)
                 chat_type, topic = self._get_topic_by_args(*args)
                 if TopicType.ISSUE == topic:
                     tasks.change_issue_assignees.delay(users, *args, **kwargs)
