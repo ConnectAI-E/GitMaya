@@ -1,5 +1,6 @@
 from app import app, db
 from model.schema import BindUser, ObjID, Repo, RepoUser, User
+from utils.github.model import Repository
 from utils.github.repo import GitHubAppRepo
 
 
@@ -18,6 +19,8 @@ def create_repo_from_github(
         Repo: repo instance
     """
 
+    repo_extra = Repository(**repo).model_dump()
+
     # 检查是否已经存在
     try:
         current_repo = Repo.query.filter_by(repo_id=str(repo["id"])).first()
@@ -29,6 +32,7 @@ def create_repo_from_github(
                 repo_id=str(repo["id"]),
                 name=repo["name"],
                 description=repo["description"],
+                extra=repo_extra,
             )
             db.session.add(new_repo)
             db.session.flush()
@@ -39,6 +43,7 @@ def create_repo_from_github(
             # 更新 repo 信息
             # 暂不支持更新 repo 名称
             current_repo.description = repo["description"]
+            current_repo.extra = repo_extra
             db.session.add(current_repo)
             db.session.flush()
 

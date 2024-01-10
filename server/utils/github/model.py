@@ -29,7 +29,13 @@ class Repository(BaseModel):
     name: str
     description: Optional[str] = None
     topics: Optional[list[str]] = []
+    visibility: str  # public/private
     private: bool
+    open_issues_count: int
+    stargazers_count: int
+    forks_count: int
+
+    updated_at: str
 
 
 class Label(BaseModel):

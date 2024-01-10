@@ -147,7 +147,7 @@ class RepoInfo(FeishuMessageCard):
                     },
                 ),
             ),
-            GitMayaCardNote(f"最近更新 {updated}"),
+            GitMayaCardNote(f"最近更新 {updated.split('T')[0]}"),
         ]
         header = FeishuMessageCardHeader(f"{repo_name} 仓库信息", template="blue")
         config = FeishuMessageCardConfig()
