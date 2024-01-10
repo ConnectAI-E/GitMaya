@@ -304,6 +304,24 @@ class GitMayaLarkParser(object):
 
     def on_access(self, param, unkown, *args, **kwargs):
         logging.info("on_access %r %r", vars(param), unkown)
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            mentions = {
+                m["key"].replace("@_user", "at_user"): m
+                for m in raw_message["event"]["message"].get("mentions", [])
+            }
+            # 只有群聊才是指定的repo
+            if "group" == chat_type:
+                if param.person in mentions:
+                    openid = mentions[param.person]["id"]["open_id"]
+                    _, topic = self._get_topic_by_args(*args)
+                    if TopicType.REPO == topic:
+                        tasks.change_repo_collaborator.delay(
+                            param.permission, openid, *args, **kwargs
+                        )
+        except Exception as e:
+            logging.error(e)
         return "access", param, unkown
 
     def on_rename(self, param, unkown, *args, **kwargs):
