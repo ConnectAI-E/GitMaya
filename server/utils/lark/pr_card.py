@@ -12,19 +12,22 @@ class PullCard(FeishuMessageCard):
         description="",
         persons=[],
         assignees=[],
+        reviewers=[],
         status="待合并",
         labels=[],
         updated="2022年12月23日 16:32",
     ):
-        pr_url = f"{repo_url}/pulls/{id}"
+        pr_url = f"{repo_url}/pull/{id}"
         template = "red"
-        users = " ".join([f"[@{name}]({url})" for name, url in assignees])
+        # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
+        assignees = "".join([f"<at id={open_id}></at>" for open_id in assignees])
+        reviewers = "".join([f"<at id={open_id}></at>" for open_id in reviewers])
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
                     FeishuMessageMarkdown(
                         # TODO 替换content
-                        f"🌿  <font color='black'>**分支合并**</font>\n** [{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
+                        f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
                         text_align="left",
                     ),
                     FeishuMessageMarkdown(
@@ -46,7 +49,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"👋 <font color='grey'>**负责人**</font>\n[@River](https://open.feishu.cn/document/ugTN1YjL4UTN24CO1UjN/uUzN1YjL1cTN24SN3UjN?from=mcb)",
+                                f"👋 <font color='grey'>**负责人**</font>\n{assignees}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -56,7 +59,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"👋 <font color='grey'>**审核人**</font>\n[@River](https://open.feishu.cn/document/ugTN1YjL4UTN24CO1UjN/uUzN1YjL1cTN24SN3UjN?from=mcb)、[@Zoe](https://open.feishu.cn/document/ugTN1YjL4UTN24CO1UjN/uUzN1YjL1cTN24SN3UjN?from=mcb)",
+                                f"👋 <font color='grey'>**审核人**</font>\n{reviewers}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -66,7 +69,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🏷 <font color='grey'>**标签** </font>\n*{labels}*",
+                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(labels)}*",
                                 text_align="left",
                             ),
                             width="weighted",

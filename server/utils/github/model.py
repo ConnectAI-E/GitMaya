@@ -95,6 +95,7 @@ class PullRequest(BaseModel):
     additions: int
     deletions: int
     changed_files: int
+    requested_reviewers: Optional[list[User]] = []
 
 
 class RepoEvent(BaseEvent):

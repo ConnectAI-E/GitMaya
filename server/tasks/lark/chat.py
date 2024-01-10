@@ -158,8 +158,14 @@ def create_issue(
         )
 
     openid = data["event"]["sender"]["sender_id"]["open_id"]
-    code_user_id = (
-        db.session.query(CodeUser.user_id)
+    # 这里连三个表查询，所以一次性都查出来
+    code_users = {
+        openid: (code_user_id, code_user_name)
+        for openid, code_user_id, code_user_name in db.session.query(
+            IMUser.openid,
+            CodeUser.user_id,
+            CodeUser.name,
+        )
         .join(
             TeamMember,
             TeamMember.code_user_id == CodeUser.id,
@@ -168,20 +174,20 @@ def create_issue(
             IMUser,
             IMUser.id == TeamMember.im_user_id,
         )
-        .filter(
-            IMUser.openid == openid,
-            TeamMember.team_id == team.id,
-        )
-        .limit(1)
-        .scalar()
-    )
+        .filter(IMUser.openid.in_([openid] + users))
+        .all()
+    }
+    # 当前操作的用户
+    current_code_user_id = code_users[openid][0]
 
-    github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
+    github_app = GitHubAppRepo(
+        code_application.installation_id, user_id=current_code_user_id
+    )
     # TODO
-    assignees = []
-    labels = []
+    body = ""
+    assignees = [code_users[openid][1] for openid in users if openid in code_users]
     response = github_app.create_issue(
-        team.name, repo.name, title, "", assignees, labels
+        team.name, repo.name, title, body, assignees, labels
     )
     if "id" not in response:
         return send_chat_failed_tip(
