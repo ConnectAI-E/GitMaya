@@ -176,15 +176,19 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, users, labels = "", [], []
+                title, users, labels = [], [], []
                 for arg in param.argv:
-                    if title == "" and not "at_user" in arg and len(users) == 0:
-                        title = arg
+                    if not "at_user" in arg and len(users) == 0:
+                        title.append(arg)
                     elif "at_user" in arg:
-                        if arg in mentions:
-                            users.append(mentions[arg]["id"]["open_id"])
+                        users.append(
+                            mentions[arg]["id"]["open_id"] if arg in mentions else ""
+                        )
                     else:
                         labels = arg.split(",")
+                # 支持title中间有空格
+                title = " ".join(title)
+                users = [open_id for open_id in users if open_id]
                 tasks.create_issue.delay(title, users, labels, *args, **kwargs)
         except Exception as e:
             logging.error(e)
@@ -421,10 +425,10 @@ if __name__ == "__main__":
         "/reopen",
         "/issue",
         "/issue test_title",
-        "/issue test_title @_user_1",
-        "/issue test_title @_user_1 @_user_2",
-        "/issue test_title @_user_1 label1",
-        "/issue test_title @_user_1 label1,label2",
+        "/issue test title @_user_1",
+        "/issue test title @_user_1 @_user_2",
+        "/issue test title @_user_1 label1",
+        "/issue test title @_user_1 label1,label2",
         "/issue @_user_1",
         "/issue @_user_1 label1,label2",
         "unkown input",
