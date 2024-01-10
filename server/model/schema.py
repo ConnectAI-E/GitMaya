@@ -2,7 +2,6 @@ import copy
 import json
 import logging
 from datetime import datetime
-from enum import Enum
 from time import time
 
 import bson
@@ -11,18 +10,7 @@ from app import app, db
 from flask.cli import with_appcontext
 from flask.json.provider import DefaultJSONProvider
 from sqlalchemy import BINARY, ForeignKey, String, text
-
-
-class ErrorMsg(Enum):
-    APP_NOT_FOUND = "找不到对应的应用"
-    REPO_CHAT_GROUP_NOT_FOUND = "找不到项目群"
-    REPO_NOT_FOUND = "找不到项目群对应项目"
-    INVALID_INPUT = "输入无效"
-    OPERATION_FAILED = "操作失败"
-
-
-class SuccessMsg(Enum):
-    OPERATION_SUCCESS = "操作成功"
+from sqlalchemy.orm import aliased
 
 
 class ObjID(BINARY):
@@ -372,6 +360,10 @@ class GitObjectMessageIdRelation(db.Model):
     issue_id = db.Column(ObjID(12), nullable=True, comment="issue.id")
     pull_request_id = db.Column(ObjID(12), nullable=True, comment="pull_request.id")
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
+
+
+CodeUser = aliased(BindUser)
+IMUser = aliased(BindUser)
 
 
 class CustomJsonProvider(DefaultJSONProvider):

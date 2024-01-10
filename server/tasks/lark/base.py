@@ -4,6 +4,7 @@ from functools import wraps
 
 from connectai.lark.sdk import Bot
 from model.schema import (
+    ChatGroup,
     GitObjectMessageIdRelation,
     IMAction,
     IMApplication,
@@ -33,6 +34,31 @@ from sqlalchemy import or_
 #         return "pull_request", results.pull_request_id
 
 
+def get_repo_id_by_chat_group(chat_id):
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+
+    return chat_group
+
+
+def get_repo_name_by_repo_id(repo_id):
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    return repo.name
+
+
 def get_bot_by_application_id(app_id):
     application = (
         db.session.query(IMApplication)
@@ -56,27 +82,35 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
-    obj = (
-        db.session.query(GitObjectMessageIdRelation)
+    issue = (
+        db.session.query(Issue)
         .filter(
-            GitObjectMessageIdRelation.message_id == message_id,
+            Issue.message_id == message_id,
         )
         .first()
     )
-    repo, issue, pr = None, None, None
-    if obj:
-        if obj.repo_id:
-            repo = db.session.query(Repo).filter(Repo.id == obj.repo_id).first()
-        if obj.issue_id:
-            issue = db.session.query(Issue).filter(Issue.id == obj.issue_id).first()
-        if obj.pull_request_id:
-            pr = (
-                db.session.query(PullRequest)
-                .filter(PullRequest.id == obj.pull_request_id)
-                .first()
-            )
+    if issue:
+        return None, issue, None
+    pr = (
+        db.session.query(PullRequest)
+        .filter(
+            PullRequest.message_id == message_id,
+        )
+        .first()
+    )
+    if pr:
+        return None, None, pr
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.message_id == message_id,
+        )
+        .first()
+    )
+    if repo:
+        return repo, None, None
 
-    return repo, issue, pr
+    return None, None, None
 
 
 def with_lark_storage(event_type="message"):

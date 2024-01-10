@@ -2,6 +2,7 @@ import argparse
 import logging
 
 import tasks
+from utils.constant import TopicType
 
 
 class GitMayaLarkParser(object):
@@ -98,33 +99,53 @@ class GitMayaLarkParser(object):
         parser_reopen = self.subparsers.add_parser("/reopen")
         parser_reopen.set_defaults(func=self.on_reopen)
 
+        # TODO 这里实际上拿到的信息是 @_user_1，需要检查是不是当前机器人
         parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
         parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
-    def on_help(self, param, unkown, *args, **kwargs):
-        logging.info("on_help %r %r", vars(param), unkown)
-        # TODO call task.delay
+    def _get_topic_by_args(self, *args):
+        # 新增一个判断是不是在issue/pr/repo的话题中
+        chat_type, topic = "", ""
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
-            root_id = raw_message["event"]["message"]["root_id"]
-            if "p2p" == chat_type:
-                tasks.send_manage_manual.delay(*args, **kwargs)
-            else:
-                # 判断 pr/issue/repo
-                (repo, issue, pr) = tasks.get_git_object_by_message_id(root_id)
-
-                if repo:
-                    tasks.send_repo_manual.delay(*args, **kwargs)
-                # elif issue:
-                #     tasks.send_issue_manual.delay(*args, **kwargs)
-                # elif pr:
-                #     tasks.send_pr_manual.delay(*args, **kwargs)
-                else:
-                    tasks.send_chat_manual.delay(*args, **kwargs)
-
+            if "group" == chat_type:
+                # 判断 pr/issue/repo?
+                root_id = raw_message["event"]["message"].get("root_id")
+                if root_id:
+                    repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                    if repo:
+                        topic = TopicType.REPO
+                    elif issue:
+                        topic = TopicType.ISSUE
+                    elif pr:
+                        topic = TopicType.PULL_REQUEST
         except Exception as e:
             logging.error(e)
+        return chat_type, topic
+
+    def on_comment(self, text, *args, **kwargs):
+        logging.info("on_comment %r", text)
+        _, topic = self._get_topic_by_args(*args)
+        if topic == TopicType.ISSUE:
+            tasks.create_issue_comment.delay(*args, **kwargs)
+        elif topic == TopicType.PULL_REQUEST:
+            tasks.create_pull_request_comment.delay(*args, **kwargs)
+
+    def on_help(self, param, unkown, *args, **kwargs):
+        logging.info("on_help %r %r", vars(param), unkown)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_manual.delay(*args, **kwargs)
+        else:
+            if TopicType.REPO == topic:
+                tasks.send_repo_manual.delay(*args, **kwargs)
+            elif TopicType.ISSUE == topic:
+                tasks.send_issue_manual.delay(*args, **kwargs)
+            elif TopicType.PULL_REQUEST == topic:
+                tasks.send_pull_request_manual.delay(*args, **kwargs)
+            else:
+                tasks.send_chat_manual.delay(*args, **kwargs)
         return "help", param, unkown
 
     def on_match(self, param, unkown, *args, **kwargs):
@@ -157,15 +178,19 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, users, labels = "", [], []
+                title, users, labels = [], [], []
                 for arg in param.argv:
-                    if title == "" and not "at_user" in arg and len(users) == 0:
-                        title = arg
+                    if not "at_user" in arg and len(users) == 0:
+                        title.append(arg)
                     elif "at_user" in arg:
-                        if arg in mentions:
-                            users.append(mentions[arg]["id"]["open_id"])
+                        users.append(
+                            mentions[arg]["id"]["open_id"] if arg in mentions else ""
+                        )
                     else:
                         labels = arg.split(",")
+                # 支持title中间有空格
+                title = " ".join(title)
+                users = [open_id for open_id in users if open_id]
                 tasks.create_issue.delay(title, users, labels, *args, **kwargs)
         except Exception as e:
             logging.error(e)
@@ -180,22 +205,26 @@ class GitMayaLarkParser(object):
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
+            user_id = raw_message["event"]["sender"]["sender_id"]["open_id"]
             chat_id = raw_message["event"]["message"]["chat_id"]
-            root_id = raw_message["event"]["message"]["root_id"]
 
+            # chat/repo 发送repo主页
             if "p2p" == chat_type:
-                tasks.open_repo_url.delay(chat_id)
+                tasks.open_user_url.delay(user_id)
 
             else:
-                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
-
-                # repo/chat 打开repo主页，私聊打开个人主页
-                if "repo" == topic_type:
-                    tasks.open_repo_url.delay(chat_id)
-                # elif "issue" == topic_type:
-                #     tasks.open_issue_url.delay(topic_id)
-                # elif "pull_request" == topic_type:
-                #     tasks.open_pull_request_url.delay(topic_id)
+                # 判断 pr/issue/repo
+                root_id = raw_message["event"]["message"].get("root_id")
+                if root_id:
+                    repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                    if repo:
+                        tasks.open_repo_url.delay(chat_id)
+                    elif issue:
+                        tasks.open_issue_url.delay(root_id)
+                    elif pr:
+                        tasks.open_pr_url.delay(root_id)
+                    else:
+                        tasks.open_repo_url.delay(chat_id)
                 else:
                     tasks.open_repo_url.delay(chat_id)
 
@@ -306,10 +335,20 @@ class GitMayaLarkParser(object):
 
     def on_close(self, param, unkown, *args, **kwargs):
         logging.info("on_close %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.close_issue.delay(*args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.close_pull_request.delay(*args, **kwargs)
         return "close", param, unkown
 
     def on_reopen(self, param, unkown, *args, **kwargs):
         logging.info("on_reopen %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.reopen_issue.delay(*args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.reopen_pull_request.delay(*args, **kwargs)
         return "reopen", param, unkown
 
     def on_at_gitmaya(self, param, unkown, *args, **kwargs):
@@ -346,14 +385,12 @@ class GitMayaLarkParser(object):
 
     def parse_args(self, command, *args, **kwargs):
         try:
-            # TODO
-            # command = command.replace("@_user_1", "")
-            # command = command.replace("@_user_2", "")
             argv = [a.replace("@_user", "at_user") for a in command.split(" ") if a]
             param, unkown = self.parser.parse_known_args(argv)
             return param.func(param, unkown, *args, **kwargs)
         except Exception as e:
             logging.debug("error %r", e)
+            raise e
 
     def parse_multiple_commands(self, commands, *args, **kwargs):
         results = []
@@ -404,10 +441,10 @@ if __name__ == "__main__":
         "/reopen",
         "/issue",
         "/issue test_title",
-        "/issue test_title @_user_1",
-        "/issue test_title @_user_1 @_user_2",
-        "/issue test_title @_user_1 label1",
-        "/issue test_title @_user_1 label1,label2",
+        "/issue test title @_user_1",
+        "/issue test title @_user_1 @_user_2",
+        "/issue test title @_user_1 label1",
+        "/issue test title @_user_1 label1,label2",
         "/issue @_user_1",
         "/issue @_user_1 label1,label2",
         "unkown input",

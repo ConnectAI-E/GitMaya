@@ -24,8 +24,13 @@ class BaseGitHubApp:
         self._user_token: str = None
 
     def base_github_rest_api(
-        self, url: str, method: str = "GET", auth_type: str = "jwt", json: dict = None
-    ) -> dict | list | None:
+        self,
+        url: str,
+        method: str = "GET",
+        auth_type: str = "jwt",
+        json: dict = None,
+        raw: bool = False,
+    ) -> dict | list | httpx.Response | None:
         """Base GitHub REST API.
 
         Args:
@@ -62,6 +67,8 @@ class BaseGitHubApp:
                 },
                 json=json,
             )
+            if raw:
+                return response
             return response.json()
 
     @property

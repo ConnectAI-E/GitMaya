@@ -59,6 +59,7 @@ class Issue(BaseModel):
     created_at: str
     updated_at: str
     assignee: Optional[User] = None
+    assignees: Optional[list[User]] = []
     pull_request: Optional[PRInIssue] = None
 
 
@@ -84,6 +85,7 @@ class PullRequest(BaseModel):
     created_at: str
     updated_at: str
     assignee: Optional[User] = None
+    assignees: Optional[list[User]] = []
     base: Branch
     head: Branch
 
@@ -93,6 +95,7 @@ class PullRequest(BaseModel):
     additions: int
     deletions: int
     changed_files: int
+    requested_reviewers: Optional[list[User]] = []
 
 
 class RepoEvent(BaseEvent):

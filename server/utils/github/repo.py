@@ -59,14 +59,109 @@ class GitHubAppRepo(BaseGitHubApp):
             auth_type="install_token",
         )
 
+    def update_repo(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        description: str = None,
+        homepage: str = None,
+        private: bool = None,
+        archived: bool = None,
+    ) -> dict | None:
+        """Update GitHub repo Info
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            description (str): The repo description.
+            homepage (str): The repo homepage.
+            private (bool): The repo private.
+            archived (bool): The repo archived.
+
+        Returns:
+            dict: The repo info.
+        """
+
+        json = dict(
+            description=description,
+            homepage=homepage,
+            private=private,
+            archived=archived,
+        )
+        json = {k: v for k, v in json.items() if v is not None}
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}",
+            "PATCH",
+            "user_token",
+            json=json,
+        )
+
+    def replace_topics(
+        self, repo_onwer: str, repo_name: str, topics: list[str]
+    ) -> dict | None:
+        """Replace topics
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            topics (list[str]): The repo topics.
+
+        Returns:
+            dict: The repo info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/topics",
+            "PUT",
+            "user_token",
+            json={"names": topics},
+        )
+
+    def add_repo_collaborator(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        username: str,
+        permission: str = "pull",
+    ) -> dict | None:
+        """Add repo collaborator
+
+        Note that username should be included in the organization.
+        The GitHub API **DO** supports adding a collaborator who
+        is not a member of the organization, but here we restrict
+        members only.
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            username (str): The username.
+            permission (str): The permission. Defaults to "pull".
+
+        Returns:
+            dict: The repo info
+        """
+        res = self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/collaborators/{username}",
+            "PUT",
+            "user_token",
+            json={"permission": permission},
+            raw=True,
+        )
+
+        if res.status_code == 204:
+            return {"status": "success"}
+        else:
+            return {"status": "failed", "message": res.json()["message"]}
+
     def create_issue(
         self,
         repo_onwer: str,
         repo_name: str,
         title: str,
         body: str,
-        assignees: list[str],
-        labels: list[str],
+        assignees: list[str] = None,
+        labels: list[str] = None,
     ) -> dict | None:
         """Create issue
 
@@ -114,4 +209,44 @@ class GitHubAppRepo(BaseGitHubApp):
             "POST",
             "user_token",
             json={"body": body},
+        )
+
+    def update_issue(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        issue_number: int,
+        title: str = None,
+        body: str = None,
+        state: str = None,
+        state_reason: str = None,
+        assignees: list[str] = None,
+        labels: list[str] = None,
+    ) -> dict | None:
+        """Reopen issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            issue_number (int): The issue number.
+
+        Returns:
+            dict: The issue info.
+        """
+
+        json = dict(
+            title=title,
+            body=body,
+            state=state,
+            state_reason=state_reason,
+            assignees=assignees,
+            labels=labels,
+        )
+        json = {k: v for k, v in json.items() if v is not None}
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
+            "PATCH",
+            "user_token",
+            json=json,
         )

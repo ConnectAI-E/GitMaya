@@ -51,7 +51,9 @@ class IssueManualHelp(FeishuMessageCard):
                     value={
                         "key": "value",  # TODO
                     },
-                ),
+                )
+                if len(tags)
+                else None,
             ),
             FeishuMessageDiv(
                 content="** 🔝 置顶 Issue**\n*话题下回复「/pin」/「/unpin」 *",
@@ -81,7 +83,7 @@ class IssueManualHelp(FeishuMessageCard):
                 tag="lark_md",
             ),
             FeishuMessageDiv(
-                content="** ⚡️ 查看更多 Issue 信息 **\n*话题下回复「/view」 *",
+                content="** ⚡️ 查看更多 Issue 信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器中打开",

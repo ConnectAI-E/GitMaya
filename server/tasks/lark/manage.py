@@ -1,4 +1,5 @@
 import logging
+import webbrowser
 from math import log
 
 from celery_app import app, celery
@@ -15,8 +16,6 @@ from model.schema import (
     TeamMember,
     db,
 )
-
-# from repo import send_repo_info
 from sqlalchemy.orm import aliased
 from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual

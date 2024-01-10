@@ -3,7 +3,18 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
-from model.schema import ChatGroup, Issue, Repo, Team, db
+from model.schema import (
+    ChatGroup,
+    CodeApplication,
+    CodeUser,
+    IMUser,
+    Issue,
+    Repo,
+    Team,
+    TeamMember,
+    db,
+)
+from utils.github.repo import GitHubAppRepo
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp
 from utils.lark.issue_tip_failed import IssueTipFailed
@@ -40,6 +51,52 @@ def send_issue_success_tip(content, app_id, message_id, *args, bot=None, **kwarg
         bot, _ = get_bot_by_application_id(app_id)
     message = IssueTipSuccess(content=content)
     return bot.reply(message_id, message).json()
+
+
+def gen_issue_card_by_issue(issue, repo_url, maunal=False):
+    assignees = issue.extra.get("assignees", [])
+    if len(assignees):
+        assignees = [
+            openid
+            for openid, in db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                CodeUser.name.in_([i["login"] for i in assignees]),
+            )
+            .all()
+        ]
+    tags = [i["name"] for i in issue.extra.get("labels", [])]
+
+    if maunal:
+        return IssueManualHelp(
+            repo_url=repo_url,
+            issue_id=issue.issue_number,
+            # TODO 这里需要找到真实的值
+            # persons=[],
+            assignees=assignees,
+            tags=tags,
+        )
+
+    status = issue.extra.get("state", "opened")
+    if status == "closed":
+        status = "已关闭"
+    else:
+        status = "待完成"
+
+    return IssueCard(
+        repo_url=repo_url,
+        id=issue.issue_number,
+        title=issue.title,
+        description=issue.description,
+        status=status,
+        assignees=assignees,
+        tags=tags,
+        updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
+    )
 
 
 @celery.task()
@@ -80,14 +137,8 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
             "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
-    message = IssueManualHelp(
-        repo_url=f"https://github.com/{team.name}/{repo.name}",
-        issue_id=issue.issue_number,
-        # TODO 这里需要找到真实的值
-        persons=[],
-        assignees=[],
-        tags=[],
-    )
+    repo_url = f"https://github.com/{team.name}/{repo.name}"
+    message = gen_issue_card_by_issue(issue, repo_url, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -114,16 +165,7 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = IssueCard(
-                    repo_url=repo_url,
-                    id=issue.issue_number,
-                    title=issue.title,
-                    description=issue.description,
-                    status="待完成",
-                    assignees=[],
-                    tags=[],
-                    updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
-                )
+                message = gen_issue_card_by_issue(issue, repo_url)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -194,24 +236,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-
-                status = issue.extra.get("state", "opened")
-                if status == "closed":
-                    status = "已关闭"
-                else:
-                    status = "待完成"
-
-                message = IssueCard(
-                    repo_url=repo_url,
-                    id=issue.issue_number,
-                    title=issue.title,
-                    description=issue.description,
-                    status=status,
-                    assignees=issue.extra.get("assignees", []),
-                    tags=issue.extra.get("labels", []),
-                    updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
-                )
-
+                message = gen_issue_card_by_issue(issue, repo_url)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -220,3 +245,121 @@ def update_issue_card(issue_id: str):
                 return result.json()
 
     return False
+
+
+def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
+    root_id = data["event"]["message"]["root_id"]
+    _, issue, _ = get_git_object_by_message_id(root_id)
+    if not issue:
+        return send_issue_failed_tip(
+            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == issue.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return send_issue_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.application_id,
+        )
+        .first()
+    )
+    if not code_application:
+        return send_issue_failed_tip(
+            "找不到对应的应用", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == code_application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    openid = data["event"]["sender"]["sender_id"]["open_id"]
+    code_user_id = (
+        db.session.query(CodeUser.user_id)
+        .join(
+            TeamMember,
+            TeamMember.code_user_id == CodeUser.id,
+        )
+        .join(
+            IMUser,
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(
+            IMUser.openid == openid,
+            TeamMember.team_id == team.id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
+    return github_app, team, repo, issue
+
+
+@celery.task()
+def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.create_issue_comment(
+        team.name, repo.name, issue.issue_number, content["text"]
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "同步消息失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
+def close_issue(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        state="closed",
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
+def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        state="opened",
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response

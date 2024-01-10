@@ -3,8 +3,18 @@ import logging
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import ChatGroup, Repo, Team, db
+from model.schema import (
+    ChatGroup,
+    CodeApplication,
+    CodeUser,
+    IMUser,
+    Repo,
+    Team,
+    TeamMember,
+    db,
+)
 from sqlalchemy.orm import aliased
+from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
@@ -84,11 +94,6 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
 def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
-    bot, application = get_bot_by_application_id(app_id)
-    if not application:
-        return send_chat_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
-        )
     if not title:
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
@@ -103,19 +108,89 @@ def create_issue(
             "issue 标题为空", app_id, message_id, content, data, *args, bot=bot, **kwargs
         )
 
-    # TODO 调用github api生成issue
-    # create_github_issue(title, users, labels)
-    message = IssueCard(
-        repo_url="https://github.com/ConnectAI-E/GitMaya",
-        id=16,
-        title="优化 OpenAI 默认返回的表格在飞书对话中的呈现",
-        description="💬  <font color='black'>**主要内容**</font>\n功能改善建议 🚀\n优化 OpenAI 默认返回的表格在飞书对话中的呈现。\n\n## 您的建议是什么？ 🤔\n\n当前问题1：当要求 OpenAI 使用表格对内容进行格式化返回时，默认会返回 Markdown 格式的文本形式，在飞书对话中显示会很混乱，特别是在手机上查看时。\n\n当前问题2：飞书对话默认不支持 Markdown 语法表格的可视化。\n\n功能预期：返回对话消息如果识别为包含表格内容，支持将内容输出至飞书多维表格，并在对话中返回相应链接。",
-        status="待完成",
-        assignees=users,
-        tags=labels,
-        updated="2022年12月23日 16:32",
-    )
-    # return bot.reply(message_id, message).json()
-    # TODO 回复或者直接发卡片
     chat_id = data["event"]["message"]["chat_id"]
-    return bot.send(chat_id, message, receive_id_type="chat_id").json()
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+        )
+        .first()
+    )
+    if not chat_group:
+        return send_chat_failed_tip(
+            "找不到项目群", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == chat_group.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return send_issue_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.application_id,
+        )
+        .first()
+    )
+    if not code_application:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == code_application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    openid = data["event"]["sender"]["sender_id"]["open_id"]
+    # 这里连三个表查询，所以一次性都查出来
+    code_users = {
+        openid: (code_user_id, code_user_name)
+        for openid, code_user_id, code_user_name in db.session.query(
+            IMUser.openid,
+            CodeUser.user_id,
+            CodeUser.name,
+        )
+        .join(
+            TeamMember,
+            TeamMember.code_user_id == CodeUser.id,
+        )
+        .join(
+            IMUser,
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(IMUser.openid.in_([openid] + users))
+        .all()
+    }
+    # 当前操作的用户
+    current_code_user_id = code_users[openid][0]
+
+    github_app = GitHubAppRepo(
+        code_application.installation_id, user_id=current_code_user_id
+    )
+    # TODO
+    body = ""
+    assignees = [code_users[openid][1] for openid in users if openid in code_users]
+    response = github_app.create_issue(
+        team.name, repo.name, title, body, assignees, labels
+    )
+    if "id" not in response:
+        return send_chat_failed_tip(
+            "创建issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response

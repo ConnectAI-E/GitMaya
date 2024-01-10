@@ -4,21 +4,7 @@ from email import message
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from lark import *
-from model.schema import (
-    BindUser,
-    ChatGroup,
-    CodeApplication,
-    ErrorMsg,
-    IMApplication,
-    ObjID,
-    Repo,
-    SuccessMsg,
-    Team,
-    User,
-    db,
-)
-from sqlalchemy import func, or_
+from model.schema import BindUser, Repo, Team, TeamMember, db
 from utils.lark.repo_info import RepoInfo
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
@@ -31,7 +17,7 @@ from .base import *
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
     chat_group = get_repo_id_by_chat_group(chat_id)
 
-    repo = get_repo_name_by_repo_id(chat_group.repo_id)
+    repo_name = get_repo_name_by_repo_id(chat_group.repo_id)
     team = (
         db.session.query(Team)
         .filter(
@@ -40,7 +26,7 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
         )
         .first()
     )
-    return f"https://github.com/{team.name}/{repo.name}"
+    return f"https://github.com/{team.name}/{repo_name}"
 
 
 @celery.task()
@@ -55,10 +41,14 @@ def open_repo_url(chat_id):
 
 
 @celery.task()
-def open_repo_insight(chat_id):
+def open_issue_url(message_id):
     try:
-        url = get_repo_url_by_chat_id(chat_id)
-        webbrowser.open(f"{url}/pulse")
+        url = get_repo_url_by_chat_id(message_id)
+        issue = db.session.query(Issue).filter(
+            Issue.message_id == message_id,
+            Issue.status == 0,
+        )
+        webbrowser.open(f"{url}/issues/{issue.issue_number}")
         return True
     except Exception as e:
         logging.error(e)
@@ -66,25 +56,39 @@ def open_repo_insight(chat_id):
 
 
 @celery.task()
-def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
-    chat_group = get_repo_id_by_chat_group(chat_id)
-
-    repo = get_repo_name_by_repo_id(chat_group.repo_id)
-    team = (
-        db.session.query(Team)
-        .filter(
-            Team.id == chat_group.team_id,
-            Team.status == 0,
+def open_pr_url(message_id):
+    try:
+        url = get_repo_url_by_chat_id(message_id)
+        pr = db.session.query(PullRequest).filter(
+            PullRequest.message_id == message_id,
+            PullRequest.status == 0,
         )
-        .first()
-    )
-    return f"https://github.com/{team.name}/{repo.name}"
+        webbrowser.open(f"{url}/pull/{pr.pull_request_number}")
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
 
 
 @celery.task()
-def open_repo_url(chat_id):
+def open_user_url(user_id):
     try:
-        url = get_repo_url_by_chat_id(chat_id)
+        # 从 从im的user_id获取绑定GitHub的name
+        github_bind_users = (
+            db.session.query(BindUser)
+            .join(
+                TeamMember,
+                TeamMember.im_user_id == BindUser.id,
+            )
+            .filter(
+                TeamMember.im_user_id == user_id,
+                TeamMember.status == 0,
+                BindUser.status == 0,
+            )
+            .all()
+        )
+
+        url = f"https://github.com/{github_bind_users.name}"
         webbrowser.open(url)
         return True
     except Exception as e:
@@ -140,8 +144,8 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-@with_lark_storage("repo_manual")
-def send_repo_manual(app_id, message_id, data, *args, **kwargs):
+# @with_lark_storage("repo_manual")
+def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
 
@@ -154,10 +158,16 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
         dict: The JSON response from the bot.
 
     """
+    # try:
     bot, application = get_bot_by_application_id(app_id)
 
     # 通过chat_group查repo id
-    chat_group = get_repo_id_by_chat_group(data)
+    chat_id = data["event"]["message"]["chat_id"]
+    logging.info(f"chat_id: {chat_id}")
+
+    chat_group = get_repo_id_by_chat_group(chat_id)
+    logging.info(f"chat_group: {chat_group}")
+
     repo = (
         db.session.query(Repo)
         .filter(
@@ -166,20 +176,24 @@ def send_repo_manual(app_id, message_id, data, *args, **kwargs):
         )
         .first()
     )
-    if repo:
-        team = (
-            db.session.query(Team)
-            .filter(
-                Team.id == application.team_id,
-            )
-            .first()
+    logging.info(f"repo: {repo}")
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
         )
-        message = RepoManual(
-            repo_url=f"https://github.com/{team.name}/{repo.name}",
-            repo_name=repo.name,
-            repo_description=repo.description,
-            visibility=repo.extra.get("visibility", "public"),
-        )
+        .first()
+    )
+    message = RepoManual(
+        repo_url=f"https://github.com/{team.name}/{repo.name}",
+        repo_name=repo.name,
+        visibility=repo.extra.get("visibility", "public"),
+    )
+
+    # except Exception as e:
+    #     logging.error(e)
+
     return bot.reply(message_id, message).json()
 
 

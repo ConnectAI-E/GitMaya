@@ -1,4 +1,5 @@
 import os
+from argparse import ArgumentError
 
 from app import app
 from connectai.lark.oauth import Server as OauthServerBase
@@ -63,6 +64,9 @@ def on_text_message(bot, message_id, content, *args, **kwargs):
     # bot.reply_text(message_id, "reply: " + text)
     try:
         parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
+    except ArgumentError:
+        # 命令解析错误，直接调用里面的回复消息逻辑
+        parser.on_comment(text, bot.app_id, message_id, content, *args, **kwargs)
     except Exception as e:
         app.logger.exception(e)
 
