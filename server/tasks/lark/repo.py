@@ -78,10 +78,12 @@ def _get_github_app(app_id, message_id, content, data):
     # 通过chat_group查repo id
     try:
         chat_id = data["event"]["message"]["chat_id"]
+        openid = data["event"]["sender"]["sender_id"]["open_id"]
     except KeyError as e:
         logging.error(e)
         # card event
         chat_id = content["open_chat_id"]
+        open_id = content["open_id"]
 
     logging.info(f"chat_id: {chat_id}")
 
@@ -126,7 +128,6 @@ def _get_github_app(app_id, message_id, content, data):
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
-    openid = data["event"]["sender"]["sender_id"]["open_id"]
     code_user_id = (
         db.session.query(CodeUser.user_id)
         .join(
