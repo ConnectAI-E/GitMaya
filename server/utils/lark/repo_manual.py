@@ -8,7 +8,8 @@ class RepoManual(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_description="GitMaya is a GitHub App for Feishu.",
         visibility="public",
-        statuses=["public", "private", "internal"],
+        statuses=["public", "private"],
+        archived=False,
     ):
         elements = [
             GitMayaTitle(),
@@ -21,13 +22,12 @@ class RepoManual(FeishuMessageCard):
                         FeishuMessageOption(value=status, content=status)
                         for status in statuses
                     ],
-                    placeholder=visibility,
+                    placeholder="",
                     value={
-                        "key": "value",
+                        "command": f"/visit ",
+                        "suffix": "$option",
                     },
-                )
-                if len(visibility) > 0
-                else None,
+                ),
             ),
             FeishuMessageDiv(
                 content="** 🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",
@@ -53,17 +53,11 @@ class RepoManual(FeishuMessageCard):
             FeishuMessageDiv(
                 content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
                 tag="lark_md",
-                # TODO
                 extra=FeishuMessageButton(
-                    "Archive Repo",
+                    f"{'UnArchive' if archived else 'Archive'} Repo",
                     tag="lark_md",
-                    type="danger",
-                    multi_url={
-                        "url": repo_url,
-                        "android_url": repo_url,
-                        "ios_url": repo_url,
-                        "pc_url": repo_url,
-                    },
+                    type="primary" if archived else "danger",
+                    value={"command": "/unarchive" if archived else "/archive"},
                 ),
             ),
             FeishuMessageDiv(

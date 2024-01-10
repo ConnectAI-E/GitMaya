@@ -118,10 +118,24 @@ class GitMayaLarkParser(object):
         chat_type, topic = "", ""
         try:
             raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
-            if "group" == chat_type:
+            try:
+                chat_type = raw_message["event"]["message"]["chat_type"]
+            except Exception as e:
+                logging.error(e)
+                chat_type = ""
+            if "p2p" != chat_type:
                 # 判断 pr/issue/repo?
-                root_id = raw_message["event"]["message"].get("root_id")
+                try:
+                    root_id = raw_message["event"]["message"].get("root_id")
+                except Exception as e:
+                    logging.error(e)
+                    message_id = args[2]["open_message_id"]
+                    bot, _ = tasks.get_bot_by_application_id(args[0])
+                    messages = bot.get(
+                        f"{bot.host}/open-apis/im/v1/messages/{message_id}"
+                    ).json()
+                    root_id = messages.get("data", {}).get("items", [])[0]["root_id"]
+
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
                     if repo:
@@ -344,7 +358,9 @@ class GitMayaLarkParser(object):
         for label in param.labels:
             labels = labels + label.split(",")
         chat_type, topic = self._get_topic_by_args(*args)
-        if TopicType.ISSUE == topic:
+        if TopicType.REPO == topic:
+            tasks.change_repo_label.delay(labels, *args, **kwargs)
+        elif TopicType.ISSUE == topic:
             tasks.change_issue_label.delay(labels, *args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
             tasks.change_pull_request_label.delay(labels, *args, **kwargs)
@@ -352,10 +368,16 @@ class GitMayaLarkParser(object):
 
     def on_archive(self, param, unkown, *args, **kwargs):
         logging.info("on_archive %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_archive.delay(True, *args, **kwargs)
         return "archive", param, unkown
 
     def on_unarchive(self, param, unkown, *args, **kwargs):
         logging.info("on_unarchive %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_archive.delay(False, *args, **kwargs)
         return "unarchive", param, unkown
 
     def on_insight(self, param, unkown, *args, **kwargs):

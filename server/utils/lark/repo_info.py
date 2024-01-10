@@ -8,6 +8,7 @@ class RepoInfo(FeishuMessageCard):
         repo_name="GitMaya",
         repo_description="aaaaaaaaaa",
         repo_topic=["aaa", "ccc"],
+        homepage="",
         visibility="私有仓库",
         updated="2022年12月23日 16:32",
         open_issues_count=0,
@@ -37,7 +38,7 @@ class RepoInfo(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**🌐 Homepage：**\n{repo_url}",
+                                f"**🌐 Homepage：**\n{homepage}",
                                 text_align="left",
                             ),
                             width="weighted",
