@@ -6,6 +6,7 @@ class RepoManual(FeishuMessageCard):
         self,
         repo_name="GitMaya",
         repo_url="https://github.com/ConnectAI-E/GitMaya",
+        repo_description="GitMaya is a GitHub App for Feishu.",
         visibility="public",
         statuses=["public", "private", "internal"],
     ):

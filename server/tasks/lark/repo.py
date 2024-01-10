@@ -132,7 +132,6 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     message = RepoManual(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
         repo_name=repo.name,
-        repo_description=repo.description,
         visibility=repo.extra.get("visibility", "public"),
     )
 
