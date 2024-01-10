@@ -32,7 +32,7 @@ class Repository(BaseModel):
     visibility: str  # public/private
     private: bool
     archived: bool
-    homepage: str = None
+    homepage: Optional[str] = None
     open_issues_count: int
     stargazers_count: int
     forks_count: int
