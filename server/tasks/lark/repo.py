@@ -1,5 +1,6 @@
 import logging
-import webbrowser
+
+# import webbrowser
 from email import message
 
 from celery_app import app, celery
@@ -40,7 +41,7 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 def open_repo_url(chat_id):
     try:
         url = get_repo_url_by_chat_id(chat_id)
-        webbrowser.open(url)
+        # webbrowser.open(url)
         return True
     except Exception as e:
         logging.error(e)
@@ -55,7 +56,7 @@ def open_issue_url(message_id):
             Issue.message_id == message_id,
             Issue.status == 0,
         )
-        webbrowser.open(f"{url}/issues/{issue.issue_number}")
+        # webbrowser.open(f"{url}/issues/{issue.issue_number}")
         return True
     except Exception as e:
         logging.error(e)
@@ -70,7 +71,7 @@ def open_pr_url(message_id):
             PullRequest.message_id == message_id,
             PullRequest.status == 0,
         )
-        webbrowser.open(f"{url}/pull/{pr.pull_request_number}")
+        # webbrowser.open(f"{url}/pull/{pr.pull_request_number}")
         return True
     except Exception as e:
         logging.error(e)
@@ -96,7 +97,7 @@ def open_user_url(user_id):
         )
 
         url = f"https://github.com/{github_bind_users.name}"
-        webbrowser.open(url)
+        # webbrowser.open(url)
         return True
     except Exception as e:
         logging.error(e)
@@ -107,7 +108,7 @@ def open_user_url(user_id):
 def open_repo_insight(chat_id):
     try:
         url = get_repo_url_by_chat_id(chat_id)
-        webbrowser.open(f"{url}/pulse")
+        # webbrowser.open(f"{url}/pulse")
         return True
     except Exception as e:
         logging.error(e)
@@ -151,7 +152,7 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
 
 
 @celery.task()
-# @with_lark_storage("repo_manual")
+@with_lark_storage("repo_manual")
 def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     """
     Send repository manual to a chat group.
@@ -203,8 +204,10 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
 
     return bot.reply(message_id, message).json()
 
-    # @celery.task()
-    # def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
+
+@celery.task()
+@with_lark_storage("send_repo_info")
+def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
 
     repo = (

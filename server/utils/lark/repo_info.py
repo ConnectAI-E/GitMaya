@@ -7,7 +7,7 @@ class RepoInfo(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
         repo_description="aaaaaaaaaa",
-        repo_topic=[],
+        repo_topic=["aaa", "ccc"],
         visibility="私有仓库",
         updated="2022年12月23日 16:32",
         open_issues_count=0,
