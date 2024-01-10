@@ -94,11 +94,11 @@ class PullCard(FeishuMessageCard):
                     "合并 PR", type="primary", value={"command": f"/merge"}
                 ),
                 FeishuMessageButton(
-                    "关闭 PR", type="danger", value={"command": f"/close"}
+                    "重新打开 PR", type="primary", value={"command": f"/reopen"}
                 )
                 if status == "已关闭"
                 else FeishuMessageButton(
-                    "重新打开 PR", type="primary", value={"command": f"/reopen"}
+                    "关闭 PR", type="danger", value={"command": f"/close"}
                 ),
                 FeishuMessageButton(
                     "查看 File Changed",
