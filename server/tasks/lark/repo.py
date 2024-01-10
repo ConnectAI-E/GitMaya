@@ -213,24 +213,18 @@ def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
 @celery.task()
 def change_repo_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     """编辑 Repo"""
-    bot, application = get_bot_by_application_id(app_id)
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == repo_id,
-        )
-        .first()
+    github_app, team, repo = _get_github_app(app_id, message_id, content, data)
+
+    response = github_app.update_repo(
+        team.name,
+        repo.name,
+        description=description,
     )
-
-    if repo:
-        # TODO 修改 repo 描述, 调用github api，修改数据库和调用api要用事务
-        repo.description = desc
-        db.session.commit()
-
-        message = RepoTipSuccess(f"已成功修改 {repo.description} 仓库描述为 {desc}")
-        return bot.reply(message_id, message).json()
-
-    return bot.reply(message_id, message).json()
+    if "id" not in response:
+        return send_repo_failed_tip(
+            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
 
 
 @celery.task()
