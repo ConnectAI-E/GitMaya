@@ -31,6 +31,7 @@ class Repository(BaseModel):
     topics: Optional[list[str]] = []
     visibility: str  # public/private
     private: bool
+    archived: bool
     open_issues_count: int
     stargazers_count: int
     forks_count: int
