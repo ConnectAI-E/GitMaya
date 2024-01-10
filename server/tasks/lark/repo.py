@@ -281,9 +281,10 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
         repo_url=f"https://github.com/{team.name}/{repo.name}",
         repo_name=repo.name,
         visibility=repo.extra.get("visibility", "public"),
-        archived=True if repo.extra.get("archived") else False,
+        archived=archived,
     )
     # 卡片有一个archive按钮，可以更新状态
+    # TODO 这里延迟处理才能更新状态?
     bot, _ = get_bot_by_application_id(app_id)
     bot.update(message_id=message_id, content=message)
     return response
