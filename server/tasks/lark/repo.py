@@ -428,7 +428,7 @@ def update_repo_info(repo_id: str) -> dict | None:
             updated=repo.extra.get("updated_at", ""),
         )
 
-        return bot.update(message_id=repo.message_id, message=message).json()
+        return bot.update(message_id=repo.message_id, content=message).json()
     else:
         app.logger.error(f"Repo {repo_id} not found")
         return None
