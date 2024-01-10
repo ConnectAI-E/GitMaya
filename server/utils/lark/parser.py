@@ -204,22 +204,26 @@ class GitMayaLarkParser(object):
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
+            user_id = raw_message["event"]["sender"]["sender_id"]["open_id"]
             chat_id = raw_message["event"]["message"]["chat_id"]
-            root_id = raw_message["event"]["message"]["root_id"]
 
+            # chat/repo 发送repo主页
             if "p2p" == chat_type:
-                tasks.open_repo_url.delay(chat_id)
+                tasks.open_user_url.delay(user_id)
 
             else:
-                topic_type, topic_id = tasks.get_topic_type_by_message_id(root_id)
-
-                # repo/chat 打开repo主页，私聊打开个人主页
-                if "repo" == topic_type:
-                    tasks.open_repo_url.delay(chat_id)
-                # elif "issue" == topic_type:
-                #     tasks.open_issue_url.delay(topic_id)
-                # elif "pull_request" == topic_type:
-                #     tasks.open_pull_request_url.delay(topic_id)
+                # 判断 pr/issue/repo
+                root_id = raw_message["event"]["message"].get("root_id")
+                if root_id:
+                    repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                    if repo:
+                        tasks.open_repo_url.delay(chat_id)
+                    elif issue:
+                        tasks.open_issue_url.delay(root_id)
+                    elif pr:
+                        tasks.open_pr_url.delay(root_id)
+                    else:
+                        tasks.open_repo_url.delay(chat_id)
                 else:
                     tasks.open_repo_url.delay(chat_id)
 

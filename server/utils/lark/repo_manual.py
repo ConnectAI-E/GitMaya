@@ -6,6 +6,7 @@ class RepoManual(FeishuMessageCard):
         self,
         repo_name="GitMaya",
         repo_url="https://github.com/ConnectAI-E/GitMaya",
+        repo_description="GitMaya is a GitHub App for Feishu.",
         visibility="public",
         statuses=["public", "private", "internal"],
     ):
@@ -52,6 +53,7 @@ class RepoManual(FeishuMessageCard):
             FeishuMessageDiv(
                 content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
                 tag="lark_md",
+                # TODO
                 extra=FeishuMessageButton(
                     "Archive Repo",
                     tag="lark_md",
