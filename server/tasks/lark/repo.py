@@ -323,7 +323,7 @@ def change_repo_collaborator(
         username,
         permission,
     )
-    if "id" not in response:
+    if "status" not in response or response["status"] != "success":
         return send_repo_failed_tip(
             "添加人员失败", app_id, message_id, content, data, *args, **kwargs
         )
