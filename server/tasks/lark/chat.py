@@ -13,6 +13,7 @@ from model.schema import (
     TeamMember,
     db,
 )
+from model.team import get_code_users_by_openid
 from sqlalchemy.orm import aliased
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual
@@ -159,24 +160,7 @@ def create_issue(
 
     openid = data["event"]["sender"]["sender_id"]["open_id"]
     # 这里连三个表查询，所以一次性都查出来
-    code_users = {
-        openid: (code_user_id, code_user_name)
-        for openid, code_user_id, code_user_name in db.session.query(
-            IMUser.openid,
-            CodeUser.user_id,
-            CodeUser.name,
-        )
-        .join(
-            TeamMember,
-            TeamMember.code_user_id == CodeUser.id,
-        )
-        .join(
-            IMUser,
-            IMUser.id == TeamMember.im_user_id,
-        )
-        .filter(IMUser.openid.in_([openid] + users))
-        .all()
-    }
+    code_users = get_code_users_by_openid([openid] + users)
     # 当前操作的用户
     current_code_user_id = code_users[openid][0]
 

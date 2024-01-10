@@ -14,6 +14,7 @@ from model.schema import (
     TeamMember,
     db,
 )
+from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
 from utils.lark.pr_card import PullCard
 from utils.lark.pr_manual import PrManual
@@ -443,6 +444,27 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
         repo.name,
         pr.pull_request_number,
         body=body,
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
+def change_pull_request_assignees(
+    users, app_id, message_id, content, data, *args, **kwargs
+):
+    github_app, team, repo, pr = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    assignees = get_assignees_by_openid(users)
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        assignees=assignees,
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
