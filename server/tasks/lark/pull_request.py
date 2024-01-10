@@ -391,3 +391,21 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, pr = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        body=body,
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
