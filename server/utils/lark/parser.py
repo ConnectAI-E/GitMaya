@@ -102,7 +102,7 @@ class GitMayaLarkParser(object):
         parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
         parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
-    def _get_topic_by_args(*args):
+    def _get_topic_by_args(self, *args):
         # 新增一个判断是不是在issue/pr/repo的话题中
         chat_type, topic = "", ""
         try:

@@ -73,7 +73,7 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
 
     if maunal:
         return IssueManualHelp(
-            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_url=repo_url,
             issue_id=issue.issue_number,
             # TODO 这里需要找到真实的值
             # persons=[],
@@ -93,8 +93,8 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
         title=issue.title,
         description=issue.description,
         status=status,
-        assignees=issue.extra.get("assignees", []),
-        tags=issue.extra.get("labels", []),
+        assignees=assignees,
+        tags=tags,
         updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
     )
 
