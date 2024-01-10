@@ -170,7 +170,7 @@ def on_repository_updated(event_dict: dict | None) -> list[str]:
     repo = (
         db.session.query(Repo)
         .filter(
-            Repo.id == event.repository.id,
+            Repo.repo_id == event.repository.id,
         )
         .first()
     )
