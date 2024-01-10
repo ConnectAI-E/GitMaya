@@ -68,18 +68,27 @@ class GitMayaLarkParser(object):
         parser_access.add_argument("person", nargs="?")
         parser_access.set_defaults(func=self.on_access)
 
+        # /assign [@user_1] [@user_2]
+        parser_assign = self.subparsers.add_parser("/assign")
+        parser_assign.add_argument("argv", nargs="*")
+        parser_assign.set_defaults(func=self.on_access)
+
+        # /rename [title]  tit需要支持空格
         parser_rename = self.subparsers.add_parser("/rename")
-        parser_rename.add_argument("name", nargs="?")
+        parser_rename.add_argument("title", nargs="*")
         parser_rename.set_defaults(func=self.on_rename)
 
+        # /edit\n new body
         parser_edit = self.subparsers.add_parser("/edit")
-        parser_edit.add_argument("name", nargs="?")
+        # 这里处理body，就直接从content里面拿
+        parser_edit.add_argument("desc", nargs="*")
         parser_edit.set_defaults(func=self.on_edit)
 
         parser_link = self.subparsers.add_parser("/link")
         parser_link.add_argument("homepage", nargs="?")
         parser_link.set_defaults(func=self.on_link)
 
+        # /label [label1] [label2]
         parser_label = self.subparsers.add_parser("/label")
         parser_label.add_argument("name", nargs="?")
         parser_label.set_defaults(func=self.on_label)
@@ -276,19 +285,14 @@ class GitMayaLarkParser(object):
 
     def on_edit(self, param, unkown, *args, **kwargs):
         logging.info("on_edit %r %r", vars(param), unkown)
-        if not param.desc:
-            logging.error("return")
-            tasks.send_repo_failed_tip.delay(
-                "desc is empty",
-                *args,
-                **kwargs,
-            )
-        else:
-            tasks.change_repo_desc.delay(
-                param.desc,
-                *args,
-                **kwargs,
-            )
+        desc = " ".join(param.desc)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_desc.delay(desc, *args, **kwargs)
+        elif TopicType.ISSUE == topic:
+            tasks.change_issue_desc.delay(desc, *args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.change_pull_request_desc.delay(desc, *args, **kwargs)
         return "edit", param, unkown
 
     def on_link(self, param, unkown, *args, **kwargs):
@@ -385,6 +389,9 @@ class GitMayaLarkParser(object):
 
     def parse_args(self, command, *args, **kwargs):
         try:
+            # edit可能是多行的，第一行可能没有空格
+            if "/edit" == command[:4]:
+                command = "/edit " + command[4:]
             argv = [a.replace("@_user", "at_user") for a in command.split(" ") if a]
             param, unkown = self.parser.parse_known_args(argv)
             return param.func(param, unkown, *args, **kwargs)
