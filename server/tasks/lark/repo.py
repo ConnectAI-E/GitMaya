@@ -4,11 +4,14 @@ from email import message
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot
-from model.schema import Repo, Team, db
+from model.schema import BindUser, Repo, Team, TeamMember, db
 from utils.lark.repo_info import RepoInfo
 from utils.lark.repo_manual import RepoManual
 from utils.lark.repo_tip_failed import RepoTipFailed
 from utils.lark.repo_tip_success import RepoTipSuccess
+
+from GitMaya.server.tasks.lark import issue
+from GitMaya.server.utils.lark import issue_card
 
 from .base import *
 
@@ -33,6 +36,62 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 def open_repo_url(chat_id):
     try:
         url = get_repo_url_by_chat_id(chat_id)
+        webbrowser.open(url)
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
+def open_issue_url(message_id):
+    try:
+        url = get_repo_url_by_chat_id(message_id)
+        issue = db.session.query(Issue).filter(
+            Issue.message_id == message_id,
+            Issue.status == 0,
+        )
+        webbrowser.open(f"{url}/issues/{issue.issue_number}")
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
+def open_pr_url(message_id):
+    try:
+        url = get_repo_url_by_chat_id(message_id)
+        pr = db.session.query(PullRequest).filter(
+            PullRequest.message_id == message_id,
+            PullRequest.status == 0,
+        )
+        webbrowser.open(f"{url}/pull/{pr.pull_request_number}")
+        return True
+    except Exception as e:
+        logging.error(e)
+    return False
+
+
+@celery.task()
+def open_user_url(user_id):
+    try:
+        # 从 从im的user_id获取绑定GitHub的name
+        github_bind_users = (
+            db.session.query(BindUser)
+            .join(
+                TeamMember,
+                TeamMember.im_user_id == BindUser.id,
+            )
+            .filter(
+                TeamMember.im_user_id == user_id,
+                TeamMember.status == 0,
+                BindUser.status == 0,
+            )
+            .all()
+        )
+
+        url = f"https://github.com/{github_bind_users.name}"
         webbrowser.open(url)
         return True
     except Exception as e:

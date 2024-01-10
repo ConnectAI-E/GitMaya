@@ -53,6 +53,7 @@ class RepoManual(FeishuMessageCard):
             FeishuMessageDiv(
                 content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
                 tag="lark_md",
+                # TODO
                 extra=FeishuMessageButton(
                     "Archive Repo",
                     tag="lark_md",
