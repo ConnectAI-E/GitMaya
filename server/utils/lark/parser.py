@@ -118,10 +118,24 @@ class GitMayaLarkParser(object):
         chat_type, topic = "", ""
         try:
             raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
-            if "group" == chat_type:
+            try:
+                chat_type = raw_message["event"]["message"]["chat_type"]
+            except Exception as e:
+                logging.error(e)
+                chat_type = ""
+            if "p2p" != chat_type:
                 # 判断 pr/issue/repo?
-                root_id = raw_message["event"]["message"].get("root_id")
+                try:
+                    root_id = raw_message["event"]["message"].get("root_id")
+                except Exception as e:
+                    logging.error(e)
+                    message_id = raw_message["open_message_id"]
+                    bot, _ = tasks.get_bot_by_application_id(args[0])
+                    messages = bot.get(
+                        "{bot.host}/open-apis/im/v1/messages/{message_id}"
+                    ).json()
+                    root_id = messages.get("data", {}).get("items", [])[0]["root_id"]
+
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
                     if repo:
