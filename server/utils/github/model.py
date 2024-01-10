@@ -63,9 +63,16 @@ class Issue(BaseModel):
     pull_request: Optional[PRInIssue] = None
 
 
+class PerformedViaGithubApp(BaseModel):
+    id: int
+    name: str  # == GITHUB_APP_NAME in env
+    owner: User
+
+
 class IssueComment(BaseModel):
     id: int
     body: str
+    performed_via_github_app: Optional[PerformedViaGithubApp] = None
 
 
 class Branch(BaseModel):
