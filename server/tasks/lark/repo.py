@@ -170,7 +170,7 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-def change_repo_visit(visibility, app_id, message_id, *args, **kwargs):
+def change_repo_visit(visibility, app_id, message_id, content, data, *args, **kwargs):
     """修改 Repo 访问权限"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
@@ -187,7 +187,7 @@ def change_repo_visit(visibility, app_id, message_id, *args, **kwargs):
 
 
 @celery.task()
-def change_repo_name(name, app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
     """修改 Repo 标题"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
@@ -204,7 +204,7 @@ def change_repo_name(name, app_id, message_id, repo_id, param, *args, **kwargs):
 
 
 @celery.task()
-def change_repo_desc(desc, app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     """编辑 Repo"""
     bot, application = get_bot_by_application_id(app_id)
     repo = (
@@ -227,7 +227,7 @@ def change_repo_desc(desc, app_id, message_id, repo_id, param, *args, **kwargs):
 
 
 @celery.task()
-def change_repo_link(homepage, app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwargs):
     """修改homepage link"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
@@ -244,7 +244,7 @@ def change_repo_link(homepage, app_id, message_id, repo_id, param, *args, **kwar
 
 
 @celery.task()
-def change_repo_label(label, app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs):
     """修改homepage topic"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
@@ -261,7 +261,7 @@ def change_repo_label(label, app_id, message_id, repo_id, param, *args, **kwargs
 
 
 @celery.task()
-def change_repo_archive(archived, app_id, message_id, repo_id, param, *args, **kwargs):
+def change_repo_archive(archived, app_id, message_id, content, data, *args, **kwargs):
     """修改homepage archive status"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
