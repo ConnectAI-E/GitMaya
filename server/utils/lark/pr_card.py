@@ -17,7 +17,7 @@ class PullCard(FeishuMessageCard):
         labels=[],
         updated="2022年12月23日 16:32",
     ):
-        pr_url = f"{repo_url}/pulls/{id}"
+        pr_url = f"{repo_url}/pull/{id}"
         template = "red"
         # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
         assignees = "".join([f"<at id={open_id}></at>" for open_id in assignees])
