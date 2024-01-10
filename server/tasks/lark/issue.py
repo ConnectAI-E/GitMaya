@@ -71,6 +71,11 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
             .all()
         ]
     tags = [i["name"] for i in issue.extra.get("labels", [])]
+    status = issue.extra.get("state", "opened")
+    if status == "closed":
+        status = "已关闭"
+    else:
+        status = "待完成"
 
     if maunal:
         return IssueManualHelp(
@@ -78,15 +83,10 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
             issue_id=issue.issue_number,
             # TODO 这里需要找到真实的值
             # persons=[],
+            status=status,
             assignees=assignees,
             tags=tags,
         )
-
-    status = issue.extra.get("state", "opened")
-    if status == "closed":
-        status = "已关闭"
-    else:
-        status = "待完成"
 
     return IssueCard(
         repo_url=repo_url,
