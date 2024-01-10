@@ -1,6 +1,6 @@
 <a name="readme-top"></a>
 <div align="center">
-    <a href="https://gitmaya.com" title="React Hook Form - Simple React forms validation">
+    <a href="https://gitmaya.com" title="GitMaya - make git flow in chat">
         <img src="https://github.com/ConnectAI-E/GitMaya-Website/assets/50035229/15a87dd2-efb9-4f40-8002-9ac91983da5b" alt="Gitmaya - Next generation gitops for boosting developer teams productivity" />
     </a>
 </div>
@@ -8,7 +8,7 @@
 <p align='center'>
   <samp>An open-source, high-performance GitOps for boosting developer-teams productivity</samp>
 <br/>
- <samp>Supports lark, discord, slack, and so on. <sup><em>(FULL OPENSOURCE)</em></sup></samp>
+ <samp>Supports lark, discord, slack, and so on <sup><em>(FULL OPENSOURCE)</em></sup></samp>
 </p>
 
 
