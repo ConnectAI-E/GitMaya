@@ -5,10 +5,12 @@ from model.schema import (
     BindUser,
     CodeApplication,
     IMApplication,
+    Repo,
     RepoUser,
     Team,
     TeamMember,
 )
+from tasks.lark import update_repo_info
 from tasks.lark.manage import send_detect_repo
 from utils.github.model import RepoEvent
 from utils.github.repo import GitHubAppRepo
@@ -36,7 +38,7 @@ def on_repository(data: dict) -> list:
             task = on_repository_created.delay(event.model_dump())
             return [task.id]
         case _:
-            app.logger.info(f"Unhandled repository event action: {action}")
+            task = on_repository_updated.delay(event.model_dump())
             return []
 
 
@@ -143,3 +145,46 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         task_ids.append(task.id)
 
     return task_ids
+
+
+@celery.task()
+def on_repository_updated(event_dict: dict | None) -> list[str]:
+    """Handler for repository created event.
+
+    Send message to Repo Owner and create chat group for repo.
+
+    Args:
+        event_dict (dict): Payload from GitHub webhook.
+
+    Returns:
+        list[str]: Celery task IDs.
+    """
+
+    try:
+        event = RepoEvent(**event_dict)
+    except Exception as e:
+        app.logger.error(f"Failed to parse repository event: {e}")
+        return []
+
+    # 更新数据库
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == event.repository.id,
+        )
+        .first()
+    )
+
+    if repo is None:
+        app.logger.error(f"Repo {event.repository.id} not found")
+        return []
+
+    repo.name = event.repository.name
+    repo.description = event.repository.description
+    repo.extra = event.repository.model_dump()
+
+    db.session.commit()
+
+    task = update_repo_info.delay(repo.id)
+
+    return [task.id]

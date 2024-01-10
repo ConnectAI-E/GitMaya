@@ -218,23 +218,28 @@ def send_repo_info(app_id, chat_group_id, repo_id, *args, **kwargs):
             )
             .first()
         )
-        # TODO 获取 repo 信息
+
+        # TODO 部分历史信息拿不到
         message = RepoInfo(
             repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topic", []),
-            open_issues_count=4,
-            stargazers_count=5,
-            forks_count=6,
+            open_issues_count=repo.extra.get("open_issues_count", 0),
+            stargazers_count=repo.extra.get("stargazers_count", 0),
+            forks_count=repo.extra.get("forks_count", 0),
             visibility="私有仓库" if repo.extra.get("private") else "公开仓库",
+            updated=repo.extra.get("updated_at", ""),
         )
         return bot.send(
             chat_group_id,
             message,
             receive_id_type="chat_id",
         ).json()
-    return bot.reply(chat_group_id, message).json()
+    else:
+        message = RepoTipFailed(f"仓库不存在")
+
+    return bot.send(chat_group_id, message, receive_id_type="chat_id").json()
 
 
 @celery.task()
@@ -356,3 +361,51 @@ def label_repo(label, app_id, message_id, repo_id, param, *args, **kwargs):
     #     return bot.reply(message_id, message).json()
 
     return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def update_repo_info(repo_id: str) -> dict | None:
+    """Update the repo information.
+
+    Args:
+        repo_id (str): The ID of the repo.
+        message_id (str): The ID of the message.
+
+    Returns:
+        dict: The JSON response from the bot's reply method.
+    """
+
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+        )
+        .first()
+    )
+
+    if repo:
+        bot, application = get_bot_by_application_id(repo.application_id)
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+            )
+            .first()
+        )
+
+        message = RepoInfo(
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_name=repo.name,
+            repo_description=repo.description,
+            repo_topic=repo.extra.get("topic", []),
+            open_issues_count=repo.extra.get("open_issues_count", 0),
+            stargazers_count=repo.extra.get("stargazers_count", 0),
+            forks_count=repo.extra.get("forks_count", 0),
+            visibility="私有仓库" if repo.extra.get("private") else "公开仓库",
+            updated=repo.extra.get("updated_at", ""),
+        )
+
+        return bot.update(message_id=repo.message_id, message=message).json()
+    else:
+        app.logger.error(f"Repo {repo_id} not found")
+        return None
