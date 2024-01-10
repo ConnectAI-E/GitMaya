@@ -337,8 +337,9 @@ def update_repo_info(repo_id: str) -> dict | None:
     if repo:
         bot, _ = get_bot_by_application_id(im_application.app_id)
 
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
         message = RepoInfo(
-            repo_url=f"https://github.com/{team.name}/{repo.name}",
+            repo_url=repo_url,
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topics", []),
