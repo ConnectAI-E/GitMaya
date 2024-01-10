@@ -8,7 +8,8 @@ class RepoManual(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_description="GitMaya is a GitHub App for Feishu.",
         visibility="public",
-        statuses=["public", "private", "internal"],
+        statuses=["public", "private"],
+        archived=False,
     ):
         elements = [
             GitMayaTitle(),
@@ -52,17 +53,11 @@ class RepoManual(FeishuMessageCard):
             FeishuMessageDiv(
                 content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
                 tag="lark_md",
-                # TODO
                 extra=FeishuMessageButton(
-                    "Archive Repo",
+                    f"{'Archive' if archived else 'UnArchive'} Repo",
                     tag="lark_md",
-                    type="danger",
-                    multi_url={
-                        "url": repo_url,
-                        "android_url": repo_url,
-                        "ios_url": repo_url,
-                        "pc_url": repo_url,
-                    },
+                    type="primary" if archived else "danger",
+                    value={"command": "/unarchive" if archived else "/archive"},
                 ),
             ),
             FeishuMessageDiv(

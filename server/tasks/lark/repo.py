@@ -170,6 +170,7 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
         repo_url=f"https://github.com/{team.name}/{repo.name}",
         repo_name=repo.name,
         visibility=repo.extra.get("visibility", "public"),
+        archived=True if repo.extra.get("archived") else False,
     )
 
     bot, _ = get_bot_by_application_id(app_id)
@@ -275,6 +276,15 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
         return send_repo_failed_tip(
             "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    message = RepoManual(
+        repo_url=f"https://github.com/{team.name}/{repo.name}",
+        repo_name=repo.name,
+        visibility=repo.extra.get("visibility", "public"),
+        archived=True if repo.extra.get("archived") else False,
+    )
+    # 卡片有一个archive按钮，可以更新状态
+    bot.update(message_id=message_id, content=message)
     return response
 
 
