@@ -312,12 +312,15 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
         )
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         message = RepoInfo(
-            repo_url=repo_url,
+            repo_url=f"https://github.com/{team.name}/{repo.name}",
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topic", []),
-            visibility=repo.extra.get("visibility", "私有仓库"),
-            # TODO 其他信息
+            open_issues_count=repo.extra.get("open_issues_count", 0),
+            stargazers_count=repo.extra.get("stargazers_count", 0),
+            forks_count=repo.extra.get("forks_count", 0),
+            visibility="私有仓库" if repo.extra.get("private") else "公开仓库",
+            updated=repo.extra.get("updated_at", ""),
         )
         result = bot.send(
             chat_id,
