@@ -90,7 +90,7 @@ class GitMayaLarkParser(object):
 
         # /label [label1] [label2]
         parser_label = self.subparsers.add_parser("/label")
-        parser_label.add_argument("name", nargs="?")
+        parser_label.add_argument("labels", nargs="*")
         parser_label.set_defaults(func=self.on_label)
 
         parser_archive = self.subparsers.add_parser("/archive")
@@ -268,19 +268,14 @@ class GitMayaLarkParser(object):
 
     def on_rename(self, param, unkown, *args, **kwargs):
         logging.info("on_rename %r %r", vars(param), unkown)
-        if not param.name:
-            logging.error("return")
-            tasks.send_repo_failed_tip.delay(
-                "name is empty",
-                *args,
-                **kwargs,
-            )
-        else:
-            tasks.change_repo_name.delay(
-                param.name,
-                *args,
-                **kwargs,
-            )
+        name = " ".join(param.title)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if TopicType.REPO == topic:
+            tasks.change_repo_name.delay(title, *args, **kwargs)
+        elif TopicType.ISSUE == topic:
+            tasks.change_issue_title.delay(title, *args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.change_pull_request_title.delay(title, *args, **kwargs)
         return "rename", param, unkown
 
     def on_edit(self, param, unkown, *args, **kwargs):
@@ -315,6 +310,11 @@ class GitMayaLarkParser(object):
     def on_label(self, param, unkown, *args, **kwargs):
         logging.info("on_label %r %r", vars(param), unkown)
         # process_repo_action.delay(*args, **kwargs)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.change_issue_label.delay(param.labels, *args, **kwargs)
+        elif TopicType.PULL_REQUEST == topic:
+            tasks.change_pull_request_label.delay(param.labels, *args, **kwargs)
         return "label", param, unkown
 
     def on_archive(self, param, unkown, *args, **kwargs):
