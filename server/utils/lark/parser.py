@@ -134,7 +134,8 @@ class GitMayaLarkParser(object):
                     messages = bot.get(
                         f"{bot.host}/open-apis/im/v1/messages/{message_id}"
                     ).json()
-                    root_id = messages.get("data", {}).get("items", [])[0]["root_id"]
+                    message = messages.get("data", {}).get("items", [])[0]
+                    root_id = message.get("root_id", message["message_id"])
 
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
@@ -225,17 +226,21 @@ class GitMayaLarkParser(object):
         # /assign [@user_1] [@user_2]
         try:
             raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
+            chat_type = raw_message.get("event", {}).get("message", {}).get("chat_type")
             mentions = {
                 m["key"].replace("@_user", "at_user"): m
-                for m in raw_message["event"]["message"].get("mentions", [])
+                for m in raw_message.get("event", {})
+                .get("message", {})
+                .get("mentions", [])
             }
             # 只有群聊才是指定的repo
-            if "group" == chat_type:
+            if "p2p" != chat_type:
                 users = []
                 for user in param.users:
                     if "at_user" in user and user in mentions:
                         users.append(mentions[user]["id"]["open_id"])
+                    elif "ou_" == user[:3]:
+                        users.append(user)
                 chat_type, topic = self._get_topic_by_args(*args)
                 if TopicType.ISSUE == topic:
                     tasks.change_issue_assignees.delay(users, *args, **kwargs)
@@ -304,6 +309,24 @@ class GitMayaLarkParser(object):
 
     def on_access(self, param, unkown, *args, **kwargs):
         logging.info("on_access %r %r", vars(param), unkown)
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            mentions = {
+                m["key"].replace("@_user", "at_user"): m
+                for m in raw_message["event"]["message"].get("mentions", [])
+            }
+            # 只有群聊才是指定的repo
+            if "group" == chat_type:
+                if param.person in mentions:
+                    openid = mentions[param.person]["id"]["open_id"]
+                    _, topic = self._get_topic_by_args(*args)
+                    if TopicType.REPO == topic:
+                        tasks.change_repo_collaborator.delay(
+                            param.permission, openid, *args, **kwargs
+                        )
+        except Exception as e:
+            logging.error(e)
         return "access", param, unkown
 
     def on_rename(self, param, unkown, *args, **kwargs):

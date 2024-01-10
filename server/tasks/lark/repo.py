@@ -291,6 +291,47 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
 
 
 @celery.task()
+def change_repo_collaborator(
+    permission, openid, app_id, message_id, content, data, *args, **kwargs
+):
+    """修改homepage archive status"""
+    github_app, team, repo = _get_github_app(app_id, message_id, content, data)
+
+    # 从openid找到用户
+    username = (
+        db.session.query(CodeUser.name)
+        .join(TeamMember, TeamMember.code_user_id == CodeUser.id)
+        .join(
+            IMUser,
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(
+            TeamMember.team_id == team.id,
+            IMUser.openid == openid,
+            CodeUser.platform == "github",
+        )
+        .limit(1)
+        .scalar()
+    )
+    if not username:
+        return send_repo_failed_tip(
+            "找不到绑定人员", app_id, message_id, content, data, *args, **kwargs
+        )
+    response = github_app.add_repo_collaborator(
+        team.name,
+        repo.name,
+        username,
+        permission,
+    )
+    if "status" not in response or response["status"] != "success":
+        return send_repo_failed_tip(
+            "添加人员失败", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    return response
+
+
+@celery.task()
 def update_repo_info(repo_id: str) -> dict | None:
     """Update the repo information.
 

@@ -71,6 +71,11 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
             .all()
         ]
     tags = [i["name"] for i in issue.extra.get("labels", [])]
+    status = issue.extra.get("state", "opened")
+    if status == "closed":
+        status = "已关闭"
+    else:
+        status = "待完成"
 
     if maunal:
         return IssueManualHelp(
@@ -78,15 +83,10 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
             issue_id=issue.issue_number,
             # TODO 这里需要找到真实的值
             # persons=[],
+            status=status,
             assignees=assignees,
             tags=tags,
         )
-
-    status = issue.extra.get("state", "opened")
-    if status == "closed":
-        status = "已关闭"
-    else:
-        status = "待完成"
 
     return IssueCard(
         repo_url=repo_url,
@@ -249,7 +249,17 @@ def update_issue_card(issue_id: str):
 
 
 def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
-    root_id = data["event"]["message"]["root_id"]
+    try:
+        root_id = data["event"]["message"]["root_id"]
+        openid = data["event"]["sender"]["sender_id"]["open_id"]
+    except Exception as e:
+        message_id = content["open_message_id"]
+        bot, _ = get_bot_by_application_id(app_id)
+        messages = bot.get(f"{bot.host}/open-apis/im/v1/messages/{message_id}").json()
+        message = messages.get("data", {}).get("items", [])[0]
+        root_id = message.get("root_id", message["message_id"])
+        openid = content["open_id"]
+
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
         return send_issue_failed_tip(
@@ -292,7 +302,6 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
-    openid = data["event"]["sender"]["sender_id"]["open_id"]
     code_user_id = (
         db.session.query(CodeUser.user_id)
         .join(
@@ -312,12 +321,12 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     )
 
     github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
-    return github_app, team, repo, issue
+    return github_app, team, repo, issue, root_id, openid
 
 
 @celery.task()
 def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.create_issue_comment(
@@ -332,7 +341,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
 @celery.task()
 def close_issue(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -345,12 +354,19 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
         return send_issue_failed_tip(
             "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
         )
+    # maunal点按钮，需要更新maunal
+    if root_id != message_id:
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        issue.extra.update(state="closed")
+        message = gen_issue_card_by_issue(issue, repo_url, True)
+        bot, _ = get_bot_by_application_id(app_id)
+        bot.update(message_id=message_id, content=message)
     return response
 
 
 @celery.task()
 def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -363,12 +379,19 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
         return send_issue_failed_tip(
             "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
         )
+    # maunal点按钮，需要更新maunal
+    if root_id != message_id:
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        issue.extra.update(state="opened")
+        message = gen_issue_card_by_issue(issue, repo_url, True)
+        bot, _ = get_bot_by_application_id(app_id)
+        bot.update(message_id=message_id, content=message)
     return response
 
 
 @celery.task()
 def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -386,7 +409,7 @@ def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs
 
 @celery.task()
 def change_issue_label(labels, app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -404,7 +427,7 @@ def change_issue_label(labels, app_id, message_id, content, data, *args, **kwarg
 
 @celery.task()
 def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -422,7 +445,7 @@ def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
 
 @celery.task()
 def change_issue_assignees(users, app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, issue = _get_github_app(
+    github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     assignees = get_assignees_by_openid(users)

@@ -8,26 +8,24 @@ class IssueManualHelp(FeishuMessageCard):
         issue_id=16,
         persons=[],
         assignees=[],
+        status="待完成",
         tags=[],
     ):
         issue_url = f"{repo_url}/issues/{issue_id}"
+        action_button = (
+            FeishuMessageButton("重新打开", type="primary", value={"command": f"/reopen"})
+            if status == "已关闭"
+            else FeishuMessageButton(
+                "关闭 Issue", type="danger", value={"command": f"/close"}
+            )
+        )
         elements = [
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
                 content="** 🕹️ 更新 Issue 状态**\n*话题下回复「/close」/「/reopen」*",
                 tag="lark_md",
-                extra=FeishuMessageButton(
-                    "Close Issue",
-                    tag="lark_md",
-                    type="danger",
-                    multi_url={
-                        "url": issue_url,
-                        "android_url": issue_url,
-                        "ios_url": issue_url,
-                        "pc_url": issue_url,
-                    },
-                ),
+                extra=action_button,
             ),
             FeishuMessageDiv(
                 content="** 🏖️ 重新分配 Issue 负责人**\n*话题下回复「/assign + @成员」 **",
