@@ -20,12 +20,10 @@ class IssueCard(FeishuMessageCard):
         # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
         users = "".join([f"<at id={open_id}></at>" for open_id in assignees])
         action_button = (
-            FeishuMessageButton(
-                "重新打开", type="primary", value={"action": f"reopen:{issue_url}"}
-            )
+            FeishuMessageButton("重新打开", type="primary", value={"command": f"/reopen"})
             if status == "已关闭"
             else FeishuMessageButton(
-                "关闭 Issue", type="danger", value={"action": f"close:{issue_url}"}
+                "关闭 Issue", type="danger", value={"command": f"/close"}
             )
         )
         elements = [
