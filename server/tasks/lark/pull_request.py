@@ -93,6 +93,13 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
 
     labels = [i["name"] for i in pr.extra.get("labels", [])]
 
+    status = pr.extra.get("state", "open")
+    merged = pr.extra.get("merged")
+    if status == "open":
+        status = "待完成"
+    elif status == "closed":
+        status = "已关闭"
+
     if maunal:
         return PrManual(
             repo_url=repo_url,
@@ -100,15 +107,8 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
             persons=[],  # 就没用上
             assignees=assignees,
             tags=labels,
+            merged=merged,
         )
-
-    status = pr.extra.get("state", "open")
-    if status == "open":
-        status = "待完成"
-    elif status == "closed":
-        status = "已完成"
-    else:
-        status = "已关闭"
 
     return PullCard(
         repo_url=repo_url,
@@ -118,6 +118,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
         base=pr.extra.get("base", {}),
         head=pr.extra.get("head", {}),
         status=status,
+        merged=merged,
         persons=[],  # TODO：应该是所有有写权限的人
         assignees=assignees,
         reviewers=reviewers,
@@ -349,12 +350,12 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     )
 
     github_app = GitHubAppRepo(code_application.installation_id, user_id=code_user_id)
-    return github_app, team, repo, pr
+    return github_app, team, repo, pr, root_id, openid
 
 
 @celery.task()
 def create_pull_request_comment(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.create_issue_comment(
@@ -369,7 +370,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 @celery.task()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -382,12 +383,19 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         return send_pull_request_failed_tip(
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    # maunal点按钮，需要更新maunal
+    if root_id != message_id:
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        pr.extra.update(state="closed")
+        message = gen_pr_card_by_pr(pr, repo_url, True)
+        bot, _ = get_bot_by_application_id(app_id)
+        bot.update(message_id=message_id, content=message)
     return response
 
 
 @celery.task()
 def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -400,6 +408,12 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
         return send_pull_request_failed_tip(
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    if root_id != message_id:
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        pr.extra.update(state="opened")
+        message = gen_pr_card_by_pr(pr, repo_url, True)
+        bot, _ = get_bot_by_application_id(app_id)
+        bot.update(message_id=message_id, content=message)
     return response
 
 
@@ -407,7 +421,7 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
 def change_pull_request_title(
     title, app_id, message_id, content, data, *args, **kwargs
 ):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -427,7 +441,7 @@ def change_pull_request_title(
 def change_pull_request_label(
     labels, app_id, message_id, content, data, *args, **kwargs
 ):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -445,7 +459,7 @@ def change_pull_request_label(
 
 @celery.task()
 def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -465,7 +479,7 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
 def change_pull_request_assignees(
     users, app_id, message_id, content, data, *args, **kwargs
 ):
-    github_app, team, repo, pr = _get_github_app(
+    github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     assignees = get_assignees_by_openid(users)

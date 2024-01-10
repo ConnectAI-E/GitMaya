@@ -9,6 +9,7 @@ class PrManual(FeishuMessageCard):
         persons=[],
         assignees=[],
         tags=[],
+        merged=False,
     ):
         pr_url = f"{repo_url}/pull/{pr_id}"
         elements = [
@@ -35,13 +36,12 @@ class PrManual(FeishuMessageCard):
                     "Merge PR",
                     tag="lark_md",
                     type="primary",
-                    multi_url={
-                        "url": pr_url,
-                        "android_url": pr_url,
-                        "ios_url": pr_url,
-                        "pc_url": pr_url,
+                    value={
+                        "command": f"/merge ",
                     },
-                ),
+                )
+                if not merged
+                else None,
             ),
             FeishuMessageDiv(
                 content="** 🕹️ 查看 Commits Log**\n*话题下回复「 /log 」*",
@@ -93,26 +93,16 @@ class PrManual(FeishuMessageCard):
                 tag="lark_md",
                 extra=FeishuMessageSelectPerson(
                     *[FeishuMessageOption(value=open_id) for open_id in persons],
-                    placeholder=",".join(assignees),
+                    placeholder="",
                     value={
-                        "key": "value",  # TODO 这里字段的意义需要再看一下，应该是已经选中的人员的openid
+                        "command": f"/assign ",
+                        "suffix": "$option",
                     },
-                )
-                if len(persons) > 0
-                else None,
+                ),
             ),
             FeishuMessageDiv(
                 content="** 🏷️  修改 Pr 标签**\n*话题下回复「/label + 标签名」 *",
                 tag="lark_md",
-                extra=FeishuMessageSelect(
-                    *[FeishuMessageOption(value=tag) for tag in tags],
-                    placeholder="",
-                    value={
-                        "key": "value",  # TODO
-                    },
-                )
-                if len(tags)
-                else None,
             ),
             FeishuMessageDiv(
                 content="** 📑 修改 Pr 标题**\n*话题下回复「 /rename + 新 Pr 标题 」 *",

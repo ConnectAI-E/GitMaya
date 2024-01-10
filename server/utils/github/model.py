@@ -95,6 +95,7 @@ class PullRequest(BaseModel):
     title: str
     body: Optional[str] = None
     state: str  # open/closed
+    merged: Optional[bool] = False
     labels: Optional[list[Label]] = []
     comments: int
     created_at: str
