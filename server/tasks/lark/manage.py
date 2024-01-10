@@ -1,4 +1,5 @@
 import logging
+import webbrowser
 from math import log
 
 from celery_app import app, celery

@@ -56,7 +56,6 @@ def get_repo_name_by_repo_id(repo_id):
         )
         .first()
     )
-
     return repo.name
 
 
