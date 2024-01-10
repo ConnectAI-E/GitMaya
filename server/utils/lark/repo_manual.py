@@ -21,13 +21,12 @@ class RepoManual(FeishuMessageCard):
                         FeishuMessageOption(value=status, content=status)
                         for status in statuses
                     ],
-                    placeholder=visibility,
+                    placeholder="",
                     value={
-                        "key": "value",
+                        "command": f"/visit ",
+                        "suffix": "$option",
                     },
-                )
-                if len(visibility) > 0
-                else None,
+                ),
             ),
             FeishuMessageDiv(
                 content="** 🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",

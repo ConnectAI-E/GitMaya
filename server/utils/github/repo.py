@@ -63,9 +63,11 @@ class GitHubAppRepo(BaseGitHubApp):
         self,
         repo_onwer: str,
         repo_name: str,
+        name: str = None,
         description: str = None,
         homepage: str = None,
         private: bool = None,
+        visibility: str = None,
         archived: bool = None,
     ) -> dict | None:
         """Update GitHub repo Info
@@ -73,9 +75,11 @@ class GitHubAppRepo(BaseGitHubApp):
         Args:
             repo_onwer (str): The repo owner.
             repo_name (str): The repo name.
+            name (str): The repo name.
             description (str): The repo description.
             homepage (str): The repo homepage.
             private (bool): The repo private.
+            visibility (str): The repo visibility.
             archived (bool): The repo archived.
 
         Returns:
@@ -83,9 +87,11 @@ class GitHubAppRepo(BaseGitHubApp):
         """
 
         json = dict(
+            name=name,
             description=description,
             homepage=homepage,
             private=private,
+            visibility=visibility,
             archived=archived,
         )
         json = {k: v for k, v in json.items() if v is not None}
