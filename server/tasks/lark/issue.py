@@ -338,12 +338,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
         team.name,
         repo.name,
         issue.issue_number,
-        title=issue.title,
-        body=issue.description,
         state="closed",
-        state_reason="",
-        assignees=issue.extra.get("assignees", []),
-        labels=issue.extra.get("labels", []),
     )
     if "id" not in response:
         return send_issue_failed_tip(
@@ -361,12 +356,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
         team.name,
         repo.name,
         issue.issue_number,
-        title=issue.title,
-        body=issue.description,
         state="opened",
-        state_reason="",
-        assignees=issue.extra.get("assignees", []),
-        labels=issue.extra.get("labels", []),
     )
     if "id" not in response:
         return send_issue_failed_tip(

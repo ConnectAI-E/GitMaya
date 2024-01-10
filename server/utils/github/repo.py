@@ -82,12 +82,13 @@ class GitHubAppRepo(BaseGitHubApp):
             dict: The repo info.
         """
 
-        json = {}
-
-        for arg in [description, homepage, private, archived]:
-            if arg is None:
-                continue
-            json.update({arg.__name__: arg})
+        json = dict(
+            description=description,
+            homepage=homepage,
+            private=private,
+            archived=archived,
+        )
+        json = {k: v for k, v in json.items() if v is not None}
 
         return self.base_github_rest_api(
             f"https://api.github.com/repos/{repo_onwer}/{repo_name}",
@@ -233,11 +234,15 @@ class GitHubAppRepo(BaseGitHubApp):
             dict: The issue info.
         """
 
-        json = {}
-        for arg in [title, body, state, state_reason, assignees, labels]:
-            if arg is None:
-                continue
-            json.update({arg.__name__: arg})
+        json = dict(
+            title=title,
+            body=body,
+            state=state,
+            state_reason=state_reason,
+            assignees=assignees,
+            labels=labels,
+        )
+        json = {k: v for k, v in json.items() if v is not None}
 
         return self.base_github_rest_api(
             f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
