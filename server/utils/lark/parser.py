@@ -70,8 +70,8 @@ class GitMayaLarkParser(object):
 
         # /assign [@user_1] [@user_2]
         parser_assign = self.subparsers.add_parser("/assign")
-        parser_assign.add_argument("argv", nargs="*")
-        parser_assign.set_defaults(func=self.on_access)
+        parser_assign.add_argument("users", nargs="*")
+        parser_assign.set_defaults(func=self.on_assign)
 
         # /rename [title]  tit需要支持空格
         parser_rename = self.subparsers.add_parser("/rename")
@@ -205,6 +205,31 @@ class GitMayaLarkParser(object):
         except Exception as e:
             logging.error(e)
         return "issue", param, unkown
+
+    def on_assign(self, param, unkown, *args, **kwargs):
+        logging.info("on_assign %r %r", vars(param), unkown)
+        # /assign [@user_1] [@user_2]
+        try:
+            raw_message = args[3]
+            chat_type = raw_message["event"]["message"]["chat_type"]
+            mentions = {
+                m["key"].replace("@_user", "at_user"): m
+                for m in raw_message["event"]["message"].get("mentions", [])
+            }
+            # 只有群聊才是指定的repo
+            if "group" == chat_type:
+                users = []
+                for user in param.users:
+                    if "at_user" in user and user in mentions:
+                        users.append(mentions[user]["id"]["open_id"])
+                chat_type, topic = self._get_topic_by_args(*args)
+                if TopicType.ISSUE == topic:
+                    tasks.change_issue_assignees.delay(users, *args, **kwargs)
+                elif TopicType.PULL_REQUEST == topic:
+                    tasks.change_pull_request_assignees.delay(users, *args, **kwargs)
+        except Exception as e:
+            logging.error(e)
+        return "assign", param, unkown
 
     def on_new(self, param, unkown, *args, **kwargs):
         logging.info("on_new %r %r", vars(param), unkown)

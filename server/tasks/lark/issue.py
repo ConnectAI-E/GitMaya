@@ -14,6 +14,7 @@ from model.schema import (
     TeamMember,
     db,
 )
+from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp
@@ -411,6 +412,25 @@ def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
         repo.name,
         issue.issue_number,
         body=desc,
+    )
+    if "id" not in response:
+        return send_issue_failed_tip(
+            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
+def change_issue_assignees(users, app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, issue = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    assignees = get_assignees_by_openid(users)
+    response = github_app.update_issue(
+        team.name,
+        repo.name,
+        issue.issue_number,
+        assignees=assignees,
     )
     if "id" not in response:
         return send_issue_failed_tip(

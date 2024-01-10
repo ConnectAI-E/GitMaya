@@ -318,3 +318,31 @@ def save_im_application(
             )
         )
         db.session.commit()
+
+
+def get_code_users_by_openid(users):
+    code_users = {
+        openid: (code_user_id, code_user_name)
+        for openid, code_user_id, code_user_name in db.session.query(
+            IMUser.openid,
+            CodeUser.user_id,
+            CodeUser.name,
+        )
+        .join(
+            TeamMember,
+            TeamMember.code_user_id == CodeUser.id,
+        )
+        .join(
+            IMUser,
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(IMUser.openid.in_(users))
+        .all()
+    }
+    return code_users
+
+
+def get_assignees_by_openid(users):
+    code_users = get_code_users_by_openid(users)
+    assignees = [code_users[openid][1] for openid in users if openid in code_users]
+    return assignees
