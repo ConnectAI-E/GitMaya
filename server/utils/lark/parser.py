@@ -110,8 +110,8 @@ class GitMayaLarkParser(object):
         parser_reopen.set_defaults(func=self.on_reopen)
 
         # TODO 这里实际上拿到的信息是 @_user_1，需要检查是不是当前机器人
-        parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
-        parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
+        parser_at_bot = self.subparsers.add_parser("at_user_1")
+        parser_at_bot.set_defaults(func=self.on_at_bot)
 
     def _get_topic_by_args(self, *args):
         # 新增一个判断是不是在issue/pr/repo的话题中
@@ -388,37 +388,24 @@ class GitMayaLarkParser(object):
             tasks.reopen_pull_request.delay(*args, **kwargs)
         return "reopen", param, unkown
 
-    def on_at_gitmaya(self, param, unkown, *args, **kwargs):
-        logging.info("on_at_gitmaya %r %r", vars(param), unkown)
+    def on_at_bot(self, param, unkown, *args, **kwargs):
+        logging.info("on_at_user_1 %r %r", vars(param), unkown)
 
-        content = param.content.strip()
+        raw_message = args[3]
+        user_id = raw_message["event"]["message"]["mention"][0]["id"]["user_id"]
+        user_key = raw_message["event"]["message"]["mention"][0]["key"]
+        logging.info(f"user_id: {user_id}")
+        logging.info(f"user_key: {user_key}")
+        content = args[2].split(" ", 1)
+        # 判断机器人
+        if user_key == "@_user_1" and user_id is None:
+            command = content[1] if len(content) > 1 else None
+            # 判断@bot 后续命令合法即执行
+            if command:
+                self.parse_args(command, *args, **kwargs)
+            return self.on_help(param, unkown, *args, **kwargs)
 
-        # TODO @_user 得判断是否是机器人
-        # if content.startswith("/"):
-        #     # @GitMaya + /command，执行对应命令
-        #     commands = content[1:]
-        #     return self.parse_multiple_commands(commands, *args, **kwargs)
-
-        # else:
-        #     # @GitMaya + 空白内容，返回对应帮助卡片
-        #     # TODO 发送话题对应manual卡片
-        #     try:
-        #         raw_message = args[3]
-        #         chat_type = raw_message["event"]["message"]["chat_type"]
-        #         thread_type = "repo"
-
-        #         if "p2p" == chat_type:
-        #             tasks.send_chat_manual.delay(*args, **kwargs)
-
-        #         else:
-        #             # TODO
-        #             if "repo" == thread_type:
-        #                 tasks.send_repo_manual.delay(*args, **kwargs)
-
-        #     except Exception as e:
-        #         logging.error(e)
-
-        return "on_at_gitmaya", param, unkown
+        return "on_at_bot", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
