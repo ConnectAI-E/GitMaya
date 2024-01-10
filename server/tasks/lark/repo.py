@@ -383,15 +383,24 @@ def update_repo_info(repo_id: str) -> dict | None:
         .first()
     )
 
-    if repo:
-        bot, application = get_bot_by_application_id(repo.application_id)
-        team = (
-            db.session.query(Team)
-            .filter(
-                Team.id == application.team_id,
-            )
-            .first()
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == repo.team_id,
         )
+        .first()
+    )
+
+    im_application = (
+        db.session.query(IMApplication)
+        .filter(
+            IMApplication.team_id == team.id,
+        )
+        .first()
+    )
+
+    if repo:
+        bot, application = get_bot_by_application_id(im_application.app_id)
 
         message = RepoInfo(
             repo_url=f"https://github.com/{team.name}/{repo.name}",
