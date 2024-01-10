@@ -277,7 +277,13 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
 
 
 def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
-    root_id = data["event"]["message"]["root_id"]
+    try:
+        root_id = data["event"]["message"]["root_id"]
+        openid = data["event"]["sender"]["sender_id"]["open_id"]
+    except Exception as e:
+        root_id = content["open_message_id"]
+        openid = content["open_id"]
+
     _, _, pr = get_git_object_by_message_id(root_id)
     if not pr:
         return send_pull_request_failed_tip(
@@ -320,7 +326,6 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
-    openid = data["event"]["sender"]["sender_id"]["open_id"]
     code_user_id = (
         db.session.query(CodeUser.user_id)
         .join(
