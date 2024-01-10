@@ -102,48 +102,49 @@ class GitMayaLarkParser(object):
         parser_at_gitmaya = self.subparsers.add_parser("@GitMaya")
         parser_at_gitmaya.set_defaults(func=self.on_at_gitmaya)
 
-    def on_comment(self, text, *args, **kwargs):
-        logging.info("on_comment %r", text)
-        try:
-            raw_message = args[3]
-            root_id = raw_message["event"]["message"].get("root_id")
-            if root_id:
-                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
-                if issue:
-                    tasks.create_issue_comment.delay(*args, **kwargs)
-                elif pr:
-                    tasks.create_pull_request_comment.delay(*args, **kwargs)
-        except Exception as e:
-            logging.error(e)
-
-    def on_help(self, param, unkown, *args, **kwargs):
-        logging.info("on_help %r %r", vars(param), unkown)
-        # TODO call task.delay
+    def _get_topic_by_args(*args):
+        # 新增一个判断是不是在issue/pr/repo的话题中
+        chat_type, topic = "", ""
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
-
-            if "p2p" == chat_type:
-                tasks.send_manage_manual.delay(*args, **kwargs)
-
-            else:
+            if "group" == chat_type:
                 # 判断 pr/issue/repo?
                 root_id = raw_message["event"]["message"].get("root_id")
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
                     if repo:
-                        tasks.send_repo_manual.delay(*args, **kwargs)
+                        topic = "repo"
                     elif issue:
-                        tasks.send_issue_manual.delay(*args, **kwargs)
+                        topic = "issue"
                     elif pr:
-                        tasks.send_pull_request_manual.delay(*args, **kwargs)
-                    else:
-                        tasks.send_chat_manual.delay(*args, **kwargs)
-                else:
-                    tasks.send_chat_manual.delay(*args, **kwargs)
-
+                        topic = "pull_request"
         except Exception as e:
             logging.error(e)
+        return chat_type, topic
+
+    def on_comment(self, text, *args, **kwargs):
+        logging.info("on_comment %r", text)
+        _, topic = self._get_topic_by_args(*args)
+        if topic == "issue":
+            tasks.create_issue_comment.delay(*args, **kwargs)
+        elif topic == "pull_request":
+            tasks.create_pull_request_comment.delay(*args, **kwargs)
+
+    def on_help(self, param, unkown, *args, **kwargs):
+        logging.info("on_help %r %r", vars(param), unkown)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_manual.delay(*args, **kwargs)
+        else:
+            if "repo" == topic:
+                tasks.send_repo_manual.delay(*args, **kwargs)
+            elif "issue" == topic:
+                tasks.send_issue_manual.delay(*args, **kwargs)
+            elif "pull_request" == topic:
+                tasks.send_pull_request_manual.delay(*args, **kwargs)
+            else:
+                tasks.send_chat_manual.delay(*args, **kwargs)
         return "help", param, unkown
 
     def on_match(self, param, unkown, *args, **kwargs):
