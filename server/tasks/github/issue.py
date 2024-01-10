@@ -1,3 +1,5 @@
+import os
+
 from app import app, db
 from celery_app import celery
 from model.schema import Issue, ObjID, PullRequest, Repo
@@ -21,6 +23,13 @@ def on_issue_comment(data: dict) -> list:
     except Exception as e:
         app.logger.error(f"Failed to parse issue event: {e}")
         raise e
+
+    if (
+        event.comment.performed_via_github_app
+        and event.comment.performed_via_github_app.name
+        == os.environ.get("GITHUB_APP_NAME")
+    ):
+        return []
 
     action = event.action
     match action:
