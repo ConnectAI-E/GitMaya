@@ -70,7 +70,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
                 CodeUser.id == TeamMember.code_user_id,
             )
             .filter(
-                CodeUser.user_id.in_([assignee["id"] for assignee in assignees]),
+                CodeUser.name.in_([assignee["login"] for assignee in assignees]),
             )
             .all()
         ]
@@ -85,7 +85,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
                 CodeUser.id == TeamMember.code_user_id,
             )
             .filter(
-                CodeUser.user_id.in_([reviewer["id"] for reviewer in reviewers]),
+                CodeUser.name.in_([reviewer["login"] for reviewer in reviewers]),
             )
             .all()
         ]
