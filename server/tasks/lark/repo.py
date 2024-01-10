@@ -378,7 +378,7 @@ def update_repo_info(repo_id: str) -> dict | None:
     repo = (
         db.session.query(Repo)
         .filter(
-            Repo.id == repo_id,
+            Repo.repo_id == repo_id,
         )
         .first()
     )
