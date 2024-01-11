@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
@@ -385,6 +386,16 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         pr.pull_request_number,
         state="closed",
     )
+    if response["message"] == "Bad credentials":
+        host = os.getenv("VIRTUAL_HOST")
+        return send_pull_request_failed_tip(
+            f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
+            app_id,
+            message_id,
+            data,
+            *args,
+            **kwargs,
+        )
 
     logging.error(f"---close_pull_request--- response: {response}")
 
