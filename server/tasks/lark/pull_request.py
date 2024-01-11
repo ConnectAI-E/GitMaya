@@ -387,13 +387,8 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         state="closed",
     )
     if response["message"] == "Bad credentials":
-        import os
-
-        from dotenv import find_dotenv, load_dotenv
-
-        load_dotenv(find_dotenv())
-        host = os.getenv("VIRTUAL_HOST")
-        url = f"{host}/api/github/oauth"
+        # TODO 获取环境host
+        url = "https://testapi.gitmaya.com/api/github/oauth"
         return send_pull_request_failed_tip(
             url,
             app_id,
@@ -406,8 +401,11 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     logging.error(f"---close_pull_request--- response: {response}")
 
     if "id" not in response:
-        return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        return (
+            send_pull_request_failed_tip(
+                "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            ),
+            response["message"],
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
