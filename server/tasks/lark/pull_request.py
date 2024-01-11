@@ -29,6 +29,20 @@ from .base import (
 )
 
 
+def check_access_token(app_id, message_id, response, data, *args, **kwargs):
+    if response["message"] == "Bad credentials":
+        # TODO 获取环境host
+        url = "https://testapi.gitmaya.com/api/github/oauth"
+        return send_pull_request_failed_tip(
+            url,
+            app_id,
+            message_id,
+            data,
+            *args,
+            **kwargs,
+        )
+
+
 @celery.task()
 def send_pull_request_failed_tip(
     content, app_id, message_id, *args, bot=None, **kwargs
@@ -374,7 +388,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 
 @celery.task()
-@with_authenticated_github()
+# @with_authenticated_github()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     logging.error(f"---close_pull_request---")
     github_app, team, repo, pr, root_id, _ = _get_github_app(
@@ -386,17 +400,8 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         pr.pull_request_number,
         state="closed",
     )
-    if response["message"] == "Bad credentials":
-        # TODO 获取环境host
-        url = "https://testapi.gitmaya.com/api/github/oauth"
-        return send_pull_request_failed_tip(
-            url,
-            app_id,
-            message_id,
-            data,
-            *args,
-            **kwargs,
-        )
+
+    check_access_token(app_id, message_id, response, data, *args, **kwargs)
 
     logging.error(f"---close_pull_request--- response: {response}")
 
