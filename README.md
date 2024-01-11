@@ -32,6 +32,72 @@
 </p>
 
 
+
+## 🛳 Self Hosting
+
+GitMaya provides Self-Hosted Version with Vercel and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
+
+### `A` Deploying with Zeabur or Sealos
+
+If you want to deploy this service yourself on either Zeabur or Sealos, you can follow these steps:
+
+- Prepare GitHub App
+- todo
+<div align="center">
+
+|                     Deploy with Zeabur                      |                     Deploy with Sealos                      |
+| :---------------------------------------------------------: | :---------------------------------------------------------: |
+| [![][deploy-on-zeabur-button-image]][deploy-on-zeabur-link] | [![][deploy-on-sealos-button-image]][deploy-on-sealos-link] |
+
+</div>
+
+> \[!TIP]
+>
+> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync).
+
+
+### `B` Deploying with Docker
+
+[![][docker-release-shield]][docker-release-link]
+[![][docker-size-shield]][docker-size-link]
+[![][docker-pulls-shield]][docker-pulls-link]
+
+We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
+
+```fish
+$ docker run -d -p 3210:3210 \
+  -e OPENAI_API_KEY=sk-xxxx \
+  --name gitmaya \
+  connectai-e/gitmaya
+```
+
+
+> \[!NOTE]
+>
+> For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment)
+
+
+<details><summary><h4>🫙 Docker Environment Variable</h4></summary>
+
+
+This project provides some additional configuration items set with environment variables:
+
+| Environment Variable | Required | Description                                                                                                                                                               | Example                                                                                   |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page                                                                                                                  | `sk-xxxxxx...xxxxxx`                                                                      |
+                                         |
+</details>
+> \[!NOTE]
+>
+> The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable)
+
+<div align="right">
+
+[![][back-to-top]](#readme-top)
+
+</div>
+
+
 ## ⌨️ Local Development
 
 You can use GitHub Codespaces for online development:
@@ -132,7 +198,7 @@ This project is [MIT](./LICENSE) licensed.
 <!-- LINK GROUP -->
 
 [back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
-[fossa-license-link]: [https://app.fossa.com/projects/git%2Bgithub.com%2Flobehub%2Flobe-chat](https://app.fossa.com/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya?ref=badge_large)
+[fossa-license-link]: [https://app.fossa.com/projects/git%2Bgithub.com%2Fconnectai-e%2Fgitmaya](https://app.fossa.com/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya?ref=badge_large)
 [fossa-license-shield]: https://app.fossa.com/api/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya.svg?type=large
 [profile-link]: https://github.com/connectai-e
 [pr-welcome-link]: https://github.com/connectai-e/gitmaya/pulls
@@ -153,3 +219,14 @@ This project is [MIT](./LICENSE) licensed.
 [github-releasedate-shield]: https://img.shields.io/github/release-date/connectai-e/gitmaya?labelColor=black&style=flat-square
 [github-stars-link]: https://github.com/connectai-e/gitmaya/network/stargazers
 [github-stars-shield]: https://img.shields.io/github/stars/connectai-e/gitmaya?color=ffcb47&labelColor=black&style=flat-square
+[docker-pulls-link]: https://hub.docker.com/r/connectai-e/gitmaya
+[docker-pulls-shield]: https://img.shields.io/docker/pulls/connectai-e/gitmaya?color=45cc11&labelColor=black&style=flat-square
+[docker-release-link]: https://hub.docker.com/r/connectai-e/gitmaya
+[docker-release-shield]: https://img.shields.io/docker/v/connectai-e/gitmaya?color=369eff&label=docker&labelColor=black&logo=docker&logoColor=white&style=flat-square
+[docker-size-link]: https://hub.docker.com/r/connectai-e/gitmaya
+[docker-size-shield]: https://img.shields.io/docker/image-size/connectai-e/gitmaya?color=369eff&labelColor=black&style=flat-square
+[deploy-on-sealos-button-image]: https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg
+[deploy-on-sealos-link]: https://cloud.sealos.io/?xxx
+[deploy-on-zeabur-button-image]: https://zeabur.com/button.svg
+[deploy-on-zeabur-link]: https://zeabur.com/templates/xxx
+
