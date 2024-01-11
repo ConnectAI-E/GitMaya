@@ -192,7 +192,7 @@ def with_authenticated_github():
             判断操用户是否绑定github有权限操作卡片，没有则发出对应的失败消息卡片
             """
 
-            logging.info("with_authenticated_github")
+            logging.info("------------with_authenticated_github")
             try:
                 # 找到用户的open_id
                 # 指令消息
@@ -243,7 +243,7 @@ def with_authenticated_github():
                 if not access_token:
                     from lark.chat import send_chat_failed_tip
 
-                    return send_chat_failed_tip(
+                    return send_chat_failed_tip.delay(
                         f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
                         app_id,
                         message_id,
