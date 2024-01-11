@@ -30,4 +30,17 @@ def get_account():
     )
 
 
+@bp.route("/account", methods=["POST"])
+@authenticated
+def set_account():
+    current_team = request.json.get("current_team")
+
+    if current_team:
+        session["team_id"] = user_id
+        # 默认是会话级别的session，关闭浏览器直接就失效了
+        session.permanent = True
+
+    return jsonify({"code": 0, "msg": "success"})
+
+
 app.register_blueprint(bp)
