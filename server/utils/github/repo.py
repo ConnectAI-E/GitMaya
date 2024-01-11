@@ -261,7 +261,7 @@ class GitHubAppRepo(BaseGitHubApp):
         self,
         repo_onwer: str,
         repo_name: str,
-        issue_number: int,
+        pull_number: int,
         merge_method: str = "merge",
         commit_title: str = None,
         commit_message: str = None,
