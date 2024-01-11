@@ -256,3 +256,39 @@ class GitHubAppRepo(BaseGitHubApp):
             "user_token",
             json=json,
         )
+
+    def merge_pull_request(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        issue_number: int,
+        merge_method: str = "merge",
+        commit_title: str = None,
+        commit_message: str = None,
+    ) -> dict | None:
+        """Merge Pull Request
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            pull_number (int): The pull number.
+            commit_title (str): The comment title.
+            commit_message (str): The comment message.
+            merge_method (str): The merge method (merge / squash / rebase).
+
+        Returns:
+            dict: The merged info.
+        """
+        json = dict(
+            merge_method=merge_method,
+            commit_title=commit_title,
+            commit_message=commit_message,
+        )
+        json = {k: v for k, v in json.items() if v is not None}
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/pulls/{pull_number}/merge",
+            "PUT",
+            "user_token",
+            json=json,
+        )

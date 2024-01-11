@@ -103,6 +103,9 @@ class GitMayaLarkParser(object):
         parser_insight = self.subparsers.add_parser("/insight")
         parser_insight.set_defaults(func=self.on_insight)
 
+        parser_merge = self.subparsers.add_parser("/merge")
+        parser_merge.set_defaults(func=self.on_merge)
+
         parser_close = self.subparsers.add_parser("/close")
         parser_close.set_defaults(func=self.on_close)
 
@@ -415,6 +418,13 @@ class GitMayaLarkParser(object):
         except Exception as e:
             logging.error(e)
         return "insight", param, unkown
+
+    def on_merge(self, param, unkown, *args, **kwargs):
+        logging.info("on_merge %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.PULL_REQUEST == topic:
+            tasks.merge_pull_request.delay(*args, **kwargs)
+        return "merge", param, unkown
 
     def on_close(self, param, unkown, *args, **kwargs):
         logging.info("on_close %r %r", vars(param), unkown)

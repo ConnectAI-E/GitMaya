@@ -394,6 +394,30 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
+    github_app, team, repo, pr, _, _ = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    response = github_app.merge_pull_request(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+    )
+    if "merged" not in response:
+        return send_pull_request_failed_tip(
+            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    # maunal点按钮，需要更新maunal
+    if root_id != message_id:
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        pr.extra.update(merged=True)
+        message = gen_pr_card_by_pr(pr, repo_url, True)
+        bot, _ = get_bot_by_application_id(app_id)
+        bot.update(message_id=message_id, content=message)
+    return response
+
+
+@celery.task()
 def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
