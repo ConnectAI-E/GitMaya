@@ -191,6 +191,8 @@ def with_authenticated_github():
             """
             判断操用户是否绑定github有权限操作卡片，没有则发出对应的失败消息卡片
             """
+
+            logging.info("with_authenticated_github")
             try:
                 # 找到用户的open_id
                 # 指令消息
@@ -232,6 +234,8 @@ def with_authenticated_github():
                     .first()
                 )
                 access_token = bind_user.access_token
+
+                logging.info(f"access_token: {access_token}")
 
                 host = os.getenv("VIRTUAL_HOST")
 
