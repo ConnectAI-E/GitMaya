@@ -387,6 +387,11 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         state="closed",
     )
     if response["message"] == "Bad credentials":
+        import os
+
+        from dotenv import find_dotenv, load_dotenv
+
+        load_dotenv(find_dotenv())
         host = os.getenv("VIRTUAL_HOST")
         url = f"{host}/api/github/oauth"
         return send_pull_request_failed_tip(
