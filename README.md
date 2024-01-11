@@ -66,7 +66,7 @@ There are four repositories for gitmaya, and this is one of them:
 |     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli)           | Python     | Super Git management tool          |
 
 <div align="right">
-    
+
 [![][back-to-top]](#readme-top)
 
 </div>
@@ -101,6 +101,7 @@ Gitmaya is an open-source platform, freely available and crafted by developers, 
 
 
 <div align="right">
+
 
 [![][back-to-top]](#readme-top)
 

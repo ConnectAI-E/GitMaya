@@ -94,7 +94,9 @@ class PullCard(FeishuMessageCard):
                     "合并 PR", type="primary", value={"command": f"/merge"}
                 ),
                 FeishuMessageButton(
-                    "重新打开 PR", type="primary", value={"command": f"/reopen"}
+                    "重新打开 PR",
+                    type="primary",
+                    value={"command": "/deny" if merged else "/reopen"},
                 )
                 if status == "已关闭"
                 else FeishuMessageButton(
