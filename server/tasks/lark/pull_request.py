@@ -388,8 +388,9 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if response["message"] == "Bad credentials":
         host = os.getenv("VIRTUAL_HOST")
+        url = f"{host}/api/github/oauth"
         return send_pull_request_failed_tip(
-            f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
+            url,
             app_id,
             message_id,
             data,
