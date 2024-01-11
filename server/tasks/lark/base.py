@@ -118,7 +118,7 @@ def with_lark_storage(event_type="message"):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            1. 按默认的规则，args[-3:]  message_id/card_event_token, message_content/card_event, raw_message/raw_card_event
+            1. 按默认的规则，args[-3:]  message_id/card_event_token, message_content/card_event, raw_message
             2. 可以尝试读取message_id + message_content存 event数据库
             3. result = func(*args, **kwargs)
             4. result默认当成数组处理，然后，就可以把result的每一项存action数据表

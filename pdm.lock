@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:a7da2811fd8ca929ed4d25ee3d234f721d39336f9ef41247498d432541056f20"
+content_hash = "sha256:43f32edc928eb2ad247e64cab386c1bf2f855d79d3cbd91f9635479089067a1c"
 
 [[package]]
 name = "amqp"
@@ -103,7 +103,7 @@ files = [
 
 [[package]]
 name = "ca-lark-sdk"
-version = "0.0.16"
+version = "0.0.17"
 requires_python = ">=3.8"
 summary = "lark(feishu) client"
 dependencies = [
@@ -111,7 +111,7 @@ dependencies = [
     "pycryptodome",
 ]
 files = [
-    {file = "ca-lark-sdk-0.0.16.tar.gz", hash = "sha256:4167e2b22da4e6589af5b7131b6002d6f9635661b04266250ab1dcb42b146967"},
+    {file = "ca-lark-sdk-0.0.17.tar.gz", hash = "sha256:f78426ccdb711cf278a6b97c4978a0b456802e5bd4b3ed42856f90ee55504079"},
 ]
 
 [[package]]
