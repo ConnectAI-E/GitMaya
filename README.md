@@ -85,7 +85,7 @@ This project provides some additional configuration items set with environment v
 | Environment Variable | Required | Description                                                                                                                                                               | Example                                                                                   |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page                                                                                                                  | `sk-xxxxxx...xxxxxx`                                                                      |
-                  
+
 > \[!NOTE]
 >
 > The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable)
@@ -229,4 +229,3 @@ This project is [MIT](./LICENSE) licensed.
 [deploy-on-sealos-link]: https://cloud.sealos.io/?xxx
 [deploy-on-zeabur-button-image]: https://zeabur.com/button.svg
 [deploy-on-zeabur-link]: https://zeabur.com/templates/xxx
-
