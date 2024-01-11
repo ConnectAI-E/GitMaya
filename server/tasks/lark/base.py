@@ -1,13 +1,17 @@
 import json
 import logging
+import os
 from functools import wraps
 from os import access
 
+import httpx
 from connectai.lark.sdk import Bot
+from lark.chat import send_chat_failed_tip
+
+# from routes.github import github_register
 from model.schema import (
     BindUser,
     ChatGroup,
-    GitObjectMessageIdRelation,
     IMAction,
     IMApplication,
     IMEvent,
@@ -19,10 +23,7 @@ from model.schema import (
     TeamMember,
     db,
 )
-from routes.github import github_register
 from sqlalchemy import or_
-
-from GitMaya.server.tasks.lark.chat import send_chat_failed_tip
 
 # def get_topic_type_by_message_id(message_id):
 #     """根据message_id获取话题类型和话题id(root_id)"""
@@ -238,9 +239,10 @@ def with_authenticated_github():
                 )
                 access_token = bind_user.access_token
 
+                host = os.getenv("VIRTUAL_HOST")
                 # 未获得access_token
                 if not access_token:
-                    github_register()
+                    httpx.get(f"{host}/api/github/oauth")
                     return send_chat_failed_tip(
                         "请绑定GitHub账号后重试",
                         app_id,
