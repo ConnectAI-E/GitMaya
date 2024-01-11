@@ -249,16 +249,10 @@ def update_issue_card(issue_id: str):
 
 
 def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
-    try:
-        root_id = data["event"]["message"]["root_id"]
-        openid = data["event"]["sender"]["sender_id"]["open_id"]
-    except Exception as e:
-        message_id = content["open_message_id"]
-        bot, _ = get_bot_by_application_id(app_id)
-        messages = bot.get(f"{bot.host}/open-apis/im/v1/messages/{message_id}").json()
-        message = messages.get("data", {}).get("items", [])[0]
-        root_id = message.get("root_id", message["message_id"])
-        openid = content["open_id"]
+    root_id = data["event"]["message"].get(
+        "root_id", data["event"]["message"]["message_id"]
+    )
+    openid = data["event"]["sender"]["sender_id"]["open_id"]
 
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
