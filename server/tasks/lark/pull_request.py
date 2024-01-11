@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
@@ -22,27 +21,7 @@ from utils.lark.pr_manual import PrManual
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
 
-from .base import (
-    get_bot_by_application_id,
-    get_git_object_by_message_id,
-    with_authenticated_github,
-)
-
-
-def check_access_token(app_id, message_id, response, data, *args, **kwargs):
-    if response["message"] == "Bad credentials":
-        # TODO 获取环境host
-        url = "https://testapi.gitmaya.com/api/github/oauth"
-        send_pull_request_failed_tip(
-            url,
-            app_id,
-            message_id,
-            data,
-            *args,
-            **kwargs,
-        )
-        return False
-    return True
+from .base import get_bot_by_application_id, get_git_object_by_message_id
 
 
 @celery.task()
@@ -390,9 +369,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 
 @celery.task()
-@with_authenticated_github()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    logging.error(f"---close_pull_request---")
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
@@ -402,12 +379,10 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         pr.pull_request_number,
         state="closed",
     )
-
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
-
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -430,7 +405,7 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "merged" not in response:
         return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
