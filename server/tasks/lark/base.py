@@ -227,7 +227,7 @@ def with_authenticated_github():
 
                 response = func(*args, **kwargs)
                 logging.error(f"with_authenticated_github response: {response}")
-                if response.status.code == 200:
+                if response.code == 200:
                     return
 
                 # 找到用户的open_id
@@ -241,7 +241,7 @@ def with_authenticated_github():
                 else:
                     app_id, message_id, raw_message = args[-3:]
                     # open_id = raw_message.get("open_id", None)
-                if response.status.code == 401:
+                if response.code == 0:
                     from lark.chat import send_chat_failed_tip
 
                     return send_chat_failed_tip.delay(
