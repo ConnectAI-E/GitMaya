@@ -180,6 +180,17 @@ def get_im_user_by_team_id(team_id, page=1, size=20):
 
 
 def set_team_member(team_id, code_user_id, im_user_id):
+    if (
+        db.session.query(TeamMember.id)
+        .filter(
+            TeamMember.team_id == team_id,
+            TeamMember.im_user_id == im_user_id,
+            TeamMember.status == 0,
+        )
+        .limit(1)
+        .scalar()
+    ):
+        return abort(400, "bind duplicate im user")
     db.session.query(TeamMember).filter(
         TeamMember.team_id == team_id,
         TeamMember.code_user_id == code_user_id,
