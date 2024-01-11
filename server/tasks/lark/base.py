@@ -2,13 +2,8 @@ import json
 import logging
 import os
 from functools import wraps
-from os import access
 
-import httpx
 from connectai.lark.sdk import Bot
-from lark.chat import send_chat_failed_tip
-
-# from routes.github import github_register
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -189,7 +184,6 @@ def with_lark_storage(event_type="message"):
     return decorate
 
 
-# TODO :
 def with_authenticated_github():
     def decorate(func):
         @wraps(func)
@@ -240,11 +234,13 @@ def with_authenticated_github():
                 access_token = bind_user.access_token
 
                 host = os.getenv("VIRTUAL_HOST")
-                # 未获得access_token
+
+                # 飞书侧判断github是否授权
                 if not access_token:
-                    httpx.get(f"{host}/api/github/oauth")
+                    from lark.chat import send_chat_failed_tip
+
                     return send_chat_failed_tip(
-                        "请绑定GitHub账号后重试",
+                        f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
                         app_id,
                         message_id,
                         raw_message,
@@ -252,7 +248,9 @@ def with_authenticated_github():
                         **kwargs,
                     )
 
-                # 有access_token才执行操作
+                # github侧判断是否授权
+                # TODO 区分db中有access_token,但github侧没有授权情况
+
                 return func(*args, **kwargs)
 
             except Exception as e:
