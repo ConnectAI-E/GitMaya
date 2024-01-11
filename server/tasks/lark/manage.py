@@ -109,7 +109,9 @@ def send_detect_repo(
 
 
 @celery.task()
-def send_manage_fail_message(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_manage_fail_message(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo card message to user.
 
     Args:
@@ -120,11 +122,14 @@ def send_manage_fail_message(content, app_id, message_id, *args, bot=None, **kwa
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = ManageFaild(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
 @celery.task()
-def send_manage_success_message(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_manage_success_message(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo card message to user.
 
     Args:
@@ -134,8 +139,8 @@ def send_manage_success_message(content, app_id, message_id, *args, bot=None, **
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    message = ManageSuccess(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
 @celery.task()

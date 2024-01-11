@@ -19,3 +19,7 @@ class TopicType(Enum):
     PR = "pull_request"
     PULL_REQUEST = "pull_request"
     CHAT = "chat"
+
+
+class GitHubPermissionError(Exception):
+    pass

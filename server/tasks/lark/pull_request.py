@@ -21,7 +21,11 @@ from utils.lark.pr_manual import PrManual
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
 
-from .base import get_bot_by_application_id, get_git_object_by_message_id
+from .base import (
+    get_bot_by_application_id,
+    get_git_object_by_message_id,
+    with_authenticated_github,
+)
 
 
 @celery.task()
@@ -418,6 +422,7 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs

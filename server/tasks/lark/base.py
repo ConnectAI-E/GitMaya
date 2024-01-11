@@ -16,6 +16,7 @@ from model.schema import (
     db,
 )
 from sqlalchemy import or_
+from utils.constant import GitHubPermissionError
 
 # def get_topic_type_by_message_id(message_id):
 #     """根据message_id获取话题类型和话题id(root_id)"""
@@ -111,6 +112,39 @@ def get_git_object_by_message_id(message_id):
         return repo, None, None
 
     return None, None, None
+
+
+def with_authenticated_github():
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """
+            1. 这个装饰器用来统一处理错误消息
+            2. github rest api调用出错的时候抛出异常
+            3. 这个装饰器捕获特定的异常，给操作者特定的报错消息
+            """
+            try:
+                return func(*args, **kwargs)
+            except GitHubPermissionError as e:
+                try:
+                    from .manage import send_manage_fail_message
+
+                    host = os.environ.get("DOMAIN")
+                    send_manage_fail_message(
+                        f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
+                        app_id,
+                        message_id,
+                        content,
+                        raw_message,
+                    )
+                except Exception as e:
+                    logging.error(e)
+            except Exception as e:
+                raise e
+
+        return wrapper
+
+    return decorate
 
 
 def with_lark_storage(event_type="message"):
