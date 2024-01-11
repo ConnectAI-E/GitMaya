@@ -54,7 +54,6 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
                 data["open_message_id"],
                 data,
                 message,
-                *args,
                 **kwargs,
             )
         except Exception as e:
