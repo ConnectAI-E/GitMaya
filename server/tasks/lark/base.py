@@ -191,56 +191,57 @@ def with_authenticated_github():
             """
             判断操用户是否绑定github有权限操作卡片，没有则发出对应的失败消息卡片
             """
+            logging.info("---with_authenticated_github---")
+            #     team = (
+            #         db.session.query(Team)
+            #         .filter(
+            #             Team.app_id == app_id,
+            #         )
+            #         .first()
+            #     )
 
-            logging.info("------------with_authenticated_github")
+            #     team_member = (
+            #         db.session.query(TeamMember)
+            #         .filter(
+            #             TeamMember.team_id == team.id,
+            #             TeamMember.im_user_id == open_id,
+            #             TeamMember.status == 0,
+            #             BindUser.status == 0,
+            #         )
+            #         .first()
+            #     )
+            #     bind_user = (
+            #         db.session.query(BindUser)
+            #         .filter(
+            #             BindUser.user_id == team_member.code_user_id,
+            #             BindUser.platform == "github",
+            #             BindUser.status == 0,
+            #         )
+            #         .first()
+            #     )
+            #     access_token = bind_user.access_token
+
+            # logging.info(f"access_token: {access_token}")
             try:
-                # 找到用户的open_id
-                # 指令消息
-                if len(args) > 4:
-                    app_id, message_id, content, raw_message, open_id = args[-4:]
-                    open_id = raw_message["event"]["sender"]["sender_id"].get(
-                        "open_id", None
-                    )
-                # 点击消息
-                else:
-                    app_id, message_id, raw_message = args[-3:]
-                    open_id = raw_message.get("open_id", None)
-
-                team = (
-                    db.session.query(Team)
-                    .filter(
-                        Team.app_id == app_id,
-                    )
-                    .first()
-                )
-
-                team_member = (
-                    db.session.query(TeamMember)
-                    .filter(
-                        TeamMember.team_id == team.id,
-                        TeamMember.im_user_id == open_id,
-                        TeamMember.status == 0,
-                        BindUser.status == 0,
-                    )
-                    .first()
-                )
-                bind_user = (
-                    db.session.query(BindUser)
-                    .filter(
-                        BindUser.user_id == team_member.code_user_id,
-                        BindUser.platform == "github",
-                        BindUser.status == 0,
-                    )
-                    .first()
-                )
-                access_token = bind_user.access_token
-
-                logging.info(f"access_token: {access_token}")
-
                 host = os.getenv("VIRTUAL_HOST")
 
-                # 飞书侧判断github是否授权
-                if not access_token:
+                response = func(*args, **kwargs)
+                logging.error(f"with_authenticated_github response: {response}")
+                if response.status.code == 200:
+                    return
+
+                # 找到用户的open_id
+                # 指令消息体
+                if len(args) > 4:
+                    app_id, message_id, content, raw_message, open_id = args[-4:]
+                    # open_id = raw_message["event"]["sender"]["sender_id"].get(
+                    #     "open_id", None
+                    # )
+                # 点击消息体
+                else:
+                    app_id, message_id, raw_message = args[-3:]
+                    # open_id = raw_message.get("open_id", None)
+                if response.status.code == 401:
                     from lark.chat import send_chat_failed_tip
 
                     return send_chat_failed_tip.delay(
@@ -251,11 +252,6 @@ def with_authenticated_github():
                         *args,
                         **kwargs,
                     )
-
-                # github侧判断是否授权
-                # TODO 区分db中有access_token,但github侧没有授权情况
-
-                return func(*args, **kwargs)
 
             except Exception as e:
                 logging.error(e)
