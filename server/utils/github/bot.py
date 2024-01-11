@@ -43,7 +43,7 @@ class BaseGitHubApp:
             dict | list | None: The response of the GitHub REST API.
         """
 
-        auth = ""
+        auth = "test"
 
         match auth_type:
             case "jwt":
