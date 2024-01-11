@@ -5,6 +5,7 @@ from datetime import datetime
 import httpx
 from jwt import JWT, jwk_from_pem
 from model.schema import BindUser
+from utils.constant import GitHubPermissionError
 
 
 class BaseGitHubApp:
@@ -67,6 +68,8 @@ class BaseGitHubApp:
                 },
                 json=json,
             )
+            if response.status_code == 401:
+                raise GitHubPermissionError(response.json().get("message"))
             if raw:
                 return response
             return response.json()
