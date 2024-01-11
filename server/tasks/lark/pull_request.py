@@ -385,6 +385,7 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         pr.pull_request_number,
         state="closed",
     )
+    logging.error(f"close_pull_request response:--------{response}")
     if "id" not in response:
         return send_pull_request_failed_tip(
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
