@@ -370,7 +370,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 @celery.task()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr, _, _ = _get_github_app(
+    github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.update_issue(
@@ -395,7 +395,7 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
 
 @celery.task()
 def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    github_app, team, repo, pr, _, _ = _get_github_app(
+    github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
     response = github_app.merge_pull_request(
