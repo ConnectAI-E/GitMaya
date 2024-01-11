@@ -1,9 +1,11 @@
 import json
 import logging
 from functools import wraps
+from os import access
 
 from connectai.lark.sdk import Bot
 from model.schema import (
+    BindUser,
     ChatGroup,
     GitObjectMessageIdRelation,
     IMAction,
@@ -13,9 +15,14 @@ from model.schema import (
     ObjID,
     PullRequest,
     Repo,
+    Team,
+    TeamMember,
     db,
 )
+from routes.github import github_register
 from sqlalchemy import or_
+
+from GitMaya.server.tasks.lark.chat import send_chat_failed_tip
 
 # def get_topic_type_by_message_id(message_id):
 #     """根据message_id获取话题类型和话题id(root_id)"""
@@ -175,6 +182,79 @@ def with_lark_storage(event_type="message"):
             except Exception as e:
                 logging.error(e)
             return result
+
+        return wrapper
+
+    return decorate
+
+
+# TODO :
+def with_authenticated_github():
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            """
+            判断操用户是否绑定github有权限操作卡片，没有则发出对应的失败消息卡片
+            """
+            try:
+                # 找到用户的open_id
+                # 指令消息
+                if len(args) > 4:
+                    app_id, message_id, content, raw_message, open_id = args[-4:]
+                    open_id = raw_message["event"]["sender"]["sender_id"].get(
+                        "open_id", None
+                    )
+                # 点击消息
+                else:
+                    app_id, message_id, raw_message = args[-3:]
+                    open_id = raw_message.get("open_id", None)
+
+                team = (
+                    db.session.query(Team)
+                    .filter(
+                        Team.app_id == app_id,
+                    )
+                    .first()
+                )
+
+                team_member = (
+                    db.session.query(TeamMember)
+                    .filter(
+                        TeamMember.team_id == team.id,
+                        TeamMember.im_user_id == open_id,
+                        TeamMember.status == 0,
+                        BindUser.status == 0,
+                    )
+                    .first()
+                )
+                bind_user = (
+                    db.session.query(BindUser)
+                    .filter(
+                        BindUser.user_id == team_member.code_user_id,
+                        BindUser.platform == "github",
+                        BindUser.status == 0,
+                    )
+                    .first()
+                )
+                access_token = bind_user.access_token
+
+                # 未获得access_token
+                if not access_token:
+                    github_register()
+                    return send_chat_failed_tip(
+                        "请绑定GitHub账号后重试",
+                        app_id,
+                        message_id,
+                        raw_message,
+                        *args,
+                        **kwargs,
+                    )
+
+                # 有access_token才执行操作
+                return func(*args, **kwargs)
+
+            except Exception as e:
+                logging.error(e)
 
         return wrapper
 
