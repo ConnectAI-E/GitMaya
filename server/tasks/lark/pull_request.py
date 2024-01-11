@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
@@ -374,9 +373,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 
 @celery.task()
-@with_authenticated_github()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
-    logging.error(f"---close_pull_request---")
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
@@ -386,12 +383,10 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
         pr.pull_request_number,
         state="closed",
     )
-
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
-
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -414,7 +409,7 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "merged" not in response:
         return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
