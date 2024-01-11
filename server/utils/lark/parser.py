@@ -125,7 +125,9 @@ class GitMayaLarkParser(object):
             chat_type = raw_message["event"]["message"].get("chat_type", "")
             if "p2p" != chat_type:
                 # 判断 pr/issue/repo?
-                root_id = raw_message["event"]["message"].get("root_id")
+                root_id = raw_message["event"]["message"].get(
+                    "root_id", raw_message["event"]["message"]["message_id"]
+                )
 
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
