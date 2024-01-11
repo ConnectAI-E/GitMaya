@@ -1,18 +1,18 @@
 <a name="readme-top"></a>
-<div align="center">
-    <a href="https://gitmaya.com" title="GitMaya - make git flow in chat">
-        <img src="https://github.com/ConnectAI-E/GitMaya-Website/assets/50035229/15a87dd2-efb9-4f40-8002-9ac91983da5b" alt="Gitmaya - Next generation gitops for boosting developer teams productivity" />
-    </a>
-</div>
 
+<div align="center">
+<a href="https://gitmaya.com" target="_blank" style="display: block" align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ConnectAI-E/GitMaya/assets/50035229/45cfd4f3-9c17-44d2-b6b7-3aa97c08006b" width="655" height="auto">
+    <img alt="GitMaya - make git flow in chat " src="https://github.com/ConnectAI-E/GitMaya/assets/50035229/1c28f0ca-d6e6-4ebd-b858-c4be3eff845e" width="655" height="auto">
+  </picture>
+</a>
 <p align='center'>
   <samp>An open-source, high-performance GitOps for boosting developer-teams productivity</samp>
 <br/>
  <samp>Supports lark, discord, slack, and so on <sup><em>(FULL OPENSOURCE)</em></sup></samp>
 </p>
 
-
-<div align="center">
 
 <!-- SHIELD GROUP -->
 [![][github-contributors-shield]][github-contributors-link]
