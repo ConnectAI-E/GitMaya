@@ -35,7 +35,7 @@
 
 ## 🛳 Self Hosting
 
-GitMaya provides Self-Hosted Version with Vercel and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
+GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
 ### `A` Deploying with Zeabur or Sealos
 
