@@ -85,12 +85,12 @@ This project provides some additional configuration items set with environment v
 | Environment Variable | Required | Description                                                                                                                                                               | Example                                                                                   |
 | -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page                                                                                                                  | `sk-xxxxxx...xxxxxx`                                                                      |
-                                         |
-</details>
+                  
 > \[!NOTE]
 >
 > The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable)
 
+</details>
 <div align="right">
 
 [![][back-to-top]](#readme-top)
