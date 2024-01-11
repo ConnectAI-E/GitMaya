@@ -70,7 +70,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(labels)}*",
+                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(labels)} *",
                                 text_align="left",
                             ),
                             width="weighted",
