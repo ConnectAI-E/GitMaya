@@ -47,7 +47,7 @@ def check_access_token(app_id, message_id, response, data, *args, **kwargs):
 
 @celery.task()
 def send_pull_request_failed_tip(
-    content, app_id, message_id, check_access_token, *args, bot=None, **kwargs
+    content, app_id, message_id, *args, bot=None, **kwargs
 ):
     """send new card message to user.
 
@@ -58,11 +58,6 @@ def send_pull_request_failed_tip(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    if not check_access_token:
-        url = "https://testapi.gitmaya.com/api/github/oauth"
-        message = PrTipFailed(content=url)
-        return bot.reply(message_id, message).json()
-
     message = PrTipFailed(content=content)
     return bot.reply(message_id, message).json()
 
@@ -409,19 +404,9 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
 
     if "id" not in response:
-        if response["message"] == "Bad credentials":
-            check_access_token = False
-
-            return send_pull_request_failed_tip(
-                "关闭PullRequest失败",
-                app_id,
-                message_id,
-                content,
-                data,
-                check_access_token,
-                *args,
-                **kwargs,
-            )
+        return send_pull_request_failed_tip(
+            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
 
     # maunal点按钮，需要更新maunal
     if root_id != message_id:

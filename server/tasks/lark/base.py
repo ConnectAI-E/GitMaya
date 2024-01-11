@@ -184,7 +184,7 @@ def with_lark_storage(event_type="message"):
     return decorate
 
 
-def with_authenticated_github():
+def with_authenticated_github1():
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
