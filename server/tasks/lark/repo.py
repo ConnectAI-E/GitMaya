@@ -391,6 +391,7 @@ def update_repo_info(repo_id: str) -> dict | None:
             stargazers_count=repo.extra.get("stargazers_count", 0),
             forks_count=repo.extra.get("forks_count", 0),
             visibility="私有仓库" if repo.extra.get("private") else "公开仓库",
+            archived=repo.extra.get("archived", False),
             updated=repo.extra.get("updated_at", ""),
         )
 

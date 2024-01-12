@@ -10,6 +10,7 @@ class RepoInfo(FeishuMessageCard):
         repo_topic=[],
         homepage="待补充",
         visibility="私有仓库",
+        archived=False,
         updated="2022年12月23日 16:32",
         open_issues_count=0,
         stargazers_count=1,
@@ -156,7 +157,15 @@ class RepoInfo(FeishuMessageCard):
             ),
             GitMayaCardNote(f"最近更新 {updated.split('T')[0]}"),
         ]
-        header = FeishuMessageCardHeader(f"{repo_name} 仓库信息", template="blue")
+
+        header = (
+            FeishuMessageCardHeader(
+                f"{repo_name} 仓库信息 **<font color='red'>(已归档)</font>**", template="blue"
+            )
+            if archived
+            else FeishuMessageCardHeader(f"{repo_name} 仓库信息 ", template="blue")
+        )
+
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)
