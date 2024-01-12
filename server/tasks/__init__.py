@@ -14,7 +14,7 @@ celery.conf.beat_schedule = {
     },
     # 定时拉取（更新）所有 GitHub 侧信息
     "pull_github_repo_all": {
-        "task": "tasks.github.pull_github_repo_all",
+        "task": "tasks.github.github.pull_github_repo_all",
         "schedule": timedelta(hours=24),
         "args": (),
     },
