@@ -152,6 +152,9 @@ class Team(Base):
         db.String(128), nullable=True, comment="名称"
     )  # 同时也是 GitHub Org 的 name
     description = db.Column(db.String(1024), nullable=True, comment="描述")
+    platform_id = db.Column(
+        db.String(128), nullable=True, comment="平台ID, 如GitHub Org ID"
+    )
     extra = db.Column(
         JSONStr(2048),
         nullable=True,
