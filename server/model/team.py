@@ -241,12 +241,26 @@ def create_team(app_info: dict) -> Team:
     if not current_user_id:
         abort(403, "can not found user by id")
 
+    # 根据 Org ID 查找是否已经存在
+    # 若存在，则返回当前的 team
+    current_team = (
+        db.session.query(Team)
+        .filter(
+            Team.platform_id == app_info["account"]["id"],
+            Team.status == 0,
+        )
+        .first()
+    )
+    if current_team:
+        return current_team
+
     new_team = Team(
         id=ObjID.new_id(),
         user_id=current_user_id,
         name=app_info["account"]["login"],
         description=None,
-        # extra=app_info,
+        platform_id=str(app_info["account"]["id"]),
+        extra=app_info["account"],
     )
 
     db.session.add(new_team)
@@ -283,6 +297,21 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
     Returns:
         CodeApplication: CodeApplication object.
     """
+
+    # 查询当前 team 是否已经存在 code application
+    current_code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.team_id == team_id,
+            CodeApplication.status.in_([0, 1]),
+        )
+        .first()
+    )
+    if current_code_application:
+        # 更新 installation_id
+        current_code_application.installation_id = installation_id
+        db.session.commit()
+        return current_code_application
 
     new_code_application = CodeApplication(
         id=ObjID.new_id(),

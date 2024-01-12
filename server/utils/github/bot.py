@@ -162,6 +162,7 @@ class BaseGitHubApp:
 
         Returns:
             dict: The installation info.
+        https://docs.github.com/zh/rest/apps/apps?apiVersion=2022-11-28#get-an-installation-for-the-authenticated-app
         """
 
         return self.base_github_rest_api(
