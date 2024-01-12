@@ -63,15 +63,15 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
 
 
 @hook.on_bot_message(message_type="text")
-def on_text_message(bot, message_id, content, *args, **kwargs):
+def on_text_message(bot, message_id, content, message, *args, **kwargs):
     text = content["text"]
     # print("reply_text", message_id, text)
     # bot.reply_text(message_id, "reply: " + text)
     try:
-        parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
+        parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
     except ArgumentError:
         # 命令解析错误，直接调用里面的回复消息逻辑
-        parser.on_comment(text, bot.app_id, message_id, content, *args, **kwargs)
+        parser.on_comment(text, bot.app_id, message_id, content, message, **kwargs)
     except Exception as e:
         app.logger.exception(e)
 
