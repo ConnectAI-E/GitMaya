@@ -253,6 +253,7 @@ def create_team(app_info: dict) -> Team:
     )
     if current_team:
         current_team.extra = app_info["account"]
+        db.session.commit()
         return current_team
 
     new_team = Team(
