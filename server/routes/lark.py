@@ -76,6 +76,11 @@ def on_text_message(bot, message_id, content, message, *args, **kwargs):
         app.logger.exception(e)
 
 
+@hook.on_bot_event(event_type="p2p_chat_create")
+def on_bot_event(bot, event_id, event, message, *args, **kwargs):
+    parser.on_welcome(bot.app_id, event_id, event, message, **kwargs)
+
+
 @oauth.on_bot_event(event_type="oauth:user_info")
 def on_oauth_user_info(bot, event_id, user_info, *args, **kwargs):
     # oauth user_info

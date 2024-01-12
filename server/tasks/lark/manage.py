@@ -1,14 +1,15 @@
 import logging
-import webbrowser
-from math import log
+import os
 
 from celery_app import app, celery
 from connectai.lark.sdk import Bot, FeishuShareChatMessage, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
+    ChatUser,
     CodeApplication,
     IMApplication,
+    IMUser,
     ObjID,
     Repo,
     RepoUser,
@@ -24,6 +25,73 @@ from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
 
 from .base import get_bot_by_application_id
+
+
+@celery.task()
+def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+    if application:
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+                Team.status == 0,
+            )
+            .first()
+        )
+        if team:
+            open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+            github_user = (
+                db.session.query(CodeUser)
+                .join(
+                    TeamMember,
+                    TeamMember.code_user_id == CodeUser.id,
+                )
+                .join(
+                    IMUser,
+                    IMUser.id == TeamMember.im_user_id,
+                )
+                .filter(
+                    IMUser.openid == open_id,
+                    TeamMember.team_id == team.id,
+                )
+                .first()
+            )
+            if not github_user or not github_user.access_token:
+                host = os.environ.get("DOMAIN")
+                send_manage_fail_message(
+                    f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
+                    app_id,
+                    event_id,
+                    event,
+                    message,
+                    bot=bot,
+                )
+            repos = (
+                db.session.query(Repo)
+                .join(
+                    CodeApplication,
+                    Repo.application_id == CodeApplication.id,
+                )
+                .join(Team, CodeApplication.team_id == team.id)
+                .filter(
+                    Team.id == team.id,
+                    Repo.status == 0,
+                )
+                .order_by(
+                    Repo.modified.desc(),
+                )
+                .limit(20)
+                .all()
+            )
+            message = ManageManual(
+                org_name=team.name,
+                repos=[(repo.id, repo.name) for repo in repos],
+                team_id=team.id,
+            )
+            # 这里不是回复，而是直接创建消息
+            return bot.send(open_id, message).json()
+    return False
 
 
 @celery.task()
