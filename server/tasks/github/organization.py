@@ -1,8 +1,8 @@
 from app import app, db
 from celery_app import celery
 from model.schema import CodeApplication, Team
+from tasks.github.github import pull_github_repo
 from utils.github.model import OrganizationEvent
-from utils.user import add_team_member, create_github_member
 
 
 @celery.task
@@ -36,15 +36,13 @@ def on_organization_member_added(event_dict: dict) -> list:
         event_dict (dict): The dict of the event.
 
     Returns:
-        list: user_id and bind_user_id.
+        list: The list of task id.
     """
     try:
         event = OrganizationEvent(**event_dict)
     except Exception as e:
         app.logger.error(f"Failed to parse Organization event: {e}")
         return []
-
-    user_info = event.membership.user
 
     # 根据 installation id 查询
     installation_id = event.installation.id
@@ -58,21 +56,16 @@ def on_organization_member_added(event_dict: dict) -> list:
         app.logger.error(f"Failed to get code application: {installation_id}")
         return []
 
-    tema = db.session.query(Team).filter_by(id=code_application.team_id).first()
-    if tema is None:
+    team = db.session.query(Team).filter_by(id=code_application.team_id).first()
+    if team is None:
         app.logger.error(f"Failed to get team: {code_application.team_id}")
         return []
 
-    user_id, bind_user_id = create_github_member(
-        github_id=str(user_info.id),
-        name=user_info.login,
-        email=user_info.email,
-        avatar=user_info.avatar_url,
-        access_token=None,
+    task = pull_github_repo.delay(
+        org_name=team.name,
+        installation_id=code_application.installation_id,
         application_id=code_application.id,
-        extra=user_info.model_dump(),
+        team_id=team.id,
     )
 
-    add_team_member(team_id=tema.id, code_user_id=bind_user_id)
-
-    return [user_id, bind_user_id]
+    return [task.id]
