@@ -3,7 +3,7 @@ import webbrowser
 from math import log
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot, FeishuTextMessage
+from connectai.lark.sdk import Bot, FeishuShareChatMessage, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -202,6 +202,12 @@ def create_chat_group_for_repo(
         .first()
     )
     if chat_group:
+        try:
+            message = FeishuShareChatMessage(chat_id=chat_group.chat_id)
+            open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+            bot.send(open_id, message).json()
+        except Exception as e:
+            logging.error(e)
         return send_manage_fail_message(
             "不允许重复创建项目群", app_id, message_id, *args, bot=bot, **kwargs
         )
