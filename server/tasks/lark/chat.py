@@ -99,6 +99,7 @@ def create_issue(
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
         if parent_id:
+            bot, _ = get_bot_by_application_id(app_id)
             parent_message_url = f"{bot.host}/open-apis/im/v1/messages/{parent_id}"
             result = bot.get(parent_message_url).json()
             if len(result["data"].get("items", [])) > 0:
