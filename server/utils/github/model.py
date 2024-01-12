@@ -50,6 +50,8 @@ class User(BaseModel):
     id: int
     login: str
     type: str
+    avatar_url: Optional[str] = None
+    email: Optional[str] = None
 
 
 class PRInIssue(BaseModel):
@@ -114,6 +116,12 @@ class PullRequest(BaseModel):
     requested_reviewers: Optional[list[User]] = []
 
 
+class MemberShip(BaseModel):
+    role: str
+    state: str
+    user: User
+
+
 class RepoEvent(BaseEvent):
     action: str
     repository: Repository
@@ -136,3 +144,9 @@ class PullRequestEvent(BaseEvent):
     action: str
     pull_request: PullRequest
     repository: Repository
+
+
+class OrganizationEvent(BaseEvent):
+    action: str
+    organization: Organization
+    membership: MemberShip
