@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from datetime import datetime
@@ -69,6 +70,7 @@ class BaseGitHubApp:
                 json=json,
             )
             if response.status_code == 401:
+                logging.error("base_github_rest_api: GitHub Permission Error")
                 raise GitHubPermissionError(response.json().get("message"))
             if raw:
                 return response
