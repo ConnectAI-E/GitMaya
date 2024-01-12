@@ -20,9 +20,9 @@ class IssueCard(FeishuMessageCard):
         users = (
             "".join([f"<at id={open_id}></at>" for open_id in assignees])
             if len(assignees) > 0
-            else "<font color='red'>待分配</font>"
+            else "**<font color='red'>待分配</font>**"
         )
-        labels = "、".join(tags) if len(tags) > 0 else "<font color='red'>待补充</font>"
+        labels = "、".join(tags) if len(tags) > 0 else "**<font color='red'>待补充</font>**"
         action_button = (
             FeishuMessageButton("重新打开", type="primary", value={"command": f"/reopen"})
             if status == "已关闭"
