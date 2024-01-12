@@ -352,6 +352,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def create_pull_request_comment(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -367,6 +368,7 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
 
 
 @celery.task()
+@with_authenticated_github()
 def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -392,6 +394,7 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -441,6 +444,7 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def change_pull_request_title(
     title, app_id, message_id, content, data, *args, **kwargs
 ):
@@ -461,6 +465,7 @@ def change_pull_request_title(
 
 
 @celery.task()
+@with_authenticated_github()
 def change_pull_request_label(
     labels, app_id, message_id, content, data, *args, **kwargs
 ):
@@ -481,6 +486,7 @@ def change_pull_request_label(
 
 
 @celery.task()
+@with_authenticated_github()
 def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -499,6 +505,7 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
 
 
 @celery.task()
+@with_authenticated_github()
 def change_pull_request_assignees(
     users, app_id, message_id, content, data, *args, **kwargs
 ):

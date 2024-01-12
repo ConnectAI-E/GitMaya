@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from functools import wraps
 
 from connectai.lark.sdk import Bot
@@ -129,6 +130,7 @@ def with_authenticated_github():
                 try:
                     from .manage import send_manage_fail_message
 
+                    app_id, message_id, content, raw_message = args[-4:]
                     host = os.environ.get("DOMAIN")
                     send_manage_fail_message(
                         f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
