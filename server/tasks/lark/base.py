@@ -132,7 +132,6 @@ def with_authenticated_github():
 
                     app_id, message_id, content, raw_message = args[-4:]
 
-                    logging.error(f"with_authenticated_github args: {args}")
                     host = os.environ.get("DOMAIN")
                     send_manage_fail_message(
                         f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
