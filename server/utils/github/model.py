@@ -149,4 +149,4 @@ class PullRequestEvent(BaseEvent):
 class OrganizationEvent(BaseEvent):
     action: str
     organization: Organization
-    membership: MemberShip
+    membership: Optional[MemberShip] = None
