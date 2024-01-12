@@ -130,10 +130,7 @@ def with_authenticated_github():
                 try:
                     from .manage import send_manage_fail_message
 
-                    if isinstance(args[2], dict):
-                        app_id, message_id, content, raw_message = args[-4:]
-                    else:
-                        app_id, message_id, raw_message = args[-3:]
+                    app_id, message_id, content, raw_message = args[-4:]
 
                     logging.error(f"with_authenticated_github args: {args}")
                     host = os.environ.get("DOMAIN")
