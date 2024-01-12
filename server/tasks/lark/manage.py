@@ -123,7 +123,6 @@ def send_manage_fail_message(
         bot, _ = get_bot_by_application_id(app_id)
     message = ManageFaild(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
-    logging.error("send_manage_fail_message open_id %r", open_id)
     return bot.send(open_id, message).json()
 
 
@@ -140,7 +139,6 @@ def send_manage_success_message(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    message = ManageSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.send(open_id, message).json()
 
