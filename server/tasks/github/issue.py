@@ -2,7 +2,17 @@ import os
 
 from app import app, db
 from celery_app import celery
-from model.schema import Issue, ObjID, PullRequest, Repo
+from model.schema import (
+    BindUser,
+    CodeApplication,
+    Issue,
+    ObjID,
+    PullRequest,
+    Repo,
+    Team,
+    TeamMember,
+    User,
+)
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
@@ -148,7 +158,48 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    task = send_issue_card.delay(new_issue.id)
+    github_user_id = event.sender.id
+    installation_id = event.installation.id
+    user = db.session.query(User).filter(User.unionid == github_user_id).first()
+    if not user:
+        task = send_issue_card.delay(new_issue.id)
+    else:
+        code_application = (
+            db.session.query(CodeApplication)
+            .filter(CodeApplication.installation_id == installation_id)
+            .first()
+        )
+
+        team = (
+            db.session.query(Team)
+            .filter(Team.id == code_application.team_id, Team.status.in_([1, 0]))
+            .first()
+        )
+
+        team_member = (
+            db.session.query(TeamMember)
+            .join(BindUser, TeamMember.code_user_id == BindUser.id)
+            .filter(
+                TeamMember.team_id == team.id,
+                BindUser.user_id == user.id,
+                BindUser.platform == "github",
+            )
+            .first()
+        )
+
+        im_bind_user = (
+            db.session.query(BindUser)
+            .filter(
+                BindUser.user_id == user.id,
+                BindUser.id == team_member.im_user_id,
+                BindUser.platform == "lark",
+            )
+            .first()
+        )
+
+        task = send_issue_card.delay(
+            new_issue.id, im_bind_user.openid, im_bind_user.name
+        )
 
     return [task.id]
 

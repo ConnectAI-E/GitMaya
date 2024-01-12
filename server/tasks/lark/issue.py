@@ -149,11 +149,13 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-def send_issue_card(issue_id):
+def send_issue_card(issue_id, openid: str = "all", name: str = "所有人"):
     """send new issue card message to user.
 
     Args:
         issue_id: Issue.id.
+        openid: BindUser.openid.
+        name: BindUser.name.
     """
     issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
     if issue:
@@ -182,7 +184,9 @@ def send_issue_card(issue_id):
                     first_message_result = bot.reply(
                         message_id,
                         # 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
+                        FeishuTextMessage(
+                            f'<at user_id="{openid}">{name}</at>\n{repo_url}'
+                        ),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)
