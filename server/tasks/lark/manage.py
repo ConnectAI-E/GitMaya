@@ -61,9 +61,10 @@ def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
             if not github_user or not github_user.access_token:
                 host = os.environ.get("DOMAIN")
                 message = ManageFaild(
-                    content=f"[请点击绑定GitHub账号后重试]({host}/api/github/oauth)",
+                    content=f"[请点击绑定GitHub账号]({host}/api/github/oauth)",
+                    title="🎉 欢迎使用GitMaya！",
                 )
-                return bot.send(open_id, message).json()
+                bot.send(open_id, message).json()
             repos = (
                 db.session.query(Repo)
                 .join(
