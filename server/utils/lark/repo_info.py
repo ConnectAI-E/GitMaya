@@ -6,22 +6,35 @@ class RepoInfo(FeishuMessageCard):
         self,
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="aaaaaaaaaa",
-        repo_topic=["aaa", "ccc"],
-        homepage="",
+        repo_description="待补充",
+        repo_topic=[],
+        homepage="待补充",
         visibility="私有仓库",
+        archived=False,
         updated="2022年12月23日 16:32",
         open_issues_count=0,
         stargazers_count=1,
         forks_count=2,
     ):
+        labels = (
+            "、".join(repo_topic)
+            if len(repo_topic) > 0
+            else "**<font color='red'>待补充</font>**"
+        )
+        repo_description = (
+            repo_description
+            if repo_description != "待补充"
+            else "**<font color='red'>待补充</font>**"
+        )
+        homepage = homepage if homepage != "待补充" else "**<font color='red'>待补充</font>**"
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**📦 仓库名：** \n{repo_name}\n",
+                                f"**📦 仓库名：** \n{repo_name}",
+                                text_align="left",
                             ),
                             width="weighted",
                             weight=1,
@@ -49,12 +62,13 @@ class RepoInfo(FeishuMessageCard):
                         background_style="grey",
                     ),
                     FeishuMessageMarkdown(
-                        f"**🗒️ 描述：**\n{repo_description}\n\n", text_align="left"
+                        f"**🗒️ 描述：**\n{repo_description}", text_align="left"
                     ),
                     FeishuMessageMarkdown(
-                        f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"
+                        f"🏷️ **标签：**\n{labels}",
+                        text_align="left,",
                     ),
-                    width="auto",
+                    width="weighted",
                     weight=1,
                     vertical_align="top",
                 ),
@@ -66,24 +80,14 @@ class RepoInfo(FeishuMessageCard):
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                # f"**Issue 状态**\n<font color='green'>待处理 {issue_need_process_num} 条</font>\n累计 {issue_total_num} 条"
                                 f"**Issue 状态**\n累计 {open_issues_count} 条"
                             ),
                             width="weighted",
                             weight=1,
                             vertical_align="top",
                         ),
-                        # FeishuMessageColumn(
-                        #     FeishuMessageMarkdown(
-                        #         f"**Pr 状态**\n<font color='green'>待合并 {pr_need_process_num} 条</font>\n累计 {pr_total_num} 条",
-                        #     ),
-                        #     width="weighted",
-                        #     weight=1,
-                        #     vertical_align="top",
-                        # ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                # f"**Fork 热度**\n<font color='green'>本周新增 {fork_new_num} 条</font>\n累计 {fork_total_num} 条",
                                 f"**Fork 热度**\n累计 {forks_count} 条",
                             ),
                             width="weighted",
@@ -92,7 +96,6 @@ class RepoInfo(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                # f"**Star 热度**\n<font color='green'>本周新增 {star_new_num} 条</font>\n累计 {star_total_num} 条",
                                 f"**Star 热度**\n累计 {stargazers_count} 条",
                             ),
                             width="auto",
@@ -119,7 +122,7 @@ class RepoInfo(FeishuMessageCard):
                 ),
                 FeishuMessageButton(
                     "打开 Repo Insight",
-                    type="default",
+                    type="plain_text",
                     multi_url={
                         "url": f"{repo_url}/pulse",
                         "android_url": f"{repo_url}/pulse",
@@ -129,7 +132,7 @@ class RepoInfo(FeishuMessageCard):
                 ),
                 FeishuMessageButton(
                     "在 GitHub 中打开",
-                    type="default",
+                    type="plain_text",
                     multi_url={
                         "url": repo_url,
                         "android_url": repo_url,
@@ -137,20 +140,34 @@ class RepoInfo(FeishuMessageCard):
                         "pc_url": repo_url,
                     },
                 ),
-                FeishuMessageButton(
-                    "···",
-                    type="default",
-                    multi_url={
-                        "url": repo_url,
-                        "android_url": repo_url,
-                        "ios_url": repo_url,
-                        "pc_url": repo_url,
-                    },
+                FeishuMessageOverflow(
+                    FeishuMessageOption(
+                        value="appStore",
+                        content="修改GitHub Repo信息",
+                    ),
+                    FeishuMessageOption(
+                        value="appStore",
+                        content="暂停使用项目群",
+                    ),
+                    FeishuMessageOption(
+                        value="appStore",
+                        content="更新仓库状态",
+                    ),
                 ),
             ),
             GitMayaCardNote(f"最近更新 {updated.split('T')[0]}"),
         ]
-        header = FeishuMessageCardHeader(f"{repo_name} 仓库信息", template="blue")
+
+        header = (
+            FeishuMessageCardHeader(
+                f"{repo_name} 仓库信息 ** <font color='red'>(已归档)</font> **",
+                tag="lark_md",
+                template="blue",
+            )
+            if archived
+            else FeishuMessageCardHeader(f"{repo_name} 仓库信息 ", template="blue")
+        )
+
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)
@@ -167,8 +184,6 @@ if __name__ == "__main__":
     message = RepoInfo(
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="🖲️ Next generation gitops for boosting developer-teams productivity",
-        repo_topic=["GitMaya", "git", "feishu", "lark"],
     )
     print("message", json.dumps(message))
     result = httpx.post(

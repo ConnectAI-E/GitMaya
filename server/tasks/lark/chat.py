@@ -20,7 +20,7 @@ from utils.lark.chat_manual import ChatManual
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
 
-from .base import get_bot_by_application_id
+from .base import get_bot_by_application_id, with_authenticated_github
 
 
 @celery.task()
@@ -92,6 +92,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
