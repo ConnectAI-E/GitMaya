@@ -41,7 +41,7 @@ def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
         )
         if team:
             # p2p_chat_create v1.0
-            open_id = raw_message["event"]["operator"].get("open_id", None)
+            open_id = message["event"]["operator"].get("open_id", None)
             github_user = (
                 db.session.query(CodeUser)
                 .join(
