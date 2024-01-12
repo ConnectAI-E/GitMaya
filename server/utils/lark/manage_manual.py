@@ -16,7 +16,7 @@ class ManageManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="** 👀 关联历史 GitHub 项目**\n*话题下回复「/match + repo url + chat name 」 *",
+                content="** 👀 关联历史 GitHub 项目**\n*回复「/match + repo url + chat name 」 *",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[
@@ -35,7 +35,7 @@ class ManageManual(FeishuMessageCard):
                 else None,
             ),
             FeishuMessageDiv(
-                content="** 📦 新建 GitHub Repo**\n*话题下回复「/new」 *",
+                content="** 📦 新建 GitHub Repo**\n*回复「/new」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "新建 GitHub Repo",
@@ -50,7 +50,7 @@ class ManageManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** ⚡️ 查看个人主页 **\n*话题下回复「/view」 *",
+                content=f"** ⚡️ 查看个人主页 **\n*回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 GitHub 主页",
@@ -65,7 +65,7 @@ class ManageManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** ⚙️ 修改 {org_name} 设置**\n*话题下回复「/setting 」*",
+                content=f"** ⚙️ 修改 {org_name} 设置**\n*回复「/setting 」*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "前往 setting 面版",
