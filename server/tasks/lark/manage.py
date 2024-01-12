@@ -270,6 +270,7 @@ def create_chat_group_for_repo(
     if chat_group:
         try:
             message = FeishuShareChatMessage(chat_id=chat_group.chat_id)
+            raw_message = args[1]
             open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
             bot.send(open_id, message).json()
         except Exception as e:
