@@ -1,4 +1,4 @@
-from .base import *
+from base import *
 
 
 class RepoInfo(FeishuMessageCard):
@@ -6,9 +6,9 @@ class RepoInfo(FeishuMessageCard):
         self,
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="aaaaaaaaaa",
-        repo_topic=["aaa", "ccc"],
-        homepage="",
+        repo_description="待补充",
+        repo_topic=["待补充"],
+        homepage="待补充",
         visibility="私有仓库",
         updated="2022年12月23日 16:32",
         open_issues_count=0,
@@ -21,7 +21,8 @@ class RepoInfo(FeishuMessageCard):
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**📦 仓库名：** \n{repo_name}\n",
+                                f"**📦 仓库名：** \n{repo_name}",
+                                text_align="left",
                             ),
                             width="weighted",
                             weight=1,
@@ -49,12 +50,12 @@ class RepoInfo(FeishuMessageCard):
                         background_style="grey",
                     ),
                     FeishuMessageMarkdown(
-                        f"**🗒️ 描述：**\n{repo_description}\n\n", text_align="left"
+                        f"**🗒️ 描述：**\n{repo_description}", text_align="left"
                     ),
                     FeishuMessageMarkdown(
                         f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"
                     ),
-                    width="auto",
+                    width="weighted",
                     weight=1,
                     vertical_align="top",
                 ),
@@ -167,8 +168,6 @@ if __name__ == "__main__":
     message = RepoInfo(
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="🖲️ Next generation gitops for boosting developer-teams productivity",
-        repo_topic=["GitMaya", "git", "feishu", "lark"],
     )
     print("message", json.dumps(message))
     result = httpx.post(
