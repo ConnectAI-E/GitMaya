@@ -6,8 +6,8 @@ from connectai.lark.sdk import Bot, FeishuShareChatMessage, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
-    ChatUser,
     CodeApplication,
+    CodeUser,
     IMApplication,
     IMUser,
     ObjID,
