@@ -142,7 +142,7 @@ class GitMayaLarkParser(object):
         return chat_type, topic
 
     def on_welcome(self, *args, **kwargs):
-        logging.info("on_welcome %r", text)
+        logging.info("on_welcome %r", args)
         tasks.send_welcome_message.delay(*args, **kwargs)
 
     def on_comment(self, text, *args, **kwargs):
