@@ -1,4 +1,4 @@
-from .base import *
+from base import *
 
 
 class RepoInfo(FeishuMessageCard):
@@ -160,7 +160,9 @@ class RepoInfo(FeishuMessageCard):
 
         header = (
             FeishuMessageCardHeader(
-                f"{repo_name} 仓库信息 **<font color='red'>(已归档)</font>**", template="blue"
+                f"{repo_name} 仓库信息 ** <font color='red'>(已归档)</font> **",
+                tag="lark_md",
+                template="blue",
             )
             if archived
             else FeishuMessageCardHeader(f"{repo_name} 仓库信息 ", template="blue")
