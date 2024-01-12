@@ -6,7 +6,7 @@ class ManageRepoDetect(FeishuMessageCard):
         self,
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="",
+        repo_description="待补充",
         repo_topic=[],
         homepage="待补充",
         visibility="私有仓库",
@@ -15,6 +15,11 @@ class ManageRepoDetect(FeishuMessageCard):
         github_url = "https://github.com"
         setting_url = f"{repo_url}/settings"
         homepage = homepage if homepage != "待补充" else "**<font color='red'>待补充</font>**"
+        repo_description = (
+            repo_description
+            if repo_description != "待补充"
+            else "**<font color='red'>待补充</font>**"
+        )
         labels = (
             "、".join(repo_topic)
             if len(repo_topic) > 0

@@ -13,11 +13,11 @@ class ChatManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="** 📄  创建 Issue **\n*话题下回复「/issue + 新 Issue 标题 + @分配成员」 *",
+                content="**📄 创建 Issue **\n*群聊下回复「/issue + 新 Issue 标题 + @分配成员」 *",
                 tag="lark_md",
             ),
             FeishuMessageDiv(
-                content="** 🚀  运行 Action **\n*话题下回复「/action」 *",
+                content="**🚀 运行 Action **\n*群聊下回复「/action」 *",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[FeishuMessageOption(value=action) for action in actions],
@@ -30,7 +30,7 @@ class ChatManual(FeishuMessageCard):
                 else None,
             ),
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」 *",
+                content=f"**⚡️ 前往 GitHub 查看 Repo 主页 **\n*群聊下回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 GitHub 主页",
@@ -45,7 +45,7 @@ class ChatManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** 📈 前往 GitMaya 查看 Repo Insight **\n*话题下回复「/insight」 *",
+                content=f"**📈 前往 GitMaya 查看 Repo Insight **\n*群聊下回复「/insight」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 Insight 面板",
