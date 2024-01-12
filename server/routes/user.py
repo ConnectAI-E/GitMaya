@@ -36,7 +36,7 @@ def set_account():
     current_team = request.json.get("current_team")
 
     if current_team:
-        session["team_id"] = user_id
+        session["team_id"] = current_team
         # 默认是会话级别的session，关闭浏览器直接就失效了
         session.permanent = True
 
