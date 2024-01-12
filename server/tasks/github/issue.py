@@ -162,6 +162,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
     installation_id = event.installation.id
     user = db.session.query(User).filter(User.unionid == github_user_id).first()
     if not user:
+        app.logger.error(f"Failed to find user: {github_user_id}")
         task = send_issue_card.delay(new_issue.id)
     else:
         code_application = (
@@ -186,16 +187,23 @@ def on_issue_opened(event_dict: dict | None) -> list:
             )
             .first()
         )
+        if team_member is None:
+            app.logger.error(f"Failed to find team_member: {user.id}")
+            task = send_issue_card.delay(new_issue.id)
+            return [task.id]
 
         im_bind_user = (
             db.session.query(BindUser)
             .filter(
-                BindUser.user_id == user.id,
                 BindUser.id == team_member.im_user_id,
                 BindUser.platform == "lark",
             )
             .first()
         )
+        if im_bind_user is None:
+            app.logger.error(f"Failed to find im_bind_user: {user.id}")
+            task = send_issue_card.delay(new_issue.id)
+            return [task.id]
 
         task = send_issue_card.delay(
             new_issue.id, im_bind_user.openid, im_bind_user.name
