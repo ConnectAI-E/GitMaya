@@ -1,4 +1,4 @@
-from .base import *
+from base import *
 
 
 class RepoManual(FeishuMessageCard):
@@ -6,7 +6,7 @@ class RepoManual(FeishuMessageCard):
         self,
         repo_name="GitMaya",
         repo_url="https://github.com/ConnectAI-E/GitMaya",
-        repo_description="GitMaya is a GitHub App for Feishu.",
+        repo_description="待补充",
         visibility="public",
         statuses=["public", "private"],
         archived=False,
@@ -30,7 +30,7 @@ class RepoManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content="**🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",
+                content="**🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」*",
                 tag="lark_md",
             ),
             # repo 标题有问题，先不开放
@@ -39,7 +39,7 @@ class RepoManual(FeishuMessageCard):
             #     tag="lark_md",
             # ),
             FeishuMessageDiv(
-                content="**📝 修改 Repo 描述**\n*话题下回复「/edit + 新 Repo 描述」 *",
+                content="**📝 修改 Repo 描述**\n*话题下回复「/edit + 新 Repo 描述」*",
                 tag="lark_md",
             ),
             FeishuMessageDiv(
@@ -51,7 +51,7 @@ class RepoManual(FeishuMessageCard):
                 tag="lark_md",
             ),
             FeishuMessageDiv(
-                content=f"** 🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」 *",
+                content=f"**🕒 更新 Repo 状态**\n*话题下回复「/archive、/unarchive」*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     f"{'UnArchive' if archived else 'Archive'} Repo",
@@ -61,7 +61,7 @@ class RepoManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」 *",
+                content=f"**⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 GitHub 主页",
@@ -76,7 +76,7 @@ class RepoManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** 📈 前往 GitMaya 查看 Repo Insight **\n*话题下回复「/insight」 *",
+                content=f"**📈 前往 GitMaya 查看 Repo Insight **\n*话题下回复「/insight」*",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 Insight 面板",
