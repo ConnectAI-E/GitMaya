@@ -252,6 +252,7 @@ def create_team(app_info: dict) -> Team:
         .first()
     )
     if current_team:
+        current_team.extra = app_info["account"]
         return current_team
 
     new_team = Team(
