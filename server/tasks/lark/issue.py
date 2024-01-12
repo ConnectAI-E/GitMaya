@@ -21,7 +21,11 @@ from utils.lark.issue_manual_help import IssueManualHelp
 from utils.lark.issue_tip_failed import IssueTipFailed
 from utils.lark.issue_tip_success import IssueTipSuccess
 
-from .base import get_bot_by_application_id, get_git_object_by_message_id
+from .base import (
+    get_bot_by_application_id,
+    get_git_object_by_message_id,
+    with_authenticated_github,
+)
 
 
 @celery.task()
@@ -319,6 +323,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -334,6 +339,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def close_issue(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -359,6 +365,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, root_id, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -384,6 +391,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -402,6 +410,7 @@ def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs
 
 
 @celery.task()
+@with_authenticated_github()
 def change_issue_label(labels, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -420,6 +429,7 @@ def change_issue_label(labels, app_id, message_id, content, data, *args, **kwarg
 
 
 @celery.task()
+@with_authenticated_github()
 def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
@@ -438,6 +448,7 @@ def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
+@with_authenticated_github()
 def change_issue_assignees(users, app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
