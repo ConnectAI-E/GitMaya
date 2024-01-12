@@ -53,7 +53,7 @@ class RepoInfo(FeishuMessageCard):
                                 f"**🌐 Homepage：**\n{homepage}",
                                 text_align="left",
                             ),
-                            width="auto",
+                            width="weighted",
                             weight=1,
                             vertical_align="top",
                         ),

@@ -8,18 +8,26 @@ class ManageRepoDetect(FeishuMessageCard):
         repo_name="GitMaya",
         repo_description="",
         repo_topic=[],
+        homepage="待补充",
         visibility="私有仓库",
     ):
         new_issue_url = f"{repo_url}/issues/new"
         github_url = "https://github.com"
         setting_url = f"{repo_url}/settings"
+        homepage = homepage if homepage != "待补充" else "**<font color='red'>待补充</font>**"
+        labels = (
+            "、".join(repo_topic)
+            if len(repo_topic) > 0
+            else "**<font color='red'>待补充</font>**"
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**📦 仓库名：** \n{repo_name}\n",
+                                f"**📦 仓库名：** \n{repo_name}",
+                                text_align="left",
                             ),
                             width="weighted",
                             weight=1,
@@ -36,7 +44,7 @@ class ManageRepoDetect(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**🌐 Homepage：**\n{repo_url}",
+                                f"**🌐 Homepage：**\n{homepage}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -46,15 +54,13 @@ class ManageRepoDetect(FeishuMessageCard):
                         flex_mode="stretch",
                         background_style="grey",
                     ),
-                    width="auto",
+                    FeishuMessageMarkdown(
+                        f"**🗒️ 描述：**\n{repo_description}", text_align="left"
+                    ),
+                    FeishuMessageMarkdown(f"**🏷️ 标签：**：\n{labels}", text_align="left"),
+                    width="weighted",
                     weight=1,
                     vertical_align="top",
-                ),
-                FeishuMessageMarkdown(
-                    f"**🗒️ 描述：**\n{repo_description}", text_align="left"
-                ),
-                FeishuMessageMarkdown(
-                    f"**🏷️ Topic**：\n{'、'.join(repo_topic)}", text_align="left"
                 ),
                 flex_mode="flow",
                 background_style="grey",
