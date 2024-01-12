@@ -30,7 +30,7 @@ class RepoManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content="** 🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",
+                content="**🥂 修改 Repo 访问权限**\n*话题下回复「/access + read, triger, wirte, maintain, admin + @成员」 *",
                 tag="lark_md",
             ),
             # repo 标题有问题，先不开放
@@ -39,15 +39,15 @@ class RepoManual(FeishuMessageCard):
             #     tag="lark_md",
             # ),
             FeishuMessageDiv(
-                content="** 📝 修改 Repo 描述**\n*话题下回复「/edit + 新 Repo 描述」 *",
+                content="**📝 修改 Repo 描述**\n*话题下回复「/edit + 新 Repo 描述」 *",
                 tag="lark_md",
             ),
             FeishuMessageDiv(
-                content="** ⌨️ 修改 Repo 网页**\n*话题下回复「/link + 新 Repo homepage url」*",
+                content="**⌨️ 修改 Repo 网页**\n*话题下回复「/link + 新 Repo homepage url」*",
                 tag="lark_md",
             ),
             FeishuMessageDiv(
-                content="** 🏷 添加 Repo 标签**\n*话题下回复「/label + 标签名」*",
+                content="**🏷 添加 Repo 标签**\n*话题下回复「/label + 标签名」*",
                 tag="lark_md",
             ),
             FeishuMessageDiv(
