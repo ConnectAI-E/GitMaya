@@ -494,6 +494,9 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
             RepoUser.repo_id == repo.id,
         )
     ]
+    if len(user_id_list) == 0:
+        return abort(404, "member list is empty")
+
     name = chat_name or f"{repo.name} 项目群"
     description = f"{repo.description}"
     result = bot.post(
@@ -503,7 +506,7 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
             "description": description,
             "edit_permission": "all_members",  # TODO all_members/only_owner
             "set_bot_manager": True,  # 设置创建群的机器人为管理员
-            "owner_id": owner_id,
+            "owner_id": owner_id if owner_id else user_id_list[0],
             "user_id_list": user_id_list,
         },
     ).json()
