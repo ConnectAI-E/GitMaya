@@ -108,6 +108,10 @@ def on_pull_request_updated(event_dict: dict) -> list:
         return []
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    if repo is None:
+        app.logger.error(f"Failed to find Repo: {event.repository.id}")
+        return []
+
     pr = (
         db.session.query(PullRequest)
         .filter(PullRequest.repo_id == repo.id)
