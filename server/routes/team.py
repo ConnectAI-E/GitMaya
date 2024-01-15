@@ -6,6 +6,7 @@ from model.team import (
     get_team_by_id,
     get_team_list_by_user_id,
     get_team_member,
+    get_team_repo,
     is_team_admin,
     save_im_application,
     set_team_member,

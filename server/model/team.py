@@ -33,15 +33,16 @@ class RepoWithUsers(Repo):
     users = relationship(
         CodeUser,
         primaryjoin=and_(
-            CodeUser.id == RepoUser.bind_user_id,
-            CodeUser.status == 0,
-        ),
-        secondary=RepoUser.__table__,
-        secondaryjoin=and_(
             RepoUser.repo_id == Repo.id,
             RepoUser.status == 0,
         ),
+        secondary=RepoUser.__table__,
+        secondaryjoin=and_(
+            CodeUser.id == RepoUser.bind_user_id,
+            CodeUser.status == 0,
+        ),
         viewonly=True,
+        uselist=False,
     )
 
     group = relationship(
