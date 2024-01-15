@@ -2,7 +2,7 @@ import os
 
 from app import app, db
 from celery_app import celery
-from model.schema import Issue, ObjID, PullRequest, Repo
+from model.schema import CodeUser, IMUser, Issue, ObjID, PullRequest, Repo, TeamMember
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
@@ -136,6 +136,16 @@ def on_issue_opened(event_dict: dict | None) -> list:
     issue_info = event.issue
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    # 检查是否已经创建过 issue
+    issue = (
+        db.session.query(Issue)
+        .filter(Issue.repo_id == repo.id, Issue.issue_number == issue_info.number)
+        .first()
+    )
+    if issue:
+        app.logger.info(f"Issue already exists: {issue.id}")
+        return []
+
     # 创建 issue
     new_issue = Issue(
         id=ObjID.new_id(),
@@ -148,7 +158,28 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    task = send_issue_card.delay(new_issue.id)
+    assignees = issue_info.assignees if issue_info.assignees else []
+    if len(assignees):
+        assignees = [
+            openid
+            for openid, in db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                CodeUser.name.in_([i.login for i in assignees]),
+            )
+            .all()
+        ]
+    else:
+        assignees = []
+
+    task = send_issue_card.delay(
+        issue_id=new_issue.id,
+        assignees=assignees,
+    )
 
     return [task.id]
 
