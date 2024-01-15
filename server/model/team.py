@@ -42,7 +42,6 @@ class RepoWithUsers(Repo):
             CodeUser.status == 0,
         ),
         viewonly=True,
-        uselist=False,
     )
 
     group = relationship(
@@ -52,6 +51,7 @@ class RepoWithUsers(Repo):
             ChatGroup.status == 0,
         ),
         viewonly=True,
+        uselist=False,
     )
 
 
