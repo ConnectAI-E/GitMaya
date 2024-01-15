@@ -484,6 +484,8 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name=None):
             RepoUser.repo_id == repo.id,
         )
     ]
+    name = chat_name or f"{repo.name} 项目群"
+    description = f"{repo.description}"
     result = bot.post(
         chat_group_url,
         json={

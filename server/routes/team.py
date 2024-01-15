@@ -192,7 +192,7 @@ def get_team_repo_by_team_id(team_id):
 def create_repo_chat_group(team_id, repo_id):
     name = request.json.get("name")
     current_user = session["user_id"]
-    create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name)
+    create_repo_chat_group_by_repo_id(current_user, team_id, repo_id, name)
     return jsonify({"code": 0, "msg": "success"})
 
 
