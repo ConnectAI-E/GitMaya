@@ -123,7 +123,7 @@ class MemberShip(BaseModel):
 
 
 class Committer(BaseModel):
-    date: str
+    date: Optional[str] = None
     name: str
     email: str
     username: str

@@ -1,10 +1,11 @@
+import json
+
 from app import app, db
 from celery_app import celery
 from model.schema import ChatGroup, PullRequest, Repo
+from tasks.lark.base import get_bot_by_application_id
 from utils.github.model import PushEvent
-
-from server.tasks.lark.base import get_bot_by_application_id
-from server.utils.lark.pr_tip_commit_history import PrTipCommitHistory
+from utils.lark.pr_tip_commit_history import PrTipCommitHistory
 
 
 @celery.task()
@@ -26,7 +27,7 @@ def on_push(data: dict | None) -> list:
         db.session.query(PullRequest)
         .filter(
             PullRequest.repo_id == repo.id,
-            PullRequest.extra.get("head", {}).get("ref") == event.ref,
+            json.loads(PullRequest.extra).get("head", {}).get("ref") == event.ref,
         )
         .first()
     )
