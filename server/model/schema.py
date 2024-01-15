@@ -350,6 +350,12 @@ class PullRequest(Base):
     title = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
+
+    base = db.Column(db.String(128), nullable=True, comment="PR 的基分支")
+    head = db.Column(db.String(128), nullable=True, comment="PR 的分支")
+
+    state = db.Column(db.String(128), nullable=True, comment="PR 的状态")
+
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )

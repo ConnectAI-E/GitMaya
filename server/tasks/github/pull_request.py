@@ -67,6 +67,9 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         pull_request_number=pr_info.number,
         title=pr_info.title,
         description=pr_info.body,
+        base=pr_info.base.ref,
+        head=pr_info.head.ref,
+        state=pr_info.state,
         extra=pr_info.model_dump(),
     )
     db.session.add(new_pr)
@@ -117,6 +120,9 @@ def on_pull_request_updated(event_dict: dict) -> list:
     if pr:
         pr.title = event.pull_request.title
         pr.description = event.pull_request.body
+        pr.base = event.pull_request.base.ref
+        pr.head = event.pull_request.head.ref
+        pr.state = event.pull_request.state
         pr.extra = event.pull_request.model_dump()
         db.session.commit()
 

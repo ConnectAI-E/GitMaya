@@ -20,17 +20,15 @@ def on_push(data: dict | None) -> list:
         app.logger.info(f"Repo not found: {event.repository.name}")
         return []
 
-    # 在该 Repo 对应的 PullRequest 中查找对应的 pr
-    pr_list = db.session.query(PullRequest).filter(PullRequest.repo_id == repo.id).all()
-
-    pr = None
-    for _pr in pr_list:
-        if (
-            _pr.extra.get("head", {}).get("ref", "") == (event.ref).split("/")[-1]
-            and _pr.extra.get("state", "") == "open"
-        ):
-            pr = _pr
-            break
+    pr = (
+        db.session.query(PullRequest)
+        .filter(
+            PullRequest.repo_id == repo.id,
+            PullRequest.head == (event.ref).split("/")[-1],
+            PullRequest.state == "open",
+        )
+        .first()
+    )
 
     if pr is None:
         app.logger.info(f"PullRequest not found: {repo.name} {event.ref}")
