@@ -1,0 +1,40 @@
+@import './styles/nprogress.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.bg-dark {
+  @apply dark text-foreground bg-background;
+}
+
+.bg-light {
+  @apply light text-foreground bg-background;
+}
+
+@property --gradient-angle {
+  syntax: '<angle>'; /* <- defined as type angle for the transition to work */
+  initial-value: 360deg;
+  inherits: false;
+}
+
+@keyframes gradient-rotate {
+  0% {
+    --gradient-angle: 360deg;
+  }
+
+  100% {
+    --gradient-angle: 0deg;
+  }
+}
+
+.streamer-button {
+  background: linear-gradient(
+    var(--gradient-angle),
+    hsla(0, 0%, 100%, 0.5),
+    hsla(0, 0%, 100%, 0.1),
+    #fff,
+    hsla(0, 0%, 100%, 0.3)
+  ) !important;
+  animation: gradient-rotate 5s linear infinite reverse;
+}
