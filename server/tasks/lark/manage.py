@@ -197,6 +197,7 @@ def send_detect_repo(
             repo_description=repo.description,
             repo_topic=topics,
             visibility=visibility,
+            homepage=repo.extra.get("homepage", None),
         )
         return bot.send(
             open_id,
@@ -237,6 +238,7 @@ def send_manage_success_message(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
+    message = ManageSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.send(open_id, message).json()
 
@@ -343,7 +345,10 @@ def create_chat_group_for_repo(
             TeamMember.team_id == team.id,
             RepoUser.repo_id == repo.id,
         )
-    ] + [owner_id]
+    ]
+
+    if owner_id not in user_id_list:
+        user_id_list += [owner_id]
 
     result = bot.post(
         chat_group_url,
@@ -380,10 +385,25 @@ def create_chat_group_for_repo(
     1. 给操作的用户发成功的消息
     2. 给群发送repo 卡片消息，并pin
     """
+
+    # 把user_id_list中的每个user_id查User表，获取每个人的名字
+    user_name_list = [
+        name
+        for name, in db.session.query(IMUser.name).filter(
+            IMUser.openid.in_(user_id_list),
+        )
+    ]
+    user_name_list = (
+        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
+        if len(user_name_list) > 0
+        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+    )
+
     content = "\n".join(
         [
             f"1. 成功创建名为「{name}」的新项目群",
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
+            invite_message,
         ]
     )
     # 这里可以再触发一个异步任务给群发卡片，不过为了保存结果，就同步调用

@@ -3,7 +3,6 @@ from email import message
 
 from celery_app import app, celery
 from model.schema import (
-    BindUser,
     CodeApplication,
     CodeUser,
     IMApplication,
@@ -24,7 +23,7 @@ from .base import *
 
 @celery.task()
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
-    chat_group = get_repo_id_by_chat_group(chat_id)
+    chat_group = get_chat_group_by_chat_id(chat_id)
 
     repo_name = get_repo_name_by_repo_id(chat_group.repo_id)
     team = (
@@ -39,7 +38,15 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 
 
 @celery.task()
-def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs):
+def get_repo_name_by_chat_id(chat_id, *args, **kwargs):
+    chat_group = get_chat_group_by_chat_id(chat_id)
+    return get_repo_name_by_repo_id(chat_group.repo_id)
+
+
+@celery.task()
+def send_repo_failed_tip(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send a new repo failed tip to user.
     Args:
         content (str): The error message to be sent.
@@ -52,11 +59,14 @@ def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs)
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipFailed(content=content)
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_repo_success_tip(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo success tip to user.
 
     Args:
@@ -70,7 +80,8 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    message = RepoTipSuccess()(content=content)
+    message = RepoTipSuccess(content=content)
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.reply(message_id, message).json()
 
 
@@ -81,7 +92,7 @@ def _get_github_app(app_id, message_id, content, data):
 
     logging.info(f"chat_id: {chat_id}")
 
-    chat_group = get_repo_id_by_chat_group(chat_id)
+    chat_group = get_chat_group_by_chat_id(chat_id)
     logging.info(f"chat_group: {chat_group}")
 
     repo = (
@@ -94,9 +105,7 @@ def _get_github_app(app_id, message_id, content, data):
     )
     logging.info(f"repo: {repo}")
     if not repo:
-        return send_repo_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的项目", app_id, message_id, content, data)
 
     code_application = (
         db.session.query(CodeApplication)
@@ -107,9 +116,7 @@ def _get_github_app(app_id, message_id, content, data):
     )
 
     if not code_application:
-        return send_repo_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的应用", app_id, message_id, content, data)
 
     team = (
         db.session.query(Team)
@@ -119,9 +126,7 @@ def _get_github_app(app_id, message_id, content, data):
         .first()
     )
     if not team:
-        return send_repo_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的项目", app_id, message_id, content, data)
 
     code_user_id = (
         db.session.query(CodeUser.user_id)
@@ -185,8 +190,25 @@ def change_repo_visit(visibility, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库访问权限失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
+    vis = "公开仓库" if visibility else "私有仓库"
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库访问权限为 {vis}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
+
     return response
 
 
@@ -203,15 +225,26 @@ def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库标题失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库标题为 {name}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_desc(description, app_id, message_id, content, data, *args, **kwargs):
-    """编辑 Repo"""
+    """修改 Repo 描述"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -221,15 +254,26 @@ def change_repo_desc(description, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库描述失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库描述为 {description}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage link"""
+    """修改 homepage 链接"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -239,15 +283,32 @@ def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwarg
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库homepage 链接失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
+
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库homepage为 {homepage}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage topic"""
+    """修改 Repo 标签"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.replace_topics(
@@ -257,15 +318,27 @@ def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs)
     )
     if "names" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库标签失败", app_id, message_id, content, data, *args, **kwargs
         )
+    # label是个数组，把每个元素用逗号拼接起来变成labels
+    labels = ",".join(label)
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库标签为 {label}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_archive(archived, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage archive status"""
+    """修改 Repo archive 状态"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -275,8 +348,19 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库 archive 状态失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
+
+    archived = "已归档" if archived else "未归档"
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库状态为 {archived}", app_id, message_id, content, data
+    )
 
     message = RepoManual(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
@@ -296,7 +380,7 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
 def change_repo_collaborator(
     permission, openid, app_id, message_id, content, data, *args, **kwargs
 ):
-    """修改homepage archive status"""
+    """修改 Repo collaborator"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     # 从openid找到用户
@@ -317,7 +401,13 @@ def change_repo_collaborator(
     )
     if not username:
         return send_repo_failed_tip(
-            "找不到绑定人员", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库 collaborator 失败: 找不到绑定人员",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     response = github_app.add_repo_collaborator(
         team.name,
@@ -327,8 +417,24 @@ def change_repo_collaborator(
     )
     if "status" not in response or response["status"] != "success":
         return send_repo_failed_tip(
-            "添加人员失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库 collaborator 失败: 添加人员失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
+
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库 collaborator 成功",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
+    )
 
     return response
 
@@ -397,5 +503,5 @@ def update_repo_info(repo_id: str) -> dict | None:
 
         return bot.update(message_id=repo.message_id, content=message).json()
     else:
-        app.logger.error(f"Repo {repo_id} not found")
+        app.logger.error(f"update_repo_info: Repo {repo_id} not found")
         return None

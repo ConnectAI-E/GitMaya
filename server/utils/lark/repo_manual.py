@@ -15,7 +15,7 @@ class RepoManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="** 👀 修改 Repo 可见性**\n*话题下回复「/visit + public, private, internal」*",
+                content="** 👀 修改 Repo 可见性**\n*话题下回复「/visit + public, private」*",
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[

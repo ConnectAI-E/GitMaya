@@ -6,9 +6,9 @@ class RepoInfo(FeishuMessageCard):
         self,
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         repo_name="GitMaya",
-        repo_description="待补充",
+        repo_description="",
         repo_topic=[],
-        homepage="待补充",
+        homepage="",
         visibility="私有仓库",
         archived=False,
         updated="2022年12月23日 16:32",
@@ -21,12 +21,16 @@ class RepoInfo(FeishuMessageCard):
             if len(repo_topic) > 0
             else "**<font color='red'>待补充</font>**"
         )
-        repo_description = (
+        description = (
             repo_description
-            if repo_description != "待补充"
+            if repo_description is not None
             else "**<font color='red'>待补充</font>**"
         )
-        homepage = homepage if homepage != "待补充" else "**<font color='red'>待补充</font>**"
+        homepage = (
+            f"[{homepage}]({homepage})"
+            if homepage is not None
+            else "**<font color='red'>待补充</font>**"
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
@@ -62,7 +66,7 @@ class RepoInfo(FeishuMessageCard):
                         background_style="grey",
                     ),
                     FeishuMessageMarkdown(
-                        f"**🗒️ 描述：**\n{repo_description}", text_align="left"
+                        f"**🗒️ 描述：**\n{description}", text_align="left"
                     ),
                     FeishuMessageMarkdown(
                         f"🏷️ **标签：**\n{labels}",
