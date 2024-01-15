@@ -1,11 +1,13 @@
 from app import app
 from flask import Blueprint, abort, jsonify, redirect, request, session
 from model.team import (
+    create_repo_chat_group_by_repo_id,
     get_application_info_by_team_id,
     get_im_user_by_team_id,
     get_team_by_id,
     get_team_list_by_user_id,
     get_team_member,
+    get_team_repo,
     is_team_admin,
     save_im_application,
     set_team_member,
@@ -172,6 +174,26 @@ def get_task_result_by_id(team_id, task_id):
             },
         }
     )
+
+
+@bp.route("/<team_id>/repo", methods=["GET"])
+@authenticated
+def get_team_repo_by_team_id(team_id):
+    page = request.args.get("page", default=1, type=int)
+    size = request.args.get("size", default=20, type=int)
+
+    current_user = session["user_id"]
+    data, total = get_team_repo(team_id, current_user, page, size)
+    return jsonify({"code": 0, "msg": "success", "data": data, "total": total})
+
+
+@bp.route("/<team_id>/repo/<repo_id>/chat", methods=["POST"])
+@authenticated
+def create_repo_chat_group(team_id, repo_id):
+    name = request.json.get("name")
+    current_user = session["user_id"]
+    create_repo_chat_group_by_repo_id(current_user, team_id, repo_id, name)
+    return jsonify({"code": 0, "msg": "success"})
 
 
 app.register_blueprint(bp)

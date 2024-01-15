@@ -1,3 +1,5 @@
+import os
+
 from .base import *
 
 
@@ -11,7 +13,8 @@ class ManageManual(FeishuMessageCard):
         github_url = "https://github.com"
         new_repo_url = f"{github_url}/new"
         profile_url = f"{github_url}/{org_name}"
-        setting_url = f"{github_url}/organizations/{org_name}/settings"
+        gitmaya_host = os.environ.get("DOMAIN")
+        setting_url = f"{gitmaya_host}/app/setting"
         elements = [
             GitMayaTitle(),
             FeishuMessageHr(),
@@ -82,6 +85,90 @@ class ManageManual(FeishuMessageCard):
             GitMayaCardNote("GitMaya Manage Manual"),
         ]
         header = FeishuMessageCardHeader("GitMaya Manage Manual\n", template="violet")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class ManageView(FeishuMessageCard):
+    def __init__(self, org_name="GitMaya"):
+        github_url = "https://github.com"
+        profile_url = f"{github_url}/{org_name}"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看个人主页 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": profile_url,
+                        "android_url": profile_url,
+                        "ios_url": profile_url,
+                        "pc_url": profile_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Manage Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class ManageNew(FeishuMessageCard):
+    def __init__(self):
+        github_url = "https://github.com"
+        new_repo_url = f"{github_url}/new"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub新建Repo **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": new_repo_url,
+                        "android_url": new_repo_url,
+                        "ios_url": new_repo_url,
+                        "pc_url": new_repo_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Manage Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class ManageSetting(FeishuMessageCard):
+    def __init__(self):
+        gitmaya_host = os.environ.get("DOMAIN")
+        setting_url = f"{gitmaya_host}/app/setting"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitMaya查看 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": setting_url,
+                        "android_url": setting_url,
+                        "ios_url": setting_url,
+                        "pc_url": setting_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Manage Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)

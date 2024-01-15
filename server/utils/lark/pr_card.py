@@ -26,6 +26,9 @@ class PullCard(FeishuMessageCard):
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
+                    FeishuMessageDiv(
+                        "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                    ),
                     FeishuMessageMarkdown(
                         # TODO 替换content
                         f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
@@ -134,6 +137,14 @@ class PullCard(FeishuMessageCard):
                     placeholder="修改负责人",
                     value={
                         "command": f"/assign ",
+                        "suffix": "$option",
+                    },
+                ),
+                FeishuMessageSelectPerson(
+                    *[FeishuMessageOption(value=open_id) for open_id in persons],
+                    placeholder="修改审核人",
+                    value={
+                        "command": f"/review ",
                         "suffix": "$option",
                     },
                 ),

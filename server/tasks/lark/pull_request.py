@@ -17,7 +17,12 @@ from model.schema import (
 from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
 from utils.lark.pr_card import PullCard
-from utils.lark.pr_manual import PrManual
+from utils.lark.pr_manual import (
+    PrManual,
+    PullRequestDiff,
+    PullRequestLog,
+    PullRequestView,
+)
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
 
@@ -174,6 +179,90 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
 
     # 回复到话题内部
     return bot.reply(message_id, message).json()
+
+
+def send_pull_request_url_message(
+    app_id, message_id, content, data, *args, typ="view", **kwargs
+):
+    root_id = data["event"]["message"]["root_id"]
+    _, _, pr = get_git_object_by_message_id(root_id)
+    if not pr:
+        return send_pull_request_failed_tip(
+            "找不到PullRequest", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == pr.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return send_pull_request_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+    bot, application = get_bot_by_application_id(app_id)
+    if not application:
+        return send_pull_request_failed_tip(
+            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_pull_request_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    repo_url = f"https://github.com/{team.name}/{repo.name}"
+    if "view" == typ:
+        message = PullRequestView(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    elif "log" == typ:
+        message = PullRequestLog(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    elif "diff" == typ:
+        message = PullRequestDiff(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    else:
+        return send_pull_request_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+    # 回复到话题内部
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_pull_request_view_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="view", **kwargs
+    )
+
+
+@celery.task()
+def send_pull_request_log_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="log", **kwargs
+    )
+
+
+@celery.task()
+def send_pull_request_diff_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="diff", **kwargs
+    )
 
 
 @celery.task()
@@ -373,6 +462,10 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
         return send_pull_request_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -391,6 +484,10 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if "id" not in response:
         return send_pull_request_failed_tip(
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "关闭PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -417,6 +514,10 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
         return send_pull_request_failed_tip(
             "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "合并PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -441,7 +542,11 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "打开PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "打开PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -470,6 +575,10 @@ def change_pull_request_title(
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -491,6 +600,10 @@ def change_pull_request_label(
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -509,6 +622,10 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
     if "id" not in response:
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -531,5 +648,36 @@ def change_pull_request_assignees(
     if "id" not in response:
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
+
+
+@celery.task()
+@with_authenticated_github()
+def change_pull_request_reviewer(
+    users, app_id, message_id, content, data, *args, **kwargs
+):
+    github_app, team, repo, pr, _, _ = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    # 这里调用get_assignees_by_openid，拿到的结果是一样的
+    reviewers = get_assignees_by_openid(users)
+    response = github_app.requested_reviewers(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        reviewers=reviewers,
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "更新PullRequest审核人失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest审核人成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
