@@ -428,6 +428,93 @@ def save_im_application(
         db.session.commit()
 
 
+def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name=None):
+    team = get_team_by_id(team_id, user_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return abort(404, "can not found repo by id")
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.repo_id == repo.id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+    if chat_group:
+        return abort(400, "chat_group exists")
+
+    app_id = (
+        db.session.query(IMApplication.app_id)
+        .filter(
+            IMApplication.team_id == team.id,
+            IMApplication.status.in_([0, 1]),
+        )
+        .limit(1)
+        .scalar()
+    )
+    if not app_id:
+        return abort(404, "im_application not exists")
+
+    import tasks
+
+    bot, application = tasks.get_bot_by_application_id(app_id)
+    chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+    user_id_list = [
+        openid
+        for openid, in db.session.query(IMUser.openid)
+        .join(
+            TeamMember,
+            TeamMember.im_user_id == IMUser.id,
+        )
+        .join(CodeUser, TeamMember.code_user_id == CodeUser.id)
+        .join(
+            RepoUser,
+            RepoUser.bind_user_id == CodeUser.id,
+        )
+        .filter(
+            TeamMember.team_id == team.id,
+            RepoUser.repo_id == repo.id,
+        )
+    ]
+    result = bot.post(
+        chat_group_url,
+        json={
+            "name": name,
+            "description": description,
+            "edit_permission": "all_members",  # TODO all_members/only_owner
+            "set_bot_manager": True,  # 设置创建群的机器人为管理员
+            "owner_id": owner_id,
+            "user_id_list": user_id_list,
+        },
+    ).json()
+    chat_id = result.get("data", {}).get("chat_id")
+    if not chat_id:
+        return abort(400, "create chat group error")
+    chat_group_id = ObjID.new_id()
+    chat_group = ChatGroup(
+        id=chat_group_id,
+        repo_id=repo.id,
+        im_application_id=application.id,
+        chat_id=chat_id,
+        name=name,
+        description=description,
+        extra=result,
+    )
+    db.session.add(chat_group)
+    db.session.commit()
+    # send card message, and pin repo card
+    task.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
+    return chat_id
+
+
 def get_code_users_by_openid(users):
     code_users = {
         openid: (code_user_id, code_user_name)
