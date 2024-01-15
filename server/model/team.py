@@ -428,7 +428,7 @@ def save_im_application(
         db.session.commit()
 
 
-def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name=None):
+def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None):
     team = get_team_by_id(team_id, user_id)
     repo = (
         db.session.query(Repo)
