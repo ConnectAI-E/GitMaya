@@ -499,19 +499,18 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
 
     name = chat_name or f"{repo.name} 项目群"
     description = f"{repo.description}"
-    result = bot.post(
-        chat_group_url,
-        json={
-            "name": name,
-            "description": description,
-            "edit_permission": "all_members",  # TODO all_members/only_owner
-            "set_bot_manager": True,  # 设置创建群的机器人为管理员
-            "owner_id": owner_id if owner_id else user_id_list[0],
-            "user_id_list": user_id_list,
-        },
-    ).json()
+    data = {
+        "name": name,
+        "description": description,
+        "edit_permission": "all_members",  # TODO all_members/only_owner
+        "set_bot_manager": True,  # 设置创建群的机器人为管理员
+        "owner_id": owner_id if owner_id else user_id_list[0],
+        "user_id_list": user_id_list,
+    }
+    result = bot.post(chat_group_url, json=data).json()
     chat_id = result.get("data", {}).get("chat_id")
     if not chat_id:
+        logging.error("create chat_group error %r %r", data, result)
         return abort(400, "create chat group error")
     chat_group_id = ObjID.new_id()
     chat_group = ChatGroup(
