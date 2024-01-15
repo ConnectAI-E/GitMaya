@@ -477,23 +477,27 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
         .scalar()
         or None
     )
-    user_id_list = [
-        openid
-        for openid, in db.session.query(IMUser.openid)
-        .join(
-            TeamMember,
-            TeamMember.im_user_id == IMUser.id,
+    user_id_list = list(
+        set(
+            [
+                openid
+                for openid, in db.session.query(IMUser.openid)
+                .join(
+                    TeamMember,
+                    TeamMember.im_user_id == IMUser.id,
+                )
+                .join(CodeUser, TeamMember.code_user_id == CodeUser.id)
+                .join(
+                    RepoUser,
+                    RepoUser.bind_user_id == CodeUser.id,
+                )
+                .filter(
+                    TeamMember.team_id == team.id,
+                    RepoUser.repo_id == repo.id,
+                )
+            ]
         )
-        .join(CodeUser, TeamMember.code_user_id == CodeUser.id)
-        .join(
-            RepoUser,
-            RepoUser.bind_user_id == CodeUser.id,
-        )
-        .filter(
-            TeamMember.team_id == team.id,
-            RepoUser.repo_id == repo.id,
-        )
-    ]
+    )
     if len(user_id_list) == 0:
         return abort(404, "member list is empty")
 
