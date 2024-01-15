@@ -467,6 +467,16 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name=None):
 
     bot, application = tasks.get_bot_by_application_id(app_id)
     chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+    owner_id = (
+        db.session.query(IMUser.openid)
+        .join(
+            IMUser.application_id == application.id,
+            IMUser.user_id == user_id,
+        )
+        .limit(1)
+        .scalar()
+        or None
+    )
     user_id_list = [
         openid
         for openid, in db.session.query(IMUser.openid)
