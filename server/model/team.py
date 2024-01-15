@@ -502,7 +502,7 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
         return abort(404, "member list is empty")
 
     name = chat_name or f"{repo.name} 项目群"
-    description = f"{repo.description}"
+    description = f"{repo.description or ''}"
     data = {
         "name": name,
         "description": description,
