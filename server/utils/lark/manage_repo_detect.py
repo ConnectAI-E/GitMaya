@@ -8,7 +8,7 @@ class ManageRepoDetect(FeishuMessageCard):
         repo_name="GitMaya",
         repo_description="待补充",
         repo_topic=[],
-        homepage="待补充",
+        homepage="",
         visibility="私有仓库",
     ):
         new_issue_url = f"{repo_url}/issues/new"
