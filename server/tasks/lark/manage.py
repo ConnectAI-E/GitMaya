@@ -353,19 +353,15 @@ def create_chat_group_for_repo(
 
     # 把user_id_list中的每个user_id查User表，获取每个人的名字
     user_name_list = [
-        db.session.query(User)
-        .filter(
-            User.unionid == user_id,
-        )
-        .first()
+        db.session.query(User).filter(User.unionid == user_id).first().name
         for user_id in user_id_list
     ]
-
+    user_name_list = "、".join(user_name_list)
     content = "\n".join(
         [
             f"1. 成功创建名为「{name}」的新项目群",
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
-            f"2. 成功拉取 {user_name_list} 进入「{name}」群",
+            f"2. 成功拉取「 {user_name_list} 」进入「{name}」群",
         ]
     )
     # 这里可以再触发一个异步任务给群发卡片，不过为了保存结果，就同步调用
