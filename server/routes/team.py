@@ -174,4 +174,15 @@ def get_task_result_by_id(team_id, task_id):
     )
 
 
+@bp.route("/<team_id>/repo", methods=["GET"])
+@authenticated
+def get_team_repo_by_team_id(team_id):
+    page = request.args.get("page", default=1, type=int)
+    size = request.args.get("size", default=20, type=int)
+
+    current_user = session["user_id"]
+    data, total = get_team_repo(team_id, current_user, page, size)
+    return jsonify({"code": 0, "msg": "success", "data": data, "total": total})
+
+
 app.register_blueprint(bp)

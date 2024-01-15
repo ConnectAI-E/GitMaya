@@ -29,6 +29,31 @@ class TeamMemberWithUser(TeamMember):
     )
 
 
+class RepoWithUsers(Repo):
+    users = relationship(
+        CodeUser,
+        primaryjoin=and_(
+            CodeUser.id == RepoUser.bind_user_id,
+            CodeUser.status == 0,
+        ),
+        secondary=RepoUser.__table__,
+        secondaryjoin=and_(
+            RepoUser.repo_id == Repo.id,
+            RepoUser.status == 0,
+        ),
+        viewonly=True,
+    )
+
+    group = relationship(
+        ChatGroup,
+        primaryjoin=and_(
+            ChatGroup.repo_id == Repo.id,
+            ChatGroup.status == 0,
+        ),
+        viewonly=True,
+    )
+
+
 def get_team_list_by_user_id(user_id, page=1, size=100):
     query = (
         db.session.query(Team)
@@ -156,6 +181,46 @@ def _format_member(item):
             "avatar": item.im_user.avatar,
         }
         if item.im_user
+        else None,
+    }
+
+
+def get_team_repo(team_id, user_id, page=1, size=20):
+    query = (
+        db.session.query(RepoWithUsers)
+        .options(
+            joinedload(RepoWithUsers.users),
+            joinedload(RepoWithUsers.group),
+        )
+        .join(
+            CodeApplication,
+            CodeApplication.id == RepoWithUsers.application_id,
+        )
+        .filter(
+            CodeApplication.team_id == team_id,
+            CodeApplication.status == 0,
+            RepoWithUsers.status == 0,
+        )
+    )
+    total = query.count()
+    if total == 0:
+        return [], 0
+    return [
+        _format_repo_user(item) for item in query_one_page(query, page, size)
+    ], total
+
+
+def _format_repo_user(item):
+    return {
+        "id": item.id,
+        "name": item.name,
+        "users": [{"id": i.id, "name": i.name, "avatar": i.avatar} for i in item.users],
+        "chat": {
+            "id": item.group.id,
+            "chat_id": item.group.chat_id,
+            "name": item.group.name,
+        }
+        if item.group
         else None,
     }
 
