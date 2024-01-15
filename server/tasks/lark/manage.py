@@ -165,6 +165,7 @@ def send_detect_repo(
             repo_description=repo.description,
             repo_topic=topics,
             visibility=visibility,
+            homepage=repo.extra.get("homepage", None),
         )
         return bot.send(
             open_id,
