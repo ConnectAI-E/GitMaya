@@ -66,7 +66,7 @@ class ManageRepoDetect(FeishuMessageCard):
                     FeishuMessageMarkdown(
                         f"**🗒️ 描述：**\n{repo_description}", text_align="left"
                     ),
-                    FeishuMessageMarkdown(f"**🏷️ 标签：**：\n{labels}", text_align="left"),
+                    FeishuMessageMarkdown(f"**🏷️ 标签：**\n{labels}", text_align="left"),
                     width="weighted",
                     weight=1,
                     vertical_align="top",
