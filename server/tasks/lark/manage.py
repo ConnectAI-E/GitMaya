@@ -205,6 +205,7 @@ def send_manage_success_message(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
+    message = ManageSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.send(open_id, message).json()
 

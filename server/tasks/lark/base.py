@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from functools import wraps
 
 from connectai.lark.sdk import Bot

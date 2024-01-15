@@ -39,7 +39,9 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 
 
 @celery.task()
-def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_repo_failed_tip(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send a new repo failed tip to user.
     Args:
         content (str): The error message to be sent.
@@ -52,11 +54,14 @@ def send_repo_failed_tip(content, app_id, message_id, *args, bot=None, **kwargs)
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipFailed(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
 @celery.task()
-def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_repo_success_tip(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo success tip to user.
 
     Args:
@@ -71,10 +76,11 @@ def send_repo_success_tip(content, app_id, message_id, *args, bot=None, **kwargs
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipSuccess()(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
-def _get_github_app(app_id, message_id, content, data):
+def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     # 通过chat_group查repo id
     chat_id = data["event"]["message"]["chat_id"]
     openid = data["event"]["sender"]["sender_id"]["open_id"]
@@ -185,8 +191,13 @@ def change_repo_visit(visibility, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo 访问权限失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        "修改 Repo 访问权限成功", app_id, message_id, content, data, *args, **kwargs
+    )
+
     return response
 
 
@@ -203,15 +214,20 @@ def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo 标题失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        "修改 Repo 标题成功", app_id, message_id, content, data, *args, **kwargs
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_desc(description, app_id, message_id, content, data, *args, **kwargs):
-    """编辑 Repo"""
+    """修改 Repo 描述"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -221,15 +237,20 @@ def change_repo_desc(description, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo 描述失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        "修改 Repo 描述成功", app_id, message_id, content, data, *args, **kwargs
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage link"""
+    """修改 homepage 链接"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -239,15 +260,20 @@ def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwarg
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 homepage 链接失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        "修改 homepage 链接成功", app_id, message_id, content, data, *args, **kwargs
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage topic"""
+    """修改 Repo 标签"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.replace_topics(
@@ -257,15 +283,20 @@ def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs)
     )
     if "names" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo 标签失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip(
+        "修改 Repo 标签成功", app_id, message_id, content, data, *args, **kwargs
+    )
+
     return response
 
 
 @celery.task()
 @with_authenticated_github()
 def change_repo_archive(archived, app_id, message_id, content, data, *args, **kwargs):
-    """修改homepage archive status"""
+    """修改 Repo archive 状态"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     response = github_app.update_repo(
@@ -275,8 +306,10 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "更新Repo失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo archive 状态失败", app_id, message_id, content, data, *args, **kwargs
         )
+
+    send_repo_success_tip("修改 Repo archive 状态成功", app_id, message_id, content, data)
 
     message = RepoManual(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
@@ -296,7 +329,7 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
 def change_repo_collaborator(
     permission, openid, app_id, message_id, content, data, *args, **kwargs
 ):
-    """修改homepage archive status"""
+    """修改 Repo collaborator"""
     github_app, team, repo = _get_github_app(app_id, message_id, content, data)
 
     # 从openid找到用户
@@ -317,7 +350,13 @@ def change_repo_collaborator(
     )
     if not username:
         return send_repo_failed_tip(
-            "找不到绑定人员", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo collaborator 失败: 找不到绑定人员",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     response = github_app.add_repo_collaborator(
         team.name,
@@ -327,8 +366,18 @@ def change_repo_collaborator(
     )
     if "status" not in response or response["status"] != "success":
         return send_repo_failed_tip(
-            "添加人员失败", app_id, message_id, content, data, *args, **kwargs
+            "修改 Repo collaborator 失败: 添加人员失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
+
+    send_repo_success_tip(
+        "修改 Repo collaborator 成功", app_id, message_id, content, data, *args, **kwargs
+    )
 
     return response
 
@@ -397,5 +446,5 @@ def update_repo_info(repo_id: str) -> dict | None:
 
         return bot.update(message_id=repo.message_id, content=message).json()
     else:
-        app.logger.error(f"Repo {repo_id} not found")
+        app.logger.error(f"update_repo_info: Repo {repo_id} not found")
         return None
