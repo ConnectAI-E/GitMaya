@@ -140,8 +140,11 @@ class PrManual(FeishuMessageCard):
 
 
 class PullRequestView(FeishuMessageCard):
-    def __init__(self, pr_id=17):
-        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        pr_id=17,
+    ):
         pr_url = f"{repo_url}/pull/{pr_id}"
         elements = [
             FeishuMessageDiv(
@@ -168,8 +171,11 @@ class PullRequestView(FeishuMessageCard):
 
 
 class PullRequestLog(FeishuMessageCard):
-    def __init__(self, pr_id=17):
-        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        pr_id=17,
+    ):
         pr_url = f"{repo_url}/pull/{pr_id}/commits"
         elements = [
             FeishuMessageDiv(
@@ -196,8 +202,11 @@ class PullRequestLog(FeishuMessageCard):
 
 
 class PullRequestDiff(FeishuMessageCard):
-    def __init__(self, pr_id=17):
-        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        pr_id=17,
+    ):
         pr_url = f"{repo_url}/pull/{pr_id}/files"
         elements = [
             FeishuMessageDiv(
