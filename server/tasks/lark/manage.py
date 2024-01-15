@@ -356,15 +356,16 @@ def create_chat_group_for_repo(
 
     # 把user_id_list中的每个user_id查User表，获取每个人的名字
     user_name_list = [
-        db.session.query(IMUser).filter(IMUser.openid == user_id).first().name
-        for user_id in user_id_list
+        name
+        for name, in db.session.query(IMUser.name).filter(
+            IMUser.openid.in_(user_id_list),
+        )
     ]
-    # 如果
-    user_name_list = "、".join(user_name_list)
-
-    invite_message = f"2. 成功拉取「 {user_name_list} 」进入「{name}」群"
-    if user_name_list is None:
-        invite_message = f"2. 未获取相关绑定成员, 请检查成员是否绑定"
+    user_name_list = (
+        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
+        if len(user_name_list) > 0
+        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+    )
 
     content = "\n".join(
         [
