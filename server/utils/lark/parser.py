@@ -248,42 +248,33 @@ class GitMayaLarkParser(object):
 
     def on_new(self, param, unkown, *args, **kwargs):
         logging.info("on_new %r %r", vars(param), unkown)
+        chat_type, _ = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_new_message.delay(*args, **kwargs)
         return "new", param, unkown
 
     def on_view(self, param, unkown, *args, **kwargs):
         logging.info("on_view %r %r", vars(param), unkown)
-        try:
-            raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
-            user_id = raw_message["event"]["sender"]["sender_id"]["open_id"]
-            chat_id = raw_message["event"]["message"]["chat_id"]
-
-            # chat/repo 发送repo主页
-            if "p2p" == chat_type:
-                tasks.open_user_url.delay(user_id)
-
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_view_message.delay(*args, **kwargs)
+        else:
+            if TopicType.REPO == topic:
+                pass
+            elif TopicType.ISSUE == topic:
+                pass
+            elif TopicType.PULL_REQUEST == topic:
+                pass
             else:
-                # 判断 pr/issue/repo
-                root_id = raw_message["event"]["message"].get("root_id")
-                if root_id:
-                    repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
-                    if repo:
-                        tasks.open_repo_url.delay(chat_id)
-                    elif issue:
-                        tasks.open_issue_url.delay(root_id)
-                    elif pr:
-                        tasks.open_pr_url.delay(root_id)
-                    else:
-                        tasks.open_repo_url.delay(chat_id)
-                else:
-                    tasks.open_repo_url.delay(chat_id)
+                pass
 
-        except Exception as e:
-            logging.error(e)
         return "view", param, unkown
 
     def on_setting(self, param, unkown, *args, **kwargs):
         logging.info("on_setting %r %r", vars(param), unkown)
+        chat_type, _ = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_setting_message.delay(*args, **kwargs)
         return "setting", param, unkown
 
     def on_visit(self, param, unkown, *args, **kwargs):

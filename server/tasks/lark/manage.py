@@ -19,7 +19,7 @@ from model.schema import (
 )
 from sqlalchemy.orm import aliased
 from utils.lark.manage_fail import ManageFaild
-from utils.lark.manage_manual import ManageManual
+from utils.lark.manage_manual import ManageManual, ManageNew, ManageSetting, ManageView
 from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
@@ -127,6 +127,38 @@ def send_manage_manual(app_id, message_id, *args, **kwargs):
                 repos=[(repo.id, repo.name) for repo in repos],
                 team_id=team.id,
             )
+            return bot.reply(message_id, message).json()
+    return False
+
+
+@celery.task()
+def send_manage_new_message(app_id, message_id, *args, **kwargs):
+    bot, _ = get_bot_by_application_id(app_id)
+    message = ManageNew()
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_manage_setting_message(app_id, message_id, *args, **kwargs):
+    bot, _ = get_bot_by_application_id(app_id)
+    message = ManageSetting()
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_manage_view_message(app_id, message_id, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+    if application:
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+                Team.status == 0,
+            )
+            .first()
+        )
+        if team:
+            message = ManageView(org_name=team.name)
             return bot.reply(message_id, message).json()
     return False
 
