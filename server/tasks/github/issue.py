@@ -2,17 +2,7 @@ import os
 
 from app import app, db
 from celery_app import celery
-from model.schema import (
-    BindUser,
-    CodeApplication,
-    Issue,
-    ObjID,
-    PullRequest,
-    Repo,
-    Team,
-    TeamMember,
-    User,
-)
+from model.schema import CodeUser, IMUser, Issue, ObjID, PullRequest, Repo, TeamMember
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
@@ -146,6 +136,16 @@ def on_issue_opened(event_dict: dict | None) -> list:
     issue_info = event.issue
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    # 检查是否已经创建过 issue
+    issue = (
+        db.session.query(Issue)
+        .filter(Issue.repo_id == repo.id, Issue.issue_number == issue_info.number)
+        .first()
+    )
+    if issue:
+        app.logger.info(f"Issue already exists: {issue.id}")
+        return []
+
     # 创建 issue
     new_issue = Issue(
         id=ObjID.new_id(),
@@ -158,56 +158,28 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    github_user_id = event.sender.id
-    installation_id = event.installation.id
-    user = db.session.query(User).filter(User.unionid == github_user_id).first()
-    if not user:
-        app.logger.error(f"Failed to find user: {github_user_id}")
-        task = send_issue_card.delay(new_issue.id)
+    assignees = issue_info.assignees
+    if len(assignees):
+        assignees = [
+            openid
+            for openid, in db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                CodeUser.name.in_([i.login for i in assignees]),
+            )
+            .all()
+        ]
     else:
-        code_application = (
-            db.session.query(CodeApplication)
-            .filter(CodeApplication.installation_id == installation_id)
-            .first()
-        )
+        assignees = []
 
-        team = (
-            db.session.query(Team)
-            .filter(Team.id == code_application.team_id, Team.status.in_([1, 0]))
-            .first()
-        )
-
-        team_member = (
-            db.session.query(TeamMember)
-            .join(BindUser, TeamMember.code_user_id == BindUser.id)
-            .filter(
-                TeamMember.team_id == team.id,
-                BindUser.user_id == user.id,
-                BindUser.platform == "github",
-            )
-            .first()
-        )
-        if team_member is None:
-            app.logger.error(f"Failed to find team_member: {user.id}")
-            task = send_issue_card.delay(new_issue.id)
-            return [task.id]
-
-        im_bind_user = (
-            db.session.query(BindUser)
-            .filter(
-                BindUser.id == team_member.im_user_id,
-                BindUser.platform == "lark",
-            )
-            .first()
-        )
-        if im_bind_user is None:
-            app.logger.error(f"Failed to find im_bind_user: {user.id}")
-            task = send_issue_card.delay(new_issue.id)
-            return [task.id]
-
-        task = send_issue_card.delay(
-            new_issue.id, im_bind_user.openid, im_bind_user.name
-        )
+    task = send_issue_card.delay(
+        issue_id=new_issue.id,
+        assignees=assignees,
+    )
 
     return [task.id]
 
