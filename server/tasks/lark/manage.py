@@ -393,7 +393,7 @@ def create_chat_group_for_repo(
             IMUser.openid.in_(user_id_list),
         )
     ]
-    user_name_list = (
+    invite_message = (
         f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
         if len(user_name_list) > 0
         else "2. 未获取相关绑定成员, 请检查成员是否绑定"
