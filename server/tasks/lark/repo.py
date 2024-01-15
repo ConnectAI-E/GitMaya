@@ -75,7 +75,7 @@ def send_repo_success_tip(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    message = RepoTipSuccess()(content=content)
+    message = RepoTipSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.send(open_id, message).json()
 
