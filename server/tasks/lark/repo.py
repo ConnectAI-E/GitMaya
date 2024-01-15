@@ -62,7 +62,7 @@ def send_repo_failed_tip(
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipFailed(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
-    return bot.send(open_id, message).json()
+    return bot.reply(message_id, message).json()
 
 
 @celery.task()
@@ -84,7 +84,7 @@ def send_repo_success_tip(
         bot, _ = get_bot_by_application_id(app_id)
     message = RepoTipSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
-    return bot.send(open_id, message).json()
+    return bot.reply(message_id, message).json()
 
 
 def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
