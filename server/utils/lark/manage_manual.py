@@ -147,7 +147,7 @@ class ManageNew(FeishuMessageCard):
 
 class ManageSetting(FeishuMessageCard):
     def __init__(self):
-        gitmaya_host = (os.environ.get("DOMAIN"),)
+        gitmaya_host = os.environ.get("DOMAIN")
         setting_url = f"https://{gitmaya_host}/setting"
         elements = [
             FeishuMessageDiv(
