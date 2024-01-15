@@ -101,6 +101,18 @@ class PrManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
+                content="** 🏖️ 分配 Pr 审核人**\n*话题下回复「/review + @成员」 *",
+                tag="lark_md",
+                extra=FeishuMessageSelectPerson(
+                    *[FeishuMessageOption(value=open_id) for open_id in persons],
+                    placeholder="",
+                    value={
+                        "command": f"/review ",
+                        "suffix": "$option",
+                    },
+                ),
+            ),
+            FeishuMessageDiv(
                 content="** 🏷️  修改 Pr 标签**\n*话题下回复「/label + 标签名」 *",
                 tag="lark_md",
             ),
