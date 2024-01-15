@@ -431,8 +431,8 @@ class GitMayaLarkParser(object):
         logging.info("on_at_user_1 %r %r", vars(param), unkown)
 
         raw_message = args[3]
-        user_id = raw_message["event"]["message"]["mention"][0]["id"]["user_id"]
-        user_key = raw_message["event"]["message"]["mention"][0]["key"]
+        user_id = raw_message["event"]["message"]["mentions"][0]["id"]["user_id"]
+        user_key = raw_message["event"]["message"]["mentions"][0]["key"]
         logging.info(f"user_id: {user_id}")
         logging.info(f"user_key: {user_key}")
         # command = param.command
