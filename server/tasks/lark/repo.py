@@ -365,8 +365,9 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
             **kwargs,
         )
 
+    archived = "已归档" if archived else "未归档"
     send_repo_success_tip(
-        f"修改 {repo.name} 仓库 archive 状态为 {archived}", app_id, message_id, content, data
+        f"修改 {repo.name} 仓库状态为 {archived}", app_id, message_id, content, data
     )
 
     message = RepoManual(
