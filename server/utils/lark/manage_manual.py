@@ -14,7 +14,7 @@ class ManageManual(FeishuMessageCard):
         new_repo_url = f"{github_url}/new"
         profile_url = f"{github_url}/{org_name}"
         gitmaya_host = os.environ.get("DOMAIN")
-        setting_url = f"{gitmaya_host}/setting"
+        setting_url = f"{gitmaya_host}/app/setting"
         elements = [
             GitMayaTitle(),
             FeishuMessageHr(),
@@ -149,7 +149,7 @@ class ManageNew(FeishuMessageCard):
 class ManageSetting(FeishuMessageCard):
     def __init__(self):
         gitmaya_host = os.environ.get("DOMAIN")
-        setting_url = f"{gitmaya_host}/setting"
+        setting_url = f"{gitmaya_host}/app/setting"
         elements = [
             FeishuMessageDiv(
                 content=f"** ⚡️ 前往GitMaya查看 **",
