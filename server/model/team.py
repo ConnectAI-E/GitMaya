@@ -523,7 +523,7 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
     db.session.add(chat_group)
     db.session.commit()
     # send card message, and pin repo card
-    task.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
+    tasks.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
     return chat_id
 
 
