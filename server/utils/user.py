@@ -84,8 +84,8 @@ def create_github_user(
         if email is not None:
             bind_user.email = email
 
-        if application_id is not None:
-            bind_user.application_id = application_id
+        # if application_id is not None:
+        #     bind_user.application_id = application_id
 
         db.session.commit()
         return user.id, bind_user.id
@@ -110,7 +110,7 @@ def create_github_user(
         name=name,
         avatar=avatar,
         access_token=access_token,
-        application_id=application_id,
+        # application_id=application_id,
         extra=extra.get("oauth_info", None),
     )
 

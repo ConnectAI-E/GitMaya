@@ -57,7 +57,7 @@ def create_repo_from_github(
                 .filter(
                     User.unionid == str(repo_user["id"]),
                     BindUser.platform == "github",
-                    BindUser.application_id == application_id,
+                    # BindUser.application_id == application_id,
                     BindUser.user_id == User.id,
                 )
                 .first()
