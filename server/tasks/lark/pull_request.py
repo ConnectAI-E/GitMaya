@@ -17,7 +17,12 @@ from model.schema import (
 from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
 from utils.lark.pr_card import PullCard
-from utils.lark.pr_manual import PrManual
+from utils.lark.pr_manual import (
+    PrManual,
+    PullRequestDiff,
+    PullRequestLog,
+    PullRequestView,
+)
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
 
@@ -174,6 +179,90 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
 
     # 回复到话题内部
     return bot.reply(message_id, message).json()
+
+
+def send_pull_request_url_message(
+    app_id, message_id, content, data, *args, typ="view", **kwargs
+):
+    root_id = data["event"]["message"]["root_id"]
+    _, _, pr = get_git_object_by_message_id(root_id)
+    if not pr:
+        return send_pull_request_failed_tip(
+            "找不到PullRequest", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == pr.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return send_pull_request_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+    bot, application = get_bot_by_application_id(app_id)
+    if not application:
+        return send_pull_request_failed_tip(
+            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_pull_request_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    repo_url = f"https://github.com/{team.name}/{repo.name}"
+    if "view" == typ:
+        message = PullRequestView(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    elif "log" == typ:
+        message = PullRequestLog(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    elif "diff" == typ:
+        message = PullRequestDiff(
+            repo_url=repo_url,
+            pr_id=pr.pull_request_number,
+        )
+    else:
+        return send_pull_request_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+    # 回复到话题内部
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_pull_request_view_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="view", **kwargs
+    )
+
+
+@celery.task()
+def send_pull_request_log_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="log", **kwargs
+    )
+
+
+@celery.task()
+def send_pull_request_diff_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_pull_request_url_message(
+        app_id, message_id, content, data, *args, typ="diff", **kwargs
+    )
 
 
 @celery.task()

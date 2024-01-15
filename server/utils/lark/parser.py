@@ -56,6 +56,12 @@ class GitMayaLarkParser(object):
         parser_view = self.subparsers.add_parser("/view")
         parser_view.set_defaults(func=self.on_view)
 
+        parser_log = self.subparsers.add_parser("/log")
+        parser_log.set_defaults(func=self.on_log)
+
+        parser_diff = self.subparsers.add_parser("/diff")
+        parser_diff.set_defaults(func=self.on_diff)
+
         parser_setting = self.subparsers.add_parser("/setting")
         parser_setting.set_defaults(func=self.on_setting)
 
@@ -292,7 +298,7 @@ class GitMayaLarkParser(object):
             tasks.send_manage_view_message.delay(*args, **kwargs)
         else:
             if TopicType.REPO == topic:
-                pass
+                tasks.send_pull_request_view_message.delay(*args, **kwargs)
             elif TopicType.ISSUE == topic:
                 pass
             elif TopicType.PULL_REQUEST == topic:
@@ -301,6 +307,20 @@ class GitMayaLarkParser(object):
                 pass
 
         return "view", param, unkown
+
+    def on_log(self, param, unkown, *args, **kwargs):
+        logging.info("on_log %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.PULL_REQUEST == topic:
+            tasks.send_pull_request_log_message.delay(*args, **kwargs)
+        return "log", param, unkown
+
+    def on_diff(self, param, unkown, *args, **kwargs):
+        logging.info("on_log %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.PULL_REQUEST == topic:
+            tasks.send_pull_request_diff_message.delay(*args, **kwargs)
+        return "log", param, unkown
 
     def on_setting(self, param, unkown, *args, **kwargs):
         logging.info("on_setting %r %r", vars(param), unkown)

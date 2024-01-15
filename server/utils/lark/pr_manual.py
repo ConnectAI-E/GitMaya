@@ -139,6 +139,90 @@ class PrManual(FeishuMessageCard):
         super().__init__(*elements, header=header, config=config)
 
 
+class PullRequestView(FeishuMessageCard):
+    def __init__(self, pr_id=17):
+        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+        pr_url = f"{repo_url}/pull/{pr_id}"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": pr_url,
+                        "android_url": pr_url,
+                        "ios_url": pr_url,
+                        "pc_url": pr_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya PullRequest Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class PullRequestLog(FeishuMessageCard):
+    def __init__(self, pr_id=17):
+        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+        pr_url = f"{repo_url}/pull/{pr_id}/commits"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": pr_url,
+                        "android_url": pr_url,
+                        "ios_url": pr_url,
+                        "pc_url": pr_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya PullRequest Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class PullRequestDiff(FeishuMessageCard):
+    def __init__(self, pr_id=17):
+        repo_url = ("https://github.com/ConnectAI-E/GitMaya",)
+        pr_url = f"{repo_url}/pull/{pr_id}/files"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": pr_url,
+                        "android_url": pr_url,
+                        "ios_url": pr_url,
+                        "pc_url": pr_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya PullRequest Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
 if __name__ == "__main__":
     import json
     import os
