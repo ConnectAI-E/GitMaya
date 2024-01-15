@@ -73,6 +73,11 @@ class GitMayaLarkParser(object):
         parser_assign.add_argument("users", nargs="*")
         parser_assign.set_defaults(func=self.on_assign)
 
+        # /review [@user_1] [@user_2]
+        parser_review = self.subparsers.add_parser("/review")
+        parser_review.add_argument("users", nargs="*")
+        parser_review.set_defaults(func=self.on_review)
+
         # /rename [title]  tit需要支持空格
         parser_rename = self.subparsers.add_parser("/rename")
         parser_rename.add_argument("title", nargs="*")
@@ -216,6 +221,33 @@ class GitMayaLarkParser(object):
         except Exception as e:
             logging.error(e)
         return "issue", param, unkown
+
+    def on_review(self, param, unkown, *args, **kwargs):
+        logging.info("on_review %r %r", vars(param), unkown)
+        # /review [@user_1] [@user_2]
+        try:
+            raw_message = args[3]
+            chat_type = raw_message.get("event", {}).get("message", {}).get("chat_type")
+            mentions = {
+                m["key"].replace("@_user", "at_user"): m
+                for m in raw_message.get("event", {})
+                .get("message", {})
+                .get("mentions", [])
+            }
+            # 只有群聊才是指定的repo
+            if "p2p" != chat_type:
+                users = []
+                for user in param.users:
+                    if "at_user" in user and user in mentions:
+                        users.append(mentions[user]["id"]["open_id"])
+                    elif "ou_" == user[:3]:
+                        users.append(user)
+                chat_type, topic = self._get_topic_by_args(*args)
+                if TopicType.PULL_REQUEST == topic:
+                    tasks.change_pull_request_reviewer.delay(users, *args, **kwargs)
+        except Exception as e:
+            logging.error(e)
+        return "review", param, unkown
 
     def on_assign(self, param, unkown, *args, **kwargs):
         logging.info("on_assign %r %r", vars(param), unkown)

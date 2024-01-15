@@ -524,3 +524,26 @@ def change_pull_request_assignees(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+@with_authenticated_github()
+def change_pull_request_reviewer(
+    users, app_id, message_id, content, data, *args, **kwargs
+):
+    github_app, team, repo, pr, _, _ = _get_github_app(
+        app_id, message_id, content, data, *args, **kwargs
+    )
+    # 这里调用get_assignees_by_openid，拿到的结果是一样的
+    reviewers = get_assignees_by_openid(users)
+    response = github_app.requested_reviewers(
+        team.name,
+        repo.name,
+        pr.pull_request_number,
+        reviewers=reviewers,
+    )
+    if "id" not in response:
+        return send_pull_request_failed_tip(
+            "更新PullRequest审核人失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    return response
