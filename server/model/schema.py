@@ -60,7 +60,7 @@ class JSONStr(String):
     def result_processor(self, dialect, coltype):
         def processor(value):
             try:
-                return json.loads(value)
+                return json.loads(value) if value else value
             except Exception as e:
                 logging.exception(e)
                 return value
