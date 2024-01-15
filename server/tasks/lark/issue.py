@@ -465,3 +465,12 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
             "更新issue失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+@with_authenticated_github()
+def pin_issue(app_id, message_id, content, data, *args, **kwargs):
+    # TODO 未找到pin相关API
+    return send_issue_failed_tip(
+        "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+    )

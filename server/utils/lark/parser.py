@@ -105,6 +105,9 @@ class GitMayaLarkParser(object):
         parser_label.add_argument("labels", nargs="*")
         parser_label.set_defaults(func=self.on_label)
 
+        parser_pin = self.subparsers.add_parser("/pin")
+        parser_pin.set_defaults(func=self.on_pin)
+
         parser_archive = self.subparsers.add_parser("/archive")
         parser_archive.set_defaults(func=self.on_archive)
 
@@ -433,6 +436,13 @@ class GitMayaLarkParser(object):
         _, topic = self._get_topic_by_args(*args)
         if TopicType.REPO == topic:
             tasks.change_repo_archive.delay(True, *args, **kwargs)
+        return "archive", param, unkown
+
+    def on_pin(self, param, unkown, *args, **kwargs):
+        logging.info("on_pin %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.pin_issue.delay(*args, **kwargs)
         return "archive", param, unkown
 
     def on_unarchive(self, param, unkown, *args, **kwargs):
