@@ -122,6 +122,24 @@ class MemberShip(BaseModel):
     user: User
 
 
+class Committer(BaseModel):
+    date: str
+    name: str
+    email: str
+    username: str
+
+
+Author = Committer
+
+
+class Commit(BaseModel):
+    id: str
+    message: str
+    author: Author
+    committer: Committer
+    url: str
+
+
 class RepoEvent(BaseEvent):
     action: str
     repository: Repository
@@ -150,3 +168,11 @@ class OrganizationEvent(BaseEvent):
     action: str
     organization: Organization
     membership: Optional[MemberShip] = None
+
+
+class PushEvent(BaseEvent):
+    after: str
+    before: str
+    ref: str
+    commits: list[Commit]
+    repository: Repository

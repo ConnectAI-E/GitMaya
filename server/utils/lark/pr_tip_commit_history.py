@@ -1,18 +1,26 @@
+from utils.github.model import Commit
+
 from .base import *
 
 
 class PrTipCommitHistory(FeishuMessageCard):
     def __init__(
         self,
-        content="",
-        commit_url="https://github.com/ConnectAI-E/GitMaya/pull/17/commits/351c6b53506956a3b1c50f0a866d0289ca4077de",
+        commits: list[Commit],
     ):
+        content = "\n".join(
+            [
+                f"[-@{commit.author.username} - {commit.message}]({commit.url})"
+                for commit in commits
+            ]
+        )
+
         elements = [
             FeishuMessageDiv(
-                content=f"[-@river - feat: add xxx]({commit_url})",
+                content=content,
                 tag="lark_md",
             ),
-            GitMayaCardNote("GitMaya Pr Action"),
+            GitMayaCardNote("GitMaya PR Action"),
         ]
         header = FeishuMessageCardHeader("📚 Commit History")
         config = FeishuMessageCardConfig()
