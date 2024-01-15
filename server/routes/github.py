@@ -8,6 +8,7 @@ from tasks.github import pull_github_repo
 from tasks.github.issue import on_issue, on_issue_comment
 from tasks.github.organization import on_organization
 from tasks.github.pull_request import on_pull_request
+from tasks.github.push import on_push
 from tasks.github.repo import on_repository
 from utils.auth import authenticated
 from utils.github.application import verify_github_signature
@@ -146,6 +147,9 @@ def github_hook():
             return jsonify({"code": 0, "message": "ok", "task_id": task.id})
         case "organization":
             task = on_organization.delay(request.json)
+            return jsonify({"code": 0, "message": "ok", "task_id": task.id})
+        case "push":
+            task = on_push.delay(request.json)
             return jsonify({"code": 0, "message": "ok", "task_id": task.id})
         case _:
             app.logger.info(f"Unhandled GitHub webhook event: {x_github_event}")

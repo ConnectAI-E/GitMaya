@@ -60,7 +60,7 @@ class JSONStr(String):
     def result_processor(self, dialect, coltype):
         def processor(value):
             try:
-                return json.loads(value)
+                return json.loads(value) if value else value
             except Exception as e:
                 logging.exception(e)
                 return value
@@ -233,33 +233,6 @@ class CodeApplication(Base):
     )
 
 
-class CodeEvent(Base):
-    __tablename__ = "code_event"
-    application_id = db.Column(
-        ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="应用id"
-    )
-    event_id = db.Column(db.String(128), nullable=True, comment="event_id")
-    event_type = db.Column(db.String(128), nullable=True, comment="event_type")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class CodeAction(Base):
-    __tablename__ = "code_action"
-    event_id = db.Column(
-        ObjID(12), ForeignKey("code_event.id"), nullable=True, comment="事件ID"
-    )
-    action_type = db.Column(
-        db.String(128), nullable=True, comment="action_type: 主要是飞书那边的消息等"
-    )
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
 class IMApplication(Base):
     __tablename__ = "im_application"
     team_id = db.Column(
@@ -268,34 +241,6 @@ class IMApplication(Base):
     platform = db.Column(db.String(128), nullable=True, comment="平台：lark")
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
     app_secret = db.Column(db.String(128), nullable=True, comment="app_id")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class IMEvent(Base):
-    __tablename__ = "im_event"
-    application_id = db.Column(
-        ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="应用id"
-    )
-    event_id = db.Column(db.String(128), nullable=True, comment="event_id")
-    event_type = db.Column(db.String(128), nullable=True, comment="event_type")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class IMAction(Base):
-    __tablename__ = "im_action"
-    event_id = db.Column(
-        ObjID(12), ForeignKey("im_event.id"), nullable=True, comment="事件ID"
-    )
-    action_type = db.Column(
-        db.String(128), nullable=True, comment="action_type: 主要是github那边的动作等"
-    )
-    message_id = db.Column(db.String(128), nullable=True, comment="message_id")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
@@ -350,6 +295,12 @@ class PullRequest(Base):
     title = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
+
+    base = db.Column(db.String(128), nullable=True, comment="PR 的基分支")
+    head = db.Column(db.String(128), nullable=True, comment="PR 的分支")
+
+    state = db.Column(db.String(128), nullable=True, comment="PR 的状态")
+
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
