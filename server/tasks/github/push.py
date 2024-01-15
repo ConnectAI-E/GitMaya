@@ -23,16 +23,15 @@ def on_push(data: dict | None) -> list:
         return []
 
     # 在该 Repo 对应的 PullRequest 中查找对应的 pr
-    pr = (
-        db.session.query(PullRequest)
-        .filter(
-            PullRequest.repo_id == repo.id,
-            json.loads(PullRequest.extra).get("head", {}).get("ref") == event.ref,
-        )
-        .first()
-    )
+    pr_list = db.session.query(PullRequest).filter(PullRequest.repo_id == repo.id).all()
 
-    if not pr:
+    pr = None
+    for _pr in pr_list:
+        if _pr.extra.get("head", {}).get("ref", "") == (event.ref).split("/")[-1]:
+            pr = _pr
+            break
+
+    if pr is None:
         app.logger.info(f"PullRequest not found: {repo.name} {event.ref}")
         return []
 
