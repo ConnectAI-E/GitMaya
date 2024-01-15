@@ -39,6 +39,13 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 
 
 @celery.task()
+def get_repo_name_by_chat_id(chat_id, *args, **kwargs):
+    chat_group = get_repo_id_by_chat_group(chat_id)
+
+    return get_repo_name_by_repo_id(chat_group.repo_id)
+
+
+@celery.task()
 def send_repo_failed_tip(
     content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
 ):
@@ -75,7 +82,6 @@ def send_repo_success_tip(
     """
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
-    # TODO 拿到Repo name
     message = RepoTipSuccess(content=content)
     open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
     return bot.send(open_id, message).json()
@@ -192,11 +198,23 @@ def change_repo_visit(visibility, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "修改 Repo 访问权限失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库访问权限失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
-
+    vis = "公开仓库" if visibility else "私有仓库"
     send_repo_success_tip(
-        "修改 Repo 访问权限成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库访问权限为 {vis}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
@@ -215,11 +233,17 @@ def change_repo_name(name, app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "修改 Repo 标题失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库标题失败", app_id, message_id, content, data, *args, **kwargs
         )
 
     send_repo_success_tip(
-        "修改 Repo 标题成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库标题为 {name}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
@@ -238,11 +262,17 @@ def change_repo_desc(description, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "修改 Repo 描述失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库描述失败", app_id, message_id, content, data, *args, **kwargs
         )
 
     send_repo_success_tip(
-        "修改 Repo 描述成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库描述为 {description}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
@@ -261,11 +291,23 @@ def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwarg
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "修改 homepage 链接失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库homepage 链接失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
 
     send_repo_success_tip(
-        "修改 homepage 链接成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库homepage为 {homepage}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
@@ -284,11 +326,18 @@ def change_repo_label(label, app_id, message_id, content, data, *args, **kwargs)
     )
     if "names" not in response:
         return send_repo_failed_tip(
-            "修改 Repo 标签失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库标签失败", app_id, message_id, content, data, *args, **kwargs
         )
-
+    # label是个数组，把每个元素用逗号拼接起来变成labels
+    labels = ",".join(label)
     send_repo_success_tip(
-        "修改 Repo 标签成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库标签为 {label}",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
@@ -307,10 +356,18 @@ def change_repo_archive(archived, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            "修改 Repo archive 状态失败", app_id, message_id, content, data, *args, **kwargs
+            f"修改 {repo.name} 仓库 archive 状态失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
 
-    send_repo_success_tip("修改 Repo archive 状态成功", app_id, message_id, content, data)
+    send_repo_success_tip(
+        f"修改 {repo.name} 仓库 archive 状态为 {archived}", app_id, message_id, content, data
+    )
 
     message = RepoManual(
         repo_url=f"https://github.com/{team.name}/{repo.name}",
@@ -351,7 +408,7 @@ def change_repo_collaborator(
     )
     if not username:
         return send_repo_failed_tip(
-            "修改 Repo collaborator 失败: 找不到绑定人员",
+            f"修改 {repo.name} 仓库 collaborator 失败: 找不到绑定人员",
             app_id,
             message_id,
             content,
@@ -367,7 +424,7 @@ def change_repo_collaborator(
     )
     if "status" not in response or response["status"] != "success":
         return send_repo_failed_tip(
-            "修改 Repo collaborator 失败: 添加人员失败",
+            f"修改 {repo.name} 仓库 collaborator 失败: 添加人员失败",
             app_id,
             message_id,
             content,
@@ -377,7 +434,13 @@ def change_repo_collaborator(
         )
 
     send_repo_success_tip(
-        "修改 Repo collaborator 成功", app_id, message_id, content, data, *args, **kwargs
+        f"修改 {repo.name} 仓库 collaborator 成功",
+        app_id,
+        message_id,
+        content,
+        data,
+        *args,
+        **kwargs,
     )
 
     return response
