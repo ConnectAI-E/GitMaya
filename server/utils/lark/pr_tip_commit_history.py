@@ -9,9 +9,10 @@ class PrTipCommitHistory(FeishuMessageCard):
         commits: list[Commit],
     ):
         def process_commit_message(message: str) -> str:
-            title = message.split("\n")[0]
+            title = message.split("\n")[0] if "\n" in message else message
             if len(title) > 23:
                 title = title[:20] + "..."
+            return title
 
         content = "\n".join(
             [
