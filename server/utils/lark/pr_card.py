@@ -20,9 +20,19 @@ class PullCard(FeishuMessageCard):
     ):
         pr_url = f"{repo_url}/pull/{id}"
         template = "red"
-        # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
-        assignees = "".join([f"<at id={open_id}></at>" for open_id in assignees])
-        reviewers = "".join([f"<at id={open_id}></at>" for open_id in reviewers])
+        assignees = (
+            "".join([f"<at id={open_id}></at>" for open_id in assignees])
+            if len(assignees) > 0
+            else "**<font color='red'>待分配</font>**"
+        )
+        reviewers = (
+            "".join([f"<at id={open_id}></at>" for open_id in assignees])
+            if len(reviewers) > 0
+            else "**<font color='red'>待分配</font>**"
+        )
+        label = (
+            "、".join(labels) if len(labels) > 0 else "**<font color='red'>待补充</font>**"
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
@@ -70,7 +80,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(labels)} *",
+                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(label)} *",
                                 text_align="left",
                             ),
                             width="weighted",
