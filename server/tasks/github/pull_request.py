@@ -1,6 +1,6 @@
 from app import app, db
 from celery_app import celery
-from model.schema import ObjID, PullRequest, Repo
+from model.schema import CodeUser, IMUser, ObjID, PullRequest, Repo, TeamMember
 from tasks.lark.pull_request import send_pull_request_card, update_pull_request_card
 from utils.github.model import PullRequestEvent
 
@@ -47,6 +47,19 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     pr_info = event.pull_request
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    # 检查是否已经创建过 pullrequest
+    pr = (
+        db.session.query(PullRequest)
+        .filter(
+            PullRequest.repo_id == repo.id,
+            PullRequest.pull_request_number == pr_info.number,
+        )
+        .first()
+    )
+    if pr:
+        app.logger.info(f"PullRequest already exists: {pr.id}")
+        return []
+
     # 创建 pullrequest
     new_pr = PullRequest(
         id=ObjID.new_id(),
@@ -59,7 +72,25 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     db.session.add(new_pr)
     db.session.commit()
 
-    task = send_pull_request_card.delay(new_pr.id)
+    assignees = pr_info.assignees if pr_info.assignees else []
+    if len(assignees):
+        assignees = [
+            openid
+            for openid, in db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                CodeUser.name.in_([i.login for i in assignees]),
+            )
+            .all()
+        ]
+    else:
+        assignees = []
+
+    task = send_pull_request_card.delay(new_pr.id, assignees)
 
     return [task.id]
 

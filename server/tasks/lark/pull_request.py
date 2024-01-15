@@ -177,7 +177,7 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
 
 
 @celery.task()
-def send_pull_request_card(pull_request_id):
+def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
     """send new PullRequest card message to user.
 
     Args:
@@ -209,10 +209,19 @@ def send_pull_request_card(pull_request_id):
                     # save message_id
                     pr.message_id = message_id
                     db.session.commit()
+
+                    users = (
+                        "".join(
+                            [f'<at user_id="{open_id}"></at>' for open_id in assignees]
+                        )
+                        if len(assignees)
+                        else ""
+                    )
+
                     first_message_result = bot.reply(
                         message_id,
                         # TODO 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(f'<at user_id="all">所有人</at>\n{repo_url}'),
+                        FeishuTextMessage(f"{users}{repo_url}"),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)

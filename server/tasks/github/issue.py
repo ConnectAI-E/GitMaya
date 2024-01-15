@@ -158,7 +158,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    assignees = issue_info.assignees
+    assignees = issue_info.assignees if issue_info.assignees else []
     if len(assignees):
         assignees = [
             openid

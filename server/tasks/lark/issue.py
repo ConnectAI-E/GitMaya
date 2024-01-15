@@ -182,7 +182,9 @@ def send_issue_card(issue_id, assignees: list[str] = []):
                     db.session.commit()
 
                     users = (
-                        "".join([f"<at id={open_id}></at>" for open_id in assignees])
+                        "".join(
+                            [f'<at user_id="{open_id}"></at>' for open_id in assignees]
+                        )
                         if len(assignees)
                         else ""
                     )
