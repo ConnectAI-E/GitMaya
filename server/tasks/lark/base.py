@@ -36,7 +36,7 @@ from utils.constant import GitHubPermissionError
 #         return "pull_request", results.pull_request_id
 
 
-def get_repo_id_by_chat_group(chat_id):
+def get_chat_group_by_chat_id(chat_id):
     chat_group = (
         db.session.query(ChatGroup)
         .filter(

@@ -15,7 +15,6 @@ from model.schema import (
     RepoUser,
     Team,
     TeamMember,
-    User,
     db,
 )
 from sqlalchemy.orm import aliased
@@ -313,7 +312,10 @@ def create_chat_group_for_repo(
             TeamMember.team_id == team.id,
             RepoUser.repo_id == repo.id,
         )
-    ] + [owner_id]
+    ]
+
+    if owner_id not in user_id_list:
+        user_id_list += [owner_id]
 
     result = bot.post(
         chat_group_url,
@@ -356,6 +358,7 @@ def create_chat_group_for_repo(
         db.session.query(IMUser).filter(IMUser.openid == user_id).first().name
         for user_id in user_id_list
     ]
+    # 如果
     user_name_list = "、".join(user_name_list)
 
     content = "\n".join(

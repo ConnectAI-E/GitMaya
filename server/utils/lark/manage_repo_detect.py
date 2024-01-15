@@ -14,10 +14,14 @@ class ManageRepoDetect(FeishuMessageCard):
         new_issue_url = f"{repo_url}/issues/new"
         github_url = "https://github.com"
         setting_url = f"{repo_url}/settings"
-        homepage = homepage if homepage != "待补充" else "**<font color='red'>待补充</font>**"
+        homepage = (
+            f"[{homepage}]({homepage})"
+            if homepage is not None
+            else "**<font color='red'>待补充</font>**"
+        )
         repo_description = (
             repo_description
-            if repo_description != "待补充"
+            if repo_description is not None
             else "**<font color='red'>待补充</font>**"
         )
         labels = (

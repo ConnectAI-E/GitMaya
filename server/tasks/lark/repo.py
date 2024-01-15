@@ -3,7 +3,6 @@ from email import message
 
 from celery_app import app, celery
 from model.schema import (
-    BindUser,
     CodeApplication,
     CodeUser,
     IMApplication,
@@ -24,7 +23,7 @@ from .base import *
 
 @celery.task()
 def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
-    chat_group = get_repo_id_by_chat_group(chat_id)
+    chat_group = get_chat_group_by_chat_id(chat_id)
 
     repo_name = get_repo_name_by_repo_id(chat_group.repo_id)
     team = (
@@ -40,8 +39,7 @@ def get_repo_url_by_chat_id(chat_id, *args, **kwargs):
 
 @celery.task()
 def get_repo_name_by_chat_id(chat_id, *args, **kwargs):
-    chat_group = get_repo_id_by_chat_group(chat_id)
-
+    chat_group = get_chat_group_by_chat_id(chat_id)
     return get_repo_name_by_repo_id(chat_group.repo_id)
 
 
@@ -87,14 +85,14 @@ def send_repo_success_tip(
     return bot.reply(message_id, message).json()
 
 
-def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
+def _get_github_app(app_id, message_id, content, data):
     # 通过chat_group查repo id
     chat_id = data["event"]["message"]["chat_id"]
     openid = data["event"]["sender"]["sender_id"]["open_id"]
 
     logging.info(f"chat_id: {chat_id}")
 
-    chat_group = get_repo_id_by_chat_group(chat_id)
+    chat_group = get_chat_group_by_chat_id(chat_id)
     logging.info(f"chat_group: {chat_group}")
 
     repo = (
@@ -107,9 +105,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     )
     logging.info(f"repo: {repo}")
     if not repo:
-        return send_repo_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的项目", app_id, message_id, content, data)
 
     code_application = (
         db.session.query(CodeApplication)
@@ -120,9 +116,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     )
 
     if not code_application:
-        return send_repo_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的应用", app_id, message_id, content, data)
 
     team = (
         db.session.query(Team)
@@ -132,9 +126,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
         .first()
     )
     if not team:
-        return send_repo_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
-        )
+        return send_repo_failed_tip("找不到对应的项目", app_id, message_id, content, data)
 
     code_user_id = (
         db.session.query(CodeUser.user_id)
