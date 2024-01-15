@@ -84,6 +84,7 @@ def create_github_user(
         if email is not None:
             bind_user.email = email
 
+        # 通过 GitHub 创建的 BindUser 不再写入更新 application_id
         # if application_id is not None:
         #     bind_user.application_id = application_id
 
