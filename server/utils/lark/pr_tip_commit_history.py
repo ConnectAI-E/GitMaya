@@ -8,9 +8,14 @@ class PrTipCommitHistory(FeishuMessageCard):
         self,
         commits: list[Commit],
     ):
+        def process_commit_message(message: str) -> str:
+            title = message.split("\n")[0]
+            if len(title) > 23:
+                title = title[:20] + "..."
+
         content = "\n".join(
             [
-                f"[-@{commit.author.username} - {commit.message}]({commit.url})"
+                f"[-@{commit.author.username} - {process_commit_message(commit.message)}]({commit.url})"
                 for commit in commits
             ]
         )

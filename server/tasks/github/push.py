@@ -1,5 +1,3 @@
-import json
-
 from app import app, db
 from celery_app import celery
 from model.schema import ChatGroup, PullRequest, Repo
@@ -27,7 +25,10 @@ def on_push(data: dict | None) -> list:
 
     pr = None
     for _pr in pr_list:
-        if _pr.extra.get("head", {}).get("ref", "") == (event.ref).split("/")[-1]:
+        if (
+            _pr.extra.get("head", {}).get("ref", "") == (event.ref).split("/")[-1]
+            and _pr.extra.get("state", "") == "open"
+        ):
             pr = _pr
             break
 
@@ -37,7 +38,7 @@ def on_push(data: dict | None) -> list:
 
     # 发送 Commit Log 信息
     chat_group = (
-        db.session.query(ChatGroup).filter(ChatGroup.id == repo.repo_id).first()
+        db.session.query(ChatGroup).filter(ChatGroup.repo_id == repo.id).first()
     )
     if not chat_group:
         app.logger.info(f"ChatGroup not found: {repo.name}")
@@ -51,4 +52,4 @@ def on_push(data: dict | None) -> list:
         ),
     )
     app.logger.info(f"Reply result: {reply_result}")
-    return reply_result
+    return reply_result.json()
