@@ -453,6 +453,10 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
         return send_pull_request_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -471,6 +475,10 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if "id" not in response:
         return send_pull_request_failed_tip(
             "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "关闭PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -497,6 +505,10 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
         return send_pull_request_failed_tip(
             "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "合并PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -521,7 +533,11 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "打开PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "打开PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -550,6 +566,10 @@ def change_pull_request_title(
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -571,6 +591,10 @@ def change_pull_request_label(
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -589,6 +613,10 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
     if "id" not in response:
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -612,6 +640,10 @@ def change_pull_request_assignees(
         return send_pull_request_failed_tip(
             "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
         )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+        )
     return response
 
 
@@ -634,5 +666,9 @@ def change_pull_request_reviewer(
     if "id" not in response:
         return send_pull_request_failed_tip(
             "更新PullRequest审核人失败", app_id, message_id, content, data, *args, **kwargs
+        )
+    else:
+        send_pull_request_success_tip(
+            "更新PullRequest审核人成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
