@@ -469,7 +469,7 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, name=None):
     chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
     owner_id = (
         db.session.query(IMUser.openid)
-        .join(
+        .filter(
             IMUser.application_id == application.id,
             IMUser.user_id == user_id,
         )
