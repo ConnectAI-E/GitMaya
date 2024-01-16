@@ -36,7 +36,10 @@ def get_user_info(access_token: str) -> dict | None:
         dict: User info.
     """
 
-    with httpx.Client() as client:
+    with httpx.Client(
+        timeout=httpx.Timeout(10.0, connect=10.0, read=10.0),
+        transport=httpx.HTTPTransport(retries=3),
+    ) as client:
         response = client.get(
             "https://api.github.com/user",
             headers={
@@ -65,7 +68,10 @@ def get_email(access_token: str) -> str | None:
         str: User email.
     """
 
-    with httpx.Client() as client:
+    with httpx.Client(
+        timeout=httpx.Timeout(10.0, connect=10.0, read=10.0),
+        transport=httpx.HTTPTransport(retries=3),
+    ) as client:
         response = client.get(
             "https://api.github.com/user/emails",
             headers={
