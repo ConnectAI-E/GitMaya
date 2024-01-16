@@ -53,21 +53,21 @@ class IssueManualHelp(FeishuMessageCard):
                 if len(tags)
                 else None,
             ),
-            FeishuMessageDiv(
-                content="** 🔝 置顶 Issue**\n*话题下回复「/pin、/unpin」 *",
-                tag="lark_md",
-                extra=FeishuMessageButton(
-                    "Pin Issue",
-                    tag="lark_md",
-                    type="primary",
-                    multi_url={
-                        "url": issue_url,
-                        "android_url": issue_url,
-                        "ios_url": issue_url,
-                        "pc_url": issue_url,
-                    },
-                ),
-            ),
+            # FeishuMessageDiv(
+            #     content="** 🔝 置顶 Issue**\n*话题下回复「/pin、/unpin」 *",
+            #     tag="lark_md",
+            #     extra=FeishuMessageButton(
+            #         "Pin Issue",
+            #         tag="lark_md",
+            #         type="primary",
+            #         multi_url={
+            #             "url": issue_url,
+            #             "android_url": issue_url,
+            #             "ios_url": issue_url,
+            #             "pc_url": issue_url,
+            #         },
+            #     ),
+            # ),
             FeishuMessageDiv(
                 content="** 📑 修改 Issue 标题**\n*话题下回复「/rename + 新 Issue 标题」 *",
                 tag="lark_md",
@@ -98,6 +98,37 @@ class IssueManualHelp(FeishuMessageCard):
             GitMayaCardNote("GitMaya Issue Manual"),
         ]
         header = FeishuMessageCardHeader("ISSUE MANUAL\n", template="grey")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class IssueView(FeishuMessageCard):
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+        issue_id=17,
+    ):
+        issue_url = f"{repo_url}/issues/{issue_id}"
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": issue_url,
+                        "android_url": issue_url,
+                        "ios_url": issue_url,
+                        "pc_url": issue_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Issue Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)
