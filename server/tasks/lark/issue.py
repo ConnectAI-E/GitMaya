@@ -543,11 +543,18 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
+        assignees_name = "、".join(assignees)
         send_issue_success_tip(
-            "更新issue成功", app_id, message_id, content, data, *args, **kwargs
+            f"已成功将 issue #{issue.issue_number} 负责人修改为 「{assignees_name}」",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     return response
 
