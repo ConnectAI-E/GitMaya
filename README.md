@@ -27,11 +27,27 @@
     <a href="https://gitmaya.com">🖥 Use Now </a>
 </p>
 
+## 📃 Prerequisites
+Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application. 
+
+### 1. Feishu Bot Application
+The Feishu bot application can be set up with the help of **[botops](https://github.com/ConnectAI-E/botops). (recommended)**
+```fish
+# gitmaya.botops.example.json provided in the project
+npx botops deploy gitmaya.botops.example.json
+```
+or by referring to the official [Feishu app documentation](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process); 
+
+
+### 2. GitHub Application
+For the GitHub app, please refer to [GitHub Application](#reference).
+
+
 ## 🛳 Self Hosting
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
-### `A` Deploying with Zeabur or Sealos
+<!-- ### `A` Deploying with Zeabur or Sealos
 
 If you want to deploy this service yourself on either Zeabur or Sealos, you can follow these steps:
 
@@ -47,9 +63,9 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 
 > \[!TIP]
 >
-> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync).
+> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync). -->
 
-### `B` Deploying with Docker
+### Deploying with Docker-Compose
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -68,7 +84,7 @@ $ docker run -d -p 3210:3210 \
 >
 > For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment)
 
-<details><summary><h4>🫙 Docker Environment Variable</h4></summary>
+<details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
 
 This project provides some additional configuration items set with environment variables:
 
@@ -139,9 +155,9 @@ $ eval $(pdm venv activate)
 
 Before starting, ensure you have the following configuration files in place:
 
-- `.env`:
+- `.env`: **Configure Feishu, GitHub, and various middleware variables.**
 
-Configure Feishu Application, for details refer to: [Feishu Application](#refference)
+Configure Feishu Application, for details refer to: [Feishu Application](#reference)
 
 ```fish
 # Feishu App Settings
@@ -152,14 +168,6 @@ VERIFICATION_TOKEN='xxx'
 
 # For Feishu Bot Testing
 TEST_BOT_HOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
-```
-
-Configure Flask
-
-```fish
-# Flask Settings
-SECRET_KEY="test"
-FLASK_PERMANENT_SESSION_LIFETIME=86400
 ```
 
 Configure database by replacing [root], [passwd] and [db_name] with your own username, password and database name
@@ -177,7 +185,7 @@ CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/2
 ```
 
-Configure GitHub App, for details refer to: [GitHub App](#refference)
+Configure GitHub App, for details refer to: [GitHub App](#reference)
 
 ```fish
 # GitHub Settings
@@ -197,6 +205,13 @@ PORT=8888
 DOMAIN=http://localhost:8888
 ```
 
+(Optional) Configure Flask
+```fish
+# Flask Settings
+SECRET_KEY="test"
+FLASK_PERMANENT_SESSION_LIFETIME=86400
+```
+
 ### 4. Running the Server
 
 Before running the server, ensure you have the following services running:
@@ -212,7 +227,7 @@ $ python server/server.py
 ```
 
 
-## Refference
+## 📕 Reference
 - Feishu Application Doc
 - GitHub App Doc
 
