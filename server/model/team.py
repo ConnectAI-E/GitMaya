@@ -318,6 +318,10 @@ def create_team(app_info: dict, contact_id=None) -> Team:
         .first()
     )
     if current_team:
+        if contact_id:
+            db.session.query(TeamContact).filter(
+                TeamContact.id == contact_id,
+            ).update(dict(team_id=current_team.id))
         current_team.extra = app_info["account"]
         db.session.commit()
         return current_team
@@ -336,7 +340,7 @@ def create_team(app_info: dict, contact_id=None) -> Team:
     if contact_id:
         db.session.query(TeamContact).filter(
             TeamContact.id == contact_id,
-        ).update(dict(team_id=team_id))
+        ).update(dict(team_id=new_team.id))
 
     # 创建 TeamMember
     current_bind_user = BindUser.query.filter(
