@@ -9,7 +9,7 @@ class PullCard(FeishuMessageCard):
         title="",
         base=None,
         head=None,
-        description="",
+        description=None,
         persons=[],
         assignees=[],
         reviewers=[],

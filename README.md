@@ -13,8 +13,8 @@
  <samp>Supports lark, discord, slack, and so on <sup><em>(FULL OPENSOURCE)</em></sup></samp>
 </p>
 
-
 <!-- SHIELD GROUP -->
+
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-forks-shield]][github-forks-link]
 [![][github-stars-shield]][github-stars-link]
@@ -23,21 +23,34 @@
 
 </div>
 
-
-
-
-
 <p align="center">
     <a href="https://gitmaya.com">🖥 Use Now </a>
 </p>
 
+## 📃 Prerequisites
 
+Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
+
+### 1. Feishu Bot Application
+
+The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
+
+```fish
+# gitmaya.botops.example.json provided in the project
+npx botops deploy gitmaya.botops.example.json
+```
+
+or by referring to the official [Feishu Application Doc](#📕-reference);
+
+### 2. GitHub Application
+
+For the GitHub app, please refer to [GitHub Application Doc](#📕-reference).
 
 ## 🛳 Self Hosting
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
-### `A` Deploying with Zeabur or Sealos
+<!-- ### `A` Deploying with Zeabur or Sealos
 
 If you want to deploy this service yourself on either Zeabur or Sealos, you can follow these steps:
 
@@ -53,10 +66,9 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 
 > \[!TIP]
 >
-> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync).
+> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync). -->
 
-
-### `B` Deploying with Docker
+### Deploying with Docker-Compose
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -71,20 +83,17 @@ $ docker run -d -p 3210:3210 \
   connectai-e/gitmaya
 ```
 
-
 > \[!NOTE]
 >
 > For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment)
 
-
-<details><summary><h4>🫙 Docker Environment Variable</h4></summary>
-
+<details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
 
 This project provides some additional configuration items set with environment variables:
 
-| Environment Variable | Required | Description                                                                                                                                                               | Example                                                                                   |
-| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page                                                                                                                  | `sk-xxxxxx...xxxxxx`                                                                      |
+| Environment Variable | Required | Description                                              | Example              |
+| -------------------- | -------- | -------------------------------------------------------- | -------------------- |
+| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page | `sk-xxxxxx...xxxxxx` |
 
 > \[!NOTE]
 >
@@ -97,20 +106,134 @@ This project provides some additional configuration items set with environment v
 
 </div>
 
-
 ## ⌨️ Local Development
 
-You can use GitHub Codespaces for online development:
+### Prerequisites
+
+Ensure you have the following installed:
+
+- MySQL
+- Celery
+- Redis
+<!-- You can use GitHub Codespaces for online development:
 
 [![][codespaces-shield]][codespaces-link]
 
-Or clone it for local development:
+Or clone it for local development: -->
+
+### 1. Clone the Repository
+
+Clone the repository to your local machine or server:
 
 ```fish
-$ git clone https://github.com/connectai-e/gitmaya.git
-$ cd gitmaya
-// todo
+$ git clone https://github.com/ConnectAI-E/GitMaya.git
+$ cd GitMaya
 ```
+
+### 2. Installing Dependencies
+
+#### Using pip
+
+If you are using `pip`
+
+```fish
+pip -r requirements.txt
+```
+
+#### Using pdm(Recommended)
+
+If you are using `pdm`
+
+```fish
+pdm install
+```
+
+Activate the virtual environment:
+
+```fish
+$ eval $(pdm venv activate)
+```
+
+### 3. Configuration Files
+
+Before starting, ensure you have the following configuration files in place:
+
+- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
+
+Configure Feishu Application, for details refer to: [Feishu Application](#📕-reference)
+
+```fish
+# Feishu App Settings
+APP_ID='cli_xxxx'
+APP_SECRET='xxx'
+ENCRYPT_KEY='xxx'
+VERIFICATION_TOKEN='xxx'
+
+# For Feishu Bot Testing
+TEST_BOT_HOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
+```
+
+Configure database by replacing relevant variables
+
+```fish
+# Database Settings
+FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://[root]:[passwd]@[mysql_host]:3306/[db_name]?charset=utf8mb4&binary_prefix=true"
+```
+
+Configure Celery, using Redis as Broker
+
+```fish
+# Celery Settings
+CELERY_BROKER_URL=redis://redis:6379/1
+CELERY_RESULT_BACKEND=redis://redis:6379/2
+```
+
+Configure GitHub App, for details refer to: [GitHub App](#📕-reference)
+
+```fish
+# GitHub Settings
+GITHUB_APP_NAME=test
+GITHUB_APP_ID=1024
+GITHUB_APP_PRIVATE_KEY_PATH=/server/pem.pem
+GITHUB_CLIENT_ID=test
+GITHUB_CLIENT_SECRET=test
+GITHUB_WEBHOOK_SECRET=secret
+```
+
+Configure server address
+
+```fish
+HOST=0.0.0.0
+PORT=8888
+DOMAIN=http://localhost:8888
+```
+
+(Optional) Configure Flask
+
+```fish
+# Flask Settings
+SECRET_KEY="test"
+FLASK_PERMANENT_SESSION_LIFETIME=86400
+```
+
+### 4. Running the Server
+
+Before running the server, ensure you have the following services running:
+
+- MySQL
+- Celery
+- Redis
+
+Then, run the following command to start the server:
+
+```fish
+$ python server/server.py
+```
+
+## 📕 Reference
+
+- [Feishu Application Doc](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process)
+- [GitHub App Doc](https://docs.github.com/en/developers/apps/creating-a-github-app)
 
 <div align="right">
 
@@ -118,15 +241,13 @@ $ cd gitmaya
 
 </div>
 
-
-
 ## 📦 Ecosystem
 
 There are four repositories for gitmaya, and this is one of them:
 
 |     | Repository                                                          | Language   | Purpose                            |
 | --- | ------------------------------------------------------------------- | ---------- | ---------------------------------- |
-| 👉   | [GitMaya](https://github.com/ConnectAI-E/GitMaya)                   | Python     | Server-side code                   |
+| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)                   | Python     | Server-side code                   |
 |     | [GitMaya-Frontend](https://github.com/ConnectAI-E/GitMaya-Frontend) | TypeScript | Frontend code                      |
 |     | [GitMaya-WebSite](https://github.com/ConnectAI-E/GitMaya-Website)   | TypeScript | Official website and documentation |
 |     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli)           | Python     | Super Git management tool          |
@@ -137,13 +258,11 @@ There are four repositories for gitmaya, and this is one of them:
 
 </div>
 
-
 ## 🤝 Contributing Now
 
 Gitmaya is an open-source platform, freely available and crafted by developers, just like yourself. Feel free to proudly present your envisioned features and bring them to life through code.
 
 [![][pr-welcome-shield]][pr-welcome-link]
-
 
 <a href="https://github.com/connectai-e/gitmaya/graphs/contributors" target="_blank">
   <table>
@@ -165,14 +284,11 @@ Gitmaya is an open-source platform, freely available and crafted by developers, 
   </table>
 </a>
 
-
 <div align="right">
-
 
 [![][back-to-top]](#readme-top)
 
 </div>
-
 
 ## 👻 Alternatives
 
@@ -184,13 +300,11 @@ Gitmaya is an open-source platform, freely available and crafted by developers, 
 
 They work well but have different focuses and feature sets, try them out as well :)
 
-
 <details><summary><h4>📝 License</h4></summary>
 
 [![][fossa-license-shield]][fossa-license-link]
 
 </details>
-
 
 Copyright © 2024 [ConnectAI-E][profile-link]. <br />
 This project is [MIT](./LICENSE) licensed.
@@ -198,6 +312,7 @@ This project is [MIT](./LICENSE) licensed.
 <!-- LINK GROUP -->
 
 [back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
+
 [fossa-license-link]: [https://app.fossa.com/projects/git%2Bgithub.com%2Fconnectai-e%2Fgitmaya](https://app.fossa.com/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya?ref=badge_large)
 [fossa-license-shield]: https://app.fossa.com/api/projects/git%2Bgithub.com%2FConnectAI-E%2FGitMaya.svg?type=large
 [profile-link]: https://github.com/connectai-e

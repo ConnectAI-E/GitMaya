@@ -8,7 +8,7 @@ class RepoInfo(FeishuMessageCard):
         repo_name="GitMaya",
         repo_description="",
         repo_topic=[],
-        homepage="",
+        homepage=None,
         visibility="私有仓库",
         archived=False,
         updated="2022年12月23日 16:32",
@@ -144,20 +144,20 @@ class RepoInfo(FeishuMessageCard):
                         "pc_url": repo_url,
                     },
                 ),
-                FeishuMessageOverflow(
-                    FeishuMessageOption(
-                        value="appStore",
-                        content="修改GitHub Repo信息",
-                    ),
-                    FeishuMessageOption(
-                        value="appStore",
-                        content="暂停使用项目群",
-                    ),
-                    FeishuMessageOption(
-                        value="appStore",
-                        content="更新仓库状态",
-                    ),
-                ),
+                # FeishuMessageOverflow(
+                #     FeishuMessageOption(
+                #         value="appStore",
+                #         content="敬请期待",
+                #     ),
+                # FeishuMessageOption(
+                #     value="appStore",
+                #     content="暂停使用项目群",
+                # ),
+                # FeishuMessageOption(
+                #     value="appStore",
+                #     content="更新仓库状态",
+                # ),
+                # ),
             ),
             GitMayaCardNote(f"最近更新 {updated.split('T')[0]}"),
         ]
