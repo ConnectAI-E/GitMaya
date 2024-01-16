@@ -454,14 +454,8 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
-        try:
-            raw_message = args[3]
-            chat_id = raw_message["event"]["message"]["chat_id"]
 
-            tasks.open_repo_insight.delay(chat_id)
-
-        except Exception as e:
-            logging.error(e)
+        tasks.send_repo_insight_message(*args, **kwargs)
         return "insight", param, unkown
 
     def on_merge(self, param, unkown, *args, **kwargs):

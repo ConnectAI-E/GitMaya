@@ -177,8 +177,9 @@ def send_repo_manual(app_id, message_id, content, data, *args, **kwargs):
     return bot.reply(message_id, message).json()
 
 
-@celery.task()
-def send_repo_view_message(app_id, message_id, content, data, *args, **kwargs):
+def send_repo_url_message(
+    app_id, message_id, content, data, *args, typ="view", **kwargs
+):
     root_id = data["event"]["message"]["root_id"]
     repo, _, _ = get_git_object_by_message_id(root_id)
     if not repo:
@@ -204,9 +205,25 @@ def send_repo_view_message(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = RepoView(repo_url=repo_url)
-
+    if "view" == typ:
+        message = RepoView(repo_url=repo_url)
+    elif "insight" == typ:
+        message = RepoView(repo_url=f"{repo_url}/pulse")
     return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_repo_view_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_repo_url_message(
+        app_id, message_id, content, data, *args, typ="view", **kwargs
+    )
+
+
+@celery.task()
+def send_repo_insight_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_repo_url_message(
+        app_id, message_id, content, data, *args, typ="insight", **kwargs
+    )
 
 
 @celery.task()
