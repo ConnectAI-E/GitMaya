@@ -28,7 +28,7 @@ def github_install():
     installation_id = request.args.get("installation_id", None)
     if installation_id is None:
         return redirect(
-            f"https://github.com/apps/{os.environ.get('GITHUB_APP_NAME')}/installations/new"
+            f"https://github.com/apps/{(os.environ.get('GITHUB_APP_NAME')).replace(' ', '-')}/installations/new"
         )
 
     github_app = BaseGitHubApp(installation_id)

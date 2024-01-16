@@ -23,6 +23,7 @@ from utils.lark.manage_manual import ManageManual, ManageNew, ManageSetting, Man
 from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
+from utils.lark.repo_manual import RepoManual
 
 from .base import get_bot_by_application_id
 
@@ -473,6 +474,24 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
                 reply_in_thread=True,
             ).json()
             logging.info("debug first_message_result %r", first_message_result)
+
+            # 向群内发送 manual
+            message = RepoManual(
+                repo_url=f"https://github.com/{team.name}/{repo.name}",
+                repo_name=repo.name,
+                visibility=repo.extra.get("visibility", "public"),
+                archived=True if repo.extra.get("archived") else False,
+            )
+
+            man_result = bot.send(
+                chat_id,
+                message,
+                receive_id_type="chat_id",
+            ).json()
+        else:
+            logging.error("debug result %r", result)
+            return False
+
         # 一共有3个result需要存到imaction里面
-        return [result, pin_result, first_message_result]
+        return [result, pin_result, first_message_result, man_result]
     return False

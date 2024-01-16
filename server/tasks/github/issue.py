@@ -24,11 +24,9 @@ def on_issue_comment(data: dict) -> list:
         app.logger.error(f"Failed to parse issue event: {e}")
         raise e
 
-    if (
-        event.comment.performed_via_github_app
-        and event.comment.performed_via_github_app.name
-        == os.environ.get("GITHUB_APP_NAME")
-    ):
+    if event.comment.performed_via_github_app and (
+        event.comment.performed_via_github_app.name
+    ).replace(" ", "-") == (os.environ.get("GITHUB_APP_NAME")).replace(" ", "-"):
         return []
 
     action = event.action

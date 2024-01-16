@@ -312,7 +312,9 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
                     first_message_result = bot.reply(
                         message_id,
                         # TODO 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(f"{users}{repo_url}"),
+                        FeishuTextMessage(
+                            f"{users}{repo_url}/pull/{pr.pull_request_number}"
+                        ),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)
@@ -637,6 +639,10 @@ def change_pull_request_assignees(
         app_id, message_id, content, data, *args, **kwargs
     )
     assignees = get_assignees_by_openid(users)
+    if len(assignees) == 0:
+        return send_pull_request_failed_tip(
+            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
     response = github_app.update_issue(
         team.name,
         repo.name,
@@ -664,6 +670,10 @@ def change_pull_request_reviewer(
     )
     # 这里调用get_assignees_by_openid，拿到的结果是一样的
     reviewers = get_assignees_by_openid(users)
+    if len(reviewers) == 0:
+        return send_pull_request_failed_tip(
+            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+        )
     response = github_app.requested_reviewers(
         team.name,
         repo.name,

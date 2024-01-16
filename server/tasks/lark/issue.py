@@ -252,7 +252,9 @@ def send_issue_card(issue_id, assignees: list[str] = []):
                     first_message_result = bot.reply(
                         message_id,
                         # 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(users + repo_url),
+                        FeishuTextMessage(
+                            users + f"{repo_url}/issue/{issue.issue_number}"
+                        ),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)
@@ -544,6 +546,10 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
         app_id, message_id, content, data, *args, **kwargs
     )
     assignees = get_assignees_by_openid(users)
+    if len(assignees) == 0:
+        return send_issue_failed_tip(
+            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
     response = github_app.update_issue(
         team.name,
         repo.name,
