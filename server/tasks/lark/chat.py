@@ -20,7 +20,7 @@ from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
 
-from .base import get_bot_by_application_id, get_chat_group_by_chat_id, get_git_object_by_message_id, get_repo_name_by_repo_id, with_authenticated_github
+from .base import get_bot_by_application_id, get_chat_group_by_chat_id, get_repo_name_by_repo_id, with_authenticated_github
 
 
 @celery.task()

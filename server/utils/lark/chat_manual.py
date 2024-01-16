@@ -95,6 +95,7 @@ class ChatView(FeishuMessageCard):
 
         super().__init__(*elements, header=header, config=config)
 
+
 if __name__ == "__main__":
     import json
     import os
