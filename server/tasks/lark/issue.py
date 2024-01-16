@@ -489,6 +489,10 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
         app_id, message_id, content, data, *args, **kwargs
     )
     assignees = get_assignees_by_openid(users)
+    if len(assignees) == 0:
+        return send_issue_failed_tip(
+            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+        )
     response = github_app.update_issue(
         team.name,
         repo.name,
