@@ -33,16 +33,24 @@ class PullCard(FeishuMessageCard):
         label = (
             "、".join(labels) if len(labels) > 0 else "**<font color='red'>待补充</font>**"
         )
+        desc_block = (
+            [
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                ),
+                FeishuMessageMarkdown(
+                    # TODO 替换content
+                    description,
+                    text_align="left",
+                ),
+            ]
+            if description
+            else []
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
-                    FeishuMessageDiv(
-                        f"💬  <font color='black'>**主要内容**</font>\n {description}",
-                        tag="lark_md",
-                        text_align="left",
-                    )
-                    if description
-                    else FeishuMessageDiv(),
+                    *desc_block,
                     FeishuMessageMarkdown(
                         # TODO 替换content
                         f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
@@ -82,7 +90,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🏷 <font color='grey'>**标签** </font>\n*{label} *",
+                                f"🏷 <font color='grey'>**标签** </font>\n{label}",
                                 text_align="left",
                             ),
                             width="weighted",

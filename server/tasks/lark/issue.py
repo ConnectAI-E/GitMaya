@@ -58,7 +58,7 @@ def send_issue_success_tip(content, app_id, message_id, *args, bot=None, **kwarg
     return bot.reply(message_id, message).json()
 
 
-def gen_issue_card_by_issue(issue, repo_url, maunal=False):
+def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
     assignees = issue.extra.get("assignees", [])
     if len(assignees):
         assignees = [
@@ -70,6 +70,7 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
                 CodeUser.id == TeamMember.code_user_id,
             )
             .filter(
+                TeamMember.team_id == team.id,
                 CodeUser.name.in_([i["login"] for i in assignees]),
             )
             .all()
@@ -101,6 +102,66 @@ def gen_issue_card_by_issue(issue, repo_url, maunal=False):
         assignees=assignees,
         tags=tags,
         updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
+    )
+
+
+def send_issue_url_message(
+    app_id, message_id, content, data, *args, typ="view", **kwargs
+):
+    root_id = data["event"]["message"]["root_id"]
+    _, issue, _ = get_git_object_by_message_id(root_id)
+    if not issue:
+        return send_issue_failed_tip(
+            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+        )
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == issue.repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not issue:
+        return send_issue_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+    bot, application = get_bot_by_application_id(app_id)
+    if not application:
+        return send_issue_failed_tip(
+            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    repo_url = f"https://github.com/{team.name}/{repo.name}"
+    if "view" == typ:
+        message = IssueView(
+            repo_url=repo_url,
+            issue_id=issue.issue_number,
+        )
+    else:
+        return send_issue_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+    # 回复到话题内部
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_issue_view_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_issue_url_message(
+        app_id, message_id, content, data, *args, typ="view", **kwargs
     )
 
 
@@ -143,7 +204,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(issue, repo_url, True)
+    message = gen_issue_card_by_issue(issue, repo_url, team, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -171,7 +232,7 @@ def send_issue_card(issue_id, assignees: list[str] = []):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(issue, repo_url)
+                message = gen_issue_card_by_issue(issue, repo_url, team)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -298,7 +359,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(issue, repo_url)
+                message = gen_issue_card_by_issue(issue, repo_url, team)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -392,10 +453,6 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
         return send_issue_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
-    else:
-        send_issue_success_tip(
-            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
-        )
     return response
 
 
@@ -423,7 +480,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(issue, repo_url, True)
+        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -453,7 +510,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(issue, repo_url, True)
+        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response

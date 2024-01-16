@@ -10,6 +10,7 @@ from model.team import (
     get_team_repo,
     is_team_admin,
     save_im_application,
+    save_team_contact,
     set_team_member,
 )
 from tasks import get_contact_by_lark_application, get_status_by_id, pull_github_members
@@ -193,6 +194,23 @@ def create_repo_chat_group(team_id, repo_id):
     name = request.json.get("name")
     current_user = session["user_id"]
     create_repo_chat_group_by_repo_id(current_user, team_id, repo_id, name)
+    return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/contact", methods=["POST"])
+@authenticated
+def _save_team_contact():
+    current_user = session["user_id"]
+    first_name = request.json.get("first_name")
+    last_name = request.json.get("last_name")
+    email = request.json.get("email")
+    role = request.json.get("role")
+    newsletter = request.json.get("newsletter")
+    contact_id = save_team_contact(
+        current_user, first_name, last_name, email, role, newsletter
+    )
+    session["contact_id"] = contact_id
+    session.permanent = True
     return jsonify({"code": 0, "msg": "success"})
 
 

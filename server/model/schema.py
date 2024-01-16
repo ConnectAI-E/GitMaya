@@ -163,6 +163,21 @@ class Team(Base):
     )
 
 
+class TeamContact(Base):
+    __tablename__ = "team_contact"
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
+    )
+    user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
+    first_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    last_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    email = db.Column(db.String(128), nullable=True, comment="邮箱")
+    role = db.Column(db.String(128), nullable=True, comment="角色")
+    newsletter = db.Column(
+        db.Integer, nullable=True, default=0, server_default=text("0"), comment="是否接收邮件"
+    )
+
+
 class TeamMember(Base):
     __tablename__ = "team_member"
     team_id = db.Column(
@@ -306,16 +321,6 @@ class PullRequest(Base):
     )
 
 
-class GitObjectMessageIdRelation(db.Model):
-    __abstract__ = True
-    __tablename__ = "git_object_message_id_relation"
-    __table_args__ = {"info": dict(is_view=True)}
-    repo_id = db.Column(ObjID(12), nullable=True, comment="repo.id")
-    issue_id = db.Column(ObjID(12), nullable=True, comment="issue.id")
-    pull_request_id = db.Column(ObjID(12), nullable=True, comment="pull_request.id")
-    message_id = db.Column(db.String(128), nullable=True, comment="message_id")
-
-
 CodeUser = aliased(BindUser)
 IMUser = aliased(BindUser)
 
@@ -341,21 +346,6 @@ app.json = CustomJsonProvider(app)
 @with_appcontext
 def create():
     db.create_all()
-    try:
-        connection = db.session.connection()
-        result = connection.execute(
-            text(
-                """
-create view `git_object_message_id_relation` as select * from (
-select id as repo_id, null as issue_id, null as pull_request_id, message_id from `repo`
-union all(select null as repo_id, id as issue_id, null as pull_request_id, message_id from `issue`)
-union all(select null as repo_id, null as issue_id, id as pull_request_id, message_id from `pull_request`)
-) as t
-                                   """
-            )
-        )
-    except Exception as e:
-        logging.error(e)
 
 
 # add command function to cli commands

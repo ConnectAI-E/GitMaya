@@ -1,0 +1,3 @@
+[submodule "website"]
+	path = website
+	url = https://github.com/ConnectAI-E/GitMaya-Frontend.git
