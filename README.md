@@ -158,7 +158,7 @@ $ eval $(pdm venv activate)
 
 Before starting, ensure you have the following configuration files in place:
 
-- `.env`: **Configure Feishu, GitHub, and various middleware variables.**
+- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
 
 Configure Feishu Application, for details refer to: [Feishu Application](#📕-reference)
 
@@ -173,11 +173,11 @@ VERIFICATION_TOKEN='xxx'
 TEST_BOT_HOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
 ```
 
-Configure database by replacing [root], [passwd] and [db_name] with your own username, password and database name
+Configure database by replacing relevant variables
 
 ```fish
 # Database Settings
-FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://[root]:[passwd]@mysql:3306/[db_name]?charset=utf8mb4&binary_prefix=true"
+FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://[root]:[passwd]@[mysql_host]:3306/[db_name]?charset=utf8mb4&binary_prefix=true"
 ```
 
 Configure Celery, using Redis as Broker
