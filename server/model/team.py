@@ -292,7 +292,7 @@ def add_team_member(team_id, code_user_id):
     db.session.commit()
 
 
-def create_team(app_info: dict) -> Team:
+def create_team(app_info: dict, contact_id=None) -> Team:
     """Create a team.
 
     Args:
@@ -333,6 +333,10 @@ def create_team(app_info: dict) -> Team:
 
     db.session.add(new_team)
     db.session.flush()
+    if contact_id:
+        db.session.query(TeamContact).filter(
+            TeamContact.id == contact_id,
+        ).update(dict(team_id=team_id))
 
     # 创建 TeamMember
     current_bind_user = BindUser.query.filter(
@@ -340,6 +344,7 @@ def create_team(app_info: dict) -> Team:
         BindUser.status == 0,
     ).first()
     if not current_bind_user:
+        db.rollback()
         abort(403, "can not found bind user by id")
 
     new_team_member = TeamMember(
@@ -531,6 +536,23 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
     # send card message, and pin repo card
     tasks.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
     return chat_id
+
+
+def save_team_contact(user_id, first_name, last_name, email, role, newsletter):
+    contact_id = ObjID.new_id()
+    db.session.add(
+        TeamContact(
+            id=contact_id,
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            role=role,
+            newsletter=1 if newsletter else 0,
+        )
+    )
+    db.session.commit()
+    return contact_id
 
 
 def get_code_users_by_openid(users):

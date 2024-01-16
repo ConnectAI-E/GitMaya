@@ -163,6 +163,21 @@ class Team(Base):
     )
 
 
+class TeamContact(Base):
+    __tablename__ = "team_contact"
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
+    )
+    user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
+    first_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    last_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    email = db.Column(db.String(128), nullable=True, comment="邮箱")
+    role = db.Column(db.String(128), nullable=True, comment="角色")
+    newsletter = db.Column(
+        db.Integer, nullable=True, default=0, server_default=text("0"), comment="是否接收邮件"
+    )
+
+
 class TeamMember(Base):
     __tablename__ = "team_member"
     team_id = db.Column(

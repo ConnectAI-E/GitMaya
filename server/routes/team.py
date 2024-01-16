@@ -196,4 +196,20 @@ def create_repo_chat_group(team_id, repo_id):
     return jsonify({"code": 0, "msg": "success"})
 
 
+@bp.route("/contact", methods=["POST"])
+@authenticated
+def _save_team_contact():
+    current_user = session["user_id"]
+    first_name = request.json.get("first_name")
+    last_name = request.json.get("last_name")
+    email = request.json.get("email")
+    newsletter = request.json.get("newsletter")
+    contact_id = save_team_contact(
+        current_user, first_name, last_name, email, newsletter
+    )
+    session["contact_id"] = contact_id
+    session.permanent = True
+    return jsonify({"code": 0, "msg": "success"})
+
+
 app.register_blueprint(bp)

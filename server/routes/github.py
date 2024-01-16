@@ -46,7 +46,7 @@ def github_install():
             app.logger.error("User is not allowed to install.")
             raise Exception("User is not allowed to install.")
 
-        team = create_team(app_info)
+        team = create_team(app_info, contact_id=session.get("contact_id"))
         code_application = create_code_application(team.id, installation_id)
 
     except Exception as e:
@@ -54,6 +54,7 @@ def github_install():
         app.logger.error(e)
         app_info = str(e)
 
+    contact_id = session.get("contact_id")
     # 在后台任务中拉取仓库
     task = pull_github_repo.delay(
         org_name=app_info["account"]["login"],
