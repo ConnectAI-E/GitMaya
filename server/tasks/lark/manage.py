@@ -18,6 +18,7 @@ from model.schema import (
     db,
 )
 from sqlalchemy.orm import aliased
+from tasks.lark.repo import send_repo_manual
 from utils.lark.manage_fail import ManageFaild
 from utils.lark.manage_manual import ManageManual, ManageNew, ManageSetting, ManageView
 from utils.lark.manage_repo_detect import ManageRepoDetect
@@ -473,6 +474,10 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
                 reply_in_thread=True,
             ).json()
             logging.info("debug first_message_result %r", first_message_result)
+
+            # 向群内发送 manual
+            send_repo_manual(app_id=app_id, message_id=message_id, content="")
+
         # 一共有3个result需要存到imaction里面
         return [result, pin_result, first_message_result]
     return False
