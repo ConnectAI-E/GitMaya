@@ -37,10 +37,8 @@ class PullCard(FeishuMessageCard):
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
                     FeishuMessageDiv(
-                        "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
-                    ),
-                    FeishuMessageMarkdown(
-                        description,
+                        f"💬  <font color='black'>**主要内容**</font>\n {description}",
+                        tag="lark_md",
                         text_align="left",
                     ),
                     FeishuMessageMarkdown(
