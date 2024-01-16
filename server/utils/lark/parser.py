@@ -387,7 +387,7 @@ class GitMayaLarkParser(object):
         logging.info("on_edit %r %r", vars(param), unkown)
         desc = " ".join(param.desc)
         # 移除第一个换行字符
-        if "\n" == desc[0]:
+        if len(desc) > 0 and "\n" == desc[0]:
             desc = desc[1:]
         chat_type, topic = self._get_topic_by_args(*args)
         if TopicType.REPO == topic:
