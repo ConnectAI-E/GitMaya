@@ -9,7 +9,7 @@ class PullCard(FeishuMessageCard):
         title="",
         base=None,
         head=None,
-        description="",
+        description=None,
         persons=[],
         assignees=[],
         reviewers=[],
@@ -40,7 +40,9 @@ class PullCard(FeishuMessageCard):
                         f"💬  <font color='black'>**主要内容**</font>\n {description}",
                         tag="lark_md",
                         text_align="left",
-                    ),
+                    )
+                    if description
+                    else None,
                     FeishuMessageMarkdown(
                         # TODO 替换content
                         f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
