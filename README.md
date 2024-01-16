@@ -107,9 +107,22 @@ You can use GitHub Codespaces for online development:
 Or clone it for local development:
 
 ```fish
-$ git clone https://github.com/connectai-e/gitmaya.git
-$ cd gitmaya
-// todo
+$ git clone https://github.com/ConnectAI-E/GitMaya.git
+$ cd GitMaya
+```
+
+Install dependencies:
+
+```fish
+$ pip install pipx
+$ pipx install pdm
+$ pdm install
+```
+
+Activate the virtual environment:
+
+```fish
+$ eval $(pdm venv activate)
 ```
 
 <div align="right">
