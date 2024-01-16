@@ -42,7 +42,7 @@ class PullCard(FeishuMessageCard):
                         text_align="left",
                     )
                     if description
-                    else None,
+                    else FeishuMessageDiv(),
                     FeishuMessageMarkdown(
                         # TODO 替换content
                         f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
