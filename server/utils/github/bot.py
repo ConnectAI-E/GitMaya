@@ -58,7 +58,10 @@ class BaseGitHubApp:
                     "auth_type must be 'jwt' or 'install_token' or 'user_token'"
                 )
 
-        with httpx.Client() as client:
+        with httpx.Client(
+            timeout=httpx.Timeout(10.0, connect=10.0, read=10.0),
+            transport=httpx.HTTPTransport(retries=3),
+        ) as client:
             response = client.request(
                 method,
                 url,

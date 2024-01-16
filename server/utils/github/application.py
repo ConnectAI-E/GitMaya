@@ -19,7 +19,10 @@ def oauth_by_code(code: str) -> dict | None:
         str: The user access token.
     """
 
-    with httpx.Client() as client:
+    with httpx.Client(
+        timeout=httpx.Timeout(10.0, connect=10.0, read=10.0),
+        transport=httpx.HTTPTransport(retries=3),
+    ) as client:
         response = client.post(
             "https://github.com/login/oauth/access_token",
             params={
