@@ -263,54 +263,6 @@ def send_issue_card(issue_id, assignees: list[str] = []):
 
 
 @celery.task()
-def send_issue_view_message(app_id, message_id, content, data, *args, **kwargs):
-    root_id = data["event"]["message"]["root_id"]
-    _, issue, _ = get_git_object_by_message_id(root_id)
-    if not issue:
-        return send_issue_failed_tip(
-            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
-        )
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == issue.repo_id,
-            Repo.status == 0,
-        )
-        .first()
-    )
-    if not repo:
-        return send_issue_failed_tip(
-            "找不到项目", app_id, message_id, content, data, *args, **kwargs
-        )
-
-    bot, application = get_bot_by_application_id(app_id)
-    if not application:
-        return send_issue_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
-        )
-
-    team = (
-        db.session.query(Team)
-        .filter(
-            Team.id == application.team_id,
-        )
-        .first()
-    )
-    if not team:
-        return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
-        )
-
-    repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = IssueView(
-        repo_url=repo_url,
-        issue_id=issue.issue_number,
-    )
-
-    return bot.reply(message_id, message).json()
-
-
-@celery.task()
 def send_issue_comment(issue_id, comment, user_name: str):
     """send new issue comment message to user.
 
