@@ -1,0 +1,17 @@
+FROM node:20-slim AS build
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+COPY ./website /app
+WORKDIR /app
+
+RUN pnpm install --frozen-lockfile && pnpm build
+
+FROM jwilder/nginx-proxy:alpine
+
+ADD ./deploy/default_location /etc/nginx/vhost.d/default_location
+
+COPY --from=build /app/dist /var/www/html
