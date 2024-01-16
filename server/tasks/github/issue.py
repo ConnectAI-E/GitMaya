@@ -27,7 +27,7 @@ def on_issue_comment(data: dict) -> list:
     if (
         event.comment.performed_via_github_app
         and event.comment.performed_via_github_app.name
-        == os.environ.get("GITHUB_APP_NAME")
+        == (os.environ.get("GITHUB_APP_NAME")).replace(" ", "-")
     ):
         return []
 
