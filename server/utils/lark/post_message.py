@@ -28,7 +28,7 @@ def post_content_to_markdown(content, merge_title=True):
             line_text.append(item_text)
         text.append("".join(line_text))
     title = content.get("title", "")
-    content_text = "  ".join(text)
+    content_text = "  \n".join(text)
     if merge_title and title:
         content_text = f"# {title}  \n{content_text}"
 
