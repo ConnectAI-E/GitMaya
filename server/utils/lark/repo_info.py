@@ -8,7 +8,7 @@ class RepoInfo(FeishuMessageCard):
         repo_name="GitMaya",
         repo_description="",
         repo_topic=[],
-        homepage="",
+        homepage=None,
         visibility="私有仓库",
         archived=False,
         updated="2022年12月23日 16:32",
