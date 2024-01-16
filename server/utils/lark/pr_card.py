@@ -40,13 +40,12 @@ class PullCard(FeishuMessageCard):
                         "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
                     ),
                     FeishuMessageMarkdown(
-                        # TODO 替换content
-                        f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
+                        description,
                         text_align="left",
                     ),
                     FeishuMessageMarkdown(
                         # TODO 替换content
-                        description,
+                        f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
                         text_align="left",
                     ),
                     FeishuMessageColumnSet(
