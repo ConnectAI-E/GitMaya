@@ -20,9 +20,6 @@ startup:
 	@echo "Deploy..."
 	[ -f deploy/.env ] || cp deploy/.env.example deploy/.env
 	cd deploy && docker-compose up -d
-	@echo "Done."
-
-initdb: startup
 	@echo "Waiting Mysql Server..."
 	sleep 3
 	@echo "Init Database..."
