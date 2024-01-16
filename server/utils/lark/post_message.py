@@ -58,6 +58,43 @@ if __name__ == "__main__":
             ],
         ],
     }
+    content = {
+        "title": "",
+        "content": [
+            [{"tag": "text", "text": "测试回复post消息", "style": ["bold"]}],
+            [
+                {"tag": "text", "text": "1. ", "style": []},
+                {"tag": "text", "text": "aaa", "style": []},
+            ],
+            [
+                {"tag": "text", "text": "2. ", "style": []},
+                {"tag": "text", "text": "sda", "style": []},
+            ],
+            [
+                {"tag": "text", "text": "3. ", "style": []},
+                {"tag": "text", "text": "fff", "style": []},
+            ],
+            [{"tag": "text", "text": "测试列表", "style": ["bold"]}],
+            [
+                {"tag": "text", "text": "- ", "style": []},
+                {"tag": "text", "text": "a", "style": []},
+            ],
+            [
+                {"tag": "text", "text": "- ", "style": []},
+                {"tag": "text", "text": "b", "style": []},
+            ],
+            [
+                {"tag": "text", "text": "- ", "style": []},
+                {"tag": "text", "text": "c", "style": []},
+            ],
+            [{"tag": "text", "text": "测试quote", "style": ["bold"]}],
+            [{"tag": "text", "text": "测试quote", "style": []}],
+            [{"tag": "a", "href": "http://baidu.com", "text": "测试链接", "style": []}],
+            [{"tag": "text", "text": "", "style": []}],
+            [{"tag": "text", "text": "", "style": []}],
+            [{"tag": "unknown", "text": ""}],
+        ],
+    }
 
     text, title = post_content_to_markdown(content)
 

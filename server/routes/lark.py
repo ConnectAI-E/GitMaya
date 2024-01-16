@@ -66,6 +66,7 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
 @hook.on_bot_message(message_type="post")
 def on_post_message(bot, message_id, content, message, *args, **kwargs):
     text, _ = post_content_to_markdown(content, True)
+    content["text"] = text
     try:
         parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
     except ArgumentError:
