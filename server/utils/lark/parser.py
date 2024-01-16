@@ -307,7 +307,7 @@ class GitMayaLarkParser(object):
             elif TopicType.PULL_REQUEST == topic:
                 tasks.send_pull_request_view_message.delay(*args, **kwargs)
             else:
-                pass
+                tasks.send_repo_view_message.delay(*args, **kwargs)
 
         return "view", param, unkown
 
@@ -454,8 +454,18 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
-
-        tasks.send_repo_insight_message(*args, **kwargs)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            pass
+        else:
+            if TopicType.REPO == topic:
+                tasks.send_repo_insight_message.delay(*args, **kwargs)
+            elif TopicType.ISSUE == topic:
+                pass
+            elif TopicType.PULL_REQUEST == topic:
+                pass
+            else:
+                tasks.send_repo_insight_message.delay(*args, **kwargs)
         return "insight", param, unkown
 
     def on_merge(self, param, unkown, *args, **kwargs):
