@@ -307,7 +307,7 @@ class GitMayaLarkParser(object):
             elif TopicType.PULL_REQUEST == topic:
                 tasks.send_pull_request_view_message.delay(*args, **kwargs)
             else:
-                tasks.send_repo_view_message.delay(*args, **kwargs)
+                tasks.send_chat_view_message.delay(*args, **kwargs)
 
         return "view", param, unkown
 
@@ -465,7 +465,7 @@ class GitMayaLarkParser(object):
             elif TopicType.PULL_REQUEST == topic:
                 pass
             else:
-                tasks.send_repo_insight_message.delay(*args, **kwargs)
+                tasks.send_chat_insight_message.delay(*args, **kwargs)
         return "insight", param, unkown
 
     def on_merge(self, param, unkown, *args, **kwargs):

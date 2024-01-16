@@ -67,6 +67,34 @@ class ChatManual(FeishuMessageCard):
         super().__init__(*elements, header=header, config=config)
 
 
+class ChatView(FeishuMessageCard):
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+    ):
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往GitHub查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": repo_url,
+                        "android_url": repo_url,
+                        "ios_url": repo_url,
+                        "pc_url": repo_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Chat Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
 if __name__ == "__main__":
     import json
     import os
