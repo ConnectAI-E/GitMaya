@@ -200,7 +200,7 @@ def send_issue_card(issue_id, assignees: list[str] = []):
 
 
 @celery.task()
-def send_repo_view_message(app_id, message_id, content, data, *args, **kwargs):
+def send_issue_view_message(app_id, message_id, content, data, *args, **kwargs):
     root_id = data["event"]["message"]["root_id"]
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
