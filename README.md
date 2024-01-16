@@ -28,20 +28,23 @@
 </p>
 
 ## 📃 Prerequisites
-Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application. 
+
+Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
 
 ### 1. Feishu Bot Application
+
 The Feishu bot application can be set up with the help of **[botops](https://github.com/ConnectAI-E/botops). (recommended)**
+
 ```fish
 # gitmaya.botops.example.json provided in the project
 npx botops deploy gitmaya.botops.example.json
 ```
-or by referring to the official [Feishu app documentation](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process); 
 
+or by referring to the official [Feishu Application Doc](#📕-reference);
 
 ### 2. GitHub Application
-For the GitHub app, please refer to [GitHub Application](#reference).
 
+For the GitHub app, please refer to [GitHub Application Doc](#📕-reference).
 
 ## 🛳 Self Hosting
 
@@ -157,7 +160,7 @@ Before starting, ensure you have the following configuration files in place:
 
 - `.env`: **Configure Feishu, GitHub, and various middleware variables.**
 
-Configure Feishu Application, for details refer to: [Feishu Application](#reference)
+Configure Feishu Application, for details refer to: [Feishu Application](#📕-reference)
 
 ```fish
 # Feishu App Settings
@@ -185,7 +188,7 @@ CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/2
 ```
 
-Configure GitHub App, for details refer to: [GitHub App](#reference)
+Configure GitHub App, for details refer to: [GitHub App](#📕-reference)
 
 ```fish
 # GitHub Settings
@@ -206,6 +209,7 @@ DOMAIN=http://localhost:8888
 ```
 
 (Optional) Configure Flask
+
 ```fish
 # Flask Settings
 SECRET_KEY="test"
@@ -226,10 +230,10 @@ Then, run the following command to start the server:
 $ python server/server.py
 ```
 
-
 ## 📕 Reference
-- Feishu Application Doc
-- GitHub App Doc
+
+- [Feishu Application Doc](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process)
+- [GitHub App Doc](https://docs.github.com/en/developers/apps/creating-a-github-app)
 
 <div align="right">
 
@@ -243,7 +247,7 @@ There are four repositories for gitmaya, and this is one of them:
 
 |     | Repository                                                          | Language   | Purpose                            |
 | --- | ------------------------------------------------------------------- | ---------- | ---------------------------------- |
-| 👉   | [GitMaya](https://github.com/ConnectAI-E/GitMaya)                   | Python     | Server-side code                   |
+| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)                   | Python     | Server-side code                   |
 |     | [GitMaya-Frontend](https://github.com/ConnectAI-E/GitMaya-Frontend) | TypeScript | Frontend code                      |
 |     | [GitMaya-WebSite](https://github.com/ConnectAI-E/GitMaya-Website)   | TypeScript | Official website and documentation |
 |     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli)           | Python     | Super Git management tool          |
