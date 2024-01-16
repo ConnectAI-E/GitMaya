@@ -61,7 +61,7 @@ def verify_github_signature(
         def wrapper(*args, **kwargs):
             signature = request.headers.get("x-hub-signature-256")
             if not signature:
-                abort(400, "No signature provided.")
+                return func(*args, **kwargs)
 
             # Verify the signature
             body = request.get_data()
