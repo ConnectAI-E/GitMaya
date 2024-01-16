@@ -1,4 +1,4 @@
-def post_content_to_markdown(content, merge_title=True):
+def post_content_to_markdown(content, merge_title=True, on_at=None, on_img=None):
     text = []
     for row in content.get("content", []):
         line_text = []
@@ -7,11 +7,13 @@ def post_content_to_markdown(content, merge_title=True):
             if "text" == item["tag"]:
                 item_text = item["text"]
             elif "at" == item["tag"]:
-                item_text = f"@{item['user_name']}"
+                user_name = on_at(item) if on_at else item["user_name"]
+                item_text = f"@{user_name}"
             elif "a" == item["tag"]:
                 item_text = f"[{item['text']}]({item['href']})"
             elif "img" == item["tag"]:
-                item_text = f"![]({item['image_key']})"
+                image_key = on_img(item) if on_img else item["image_key"]
+                item_text = f"![]({image_key})"
             elif "media" == item["tag"]:
                 pass
             elif "emotion" == item["tag"]:
