@@ -72,9 +72,13 @@ def on_repository_created(event_dict: dict | list | None) -> list:
         db.session.query(Team)
         .filter(
             Team.id == code_application.team_id,
+            Team.status == 0,
         )
         .first()
     )
+    if team is None:
+        app.logger.error(f"Team {code_application.team_id} not found")
+        return []
 
     # 创建 repo，同时创建配套的 repo_user
     new_repo = create_repo_from_github(

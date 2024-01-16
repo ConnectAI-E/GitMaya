@@ -286,7 +286,7 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
-                repo_url = f"https://github.com/{team.name}/{repo.name}/pull/{pr.pull_request_number}"
+                repo_url = f"https://github.com/{team.name}/{repo.name}"
 
                 message = gen_pr_card_by_pr(pr, repo_url)
 
@@ -310,7 +310,9 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
                     first_message_result = bot.reply(
                         message_id,
                         # TODO 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(f"{users}{repo_url}"),
+                        FeishuTextMessage(
+                            f"{users}{repo_url}/pull/{pr.pull_request_number}"
+                        ),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)
