@@ -191,7 +191,9 @@ def send_issue_card(issue_id, assignees: list[str] = []):
                     first_message_result = bot.reply(
                         message_id,
                         # 第一条话题消息，直接放repo_url
-                        FeishuTextMessage(users + repo_url),
+                        FeishuTextMessage(
+                            users + f"{repo_url}/issue/{issue.issue_number}"
+                        ),
                         reply_in_thread=True,
                     ).json()
                     logging.info("debug first_message_result %r", first_message_result)

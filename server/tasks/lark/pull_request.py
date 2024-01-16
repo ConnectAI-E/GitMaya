@@ -286,7 +286,7 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
-                repo_url = f"https://github.com/{team.name}/{repo.name}"
+                repo_url = f"https://github.com/{team.name}/{repo.name}/pull/{pr.pull_request_number}"
 
                 message = gen_pr_card_by_pr(pr, repo_url)
 
