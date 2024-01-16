@@ -33,7 +33,7 @@ Before deploying GitMaya, you need to create a Feishu bot application and obtain
 
 ### 1. Feishu Bot Application
 
-The Feishu bot application can be set up with the help of **[botops](https://github.com/ConnectAI-E/botops). (recommended)**
+The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
 
 ```fish
 # gitmaya.botops.example.json provided in the project
