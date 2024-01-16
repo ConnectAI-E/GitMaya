@@ -82,6 +82,17 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
+    """
+    根据message_id区分Repo、Issue、PullRequest对象
+
+    参数：
+    message_id：消息ID
+
+    返回值：
+    repo：Repo对象，如果存在
+    issue：Issue对象，如果存在
+    pr：PullRequest对象，如果存在
+    """
     issue = (
         db.session.query(Issue)
         .filter(

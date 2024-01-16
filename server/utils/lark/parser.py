@@ -301,9 +301,9 @@ class GitMayaLarkParser(object):
             tasks.send_manage_view_message.delay(*args, **kwargs)
         else:
             if TopicType.REPO == topic:
-                pass
+                tasks.send_repo_view_message.delay(*args, **kwargs)
             elif TopicType.ISSUE == topic:
-                pass
+                tasks.send_issue_view_message.delay(*args, **kwargs)
             elif TopicType.PULL_REQUEST == topic:
                 tasks.send_pull_request_view_message.delay(*args, **kwargs)
             else:
