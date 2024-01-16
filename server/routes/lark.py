@@ -9,6 +9,7 @@ from flask import session
 from model.lark import get_bot_by_app_id
 from tasks.lark import get_contact_by_lark_application
 from utils.lark.parser import GitMayaLarkParser
+from utils.lark.post_message import post_content_to_markdown
 
 
 def get_bot(app_id):
@@ -60,6 +61,19 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
             app.logger.exception(e)
     else:
         app.logger.error("unkown card_action %r", (bot, token, data, message, *args))
+
+
+@hook.on_bot_message(message_type="post")
+def on_post_message(bot, message_id, content, message, *args, **kwargs):
+    text, _ = post_content_to_markdown(content, True)
+    content["text"] = text
+    try:
+        parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
+    except ArgumentError:
+        # 命令解析错误，直接调用里面的回复消息逻辑
+        parser.on_comment(text, bot.app_id, message_id, content, message, **kwargs)
+    except Exception as e:
+        app.logger.exception(e)
 
 
 @hook.on_bot_message(message_type="text")
