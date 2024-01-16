@@ -100,24 +100,35 @@ This project provides some additional configuration items set with environment v
 
 ## ⌨️ Local Development
 
-You can use GitHub Codespaces for online development:
+<!-- You can use GitHub Codespaces for online development:
 
 [![][codespaces-shield]][codespaces-link]
 
-Or clone it for local development:
+Or clone it for local development: -->
+
+### 1. Clone the Repository
+
+Clone the repository to your local machine or server:
 
 ```fish
 $ git clone https://github.com/ConnectAI-E/GitMaya.git
 $ cd GitMaya
 ```
 
-Install dependencies:
+### 2. Installing Dependencies
 
+#### Using pip
+If you are using `pip`
 ```fish
-$ pip install pipx
-$ pipx install pdm
-$ pdm install
+pip -r requirements.txt
 ```
+
+#### Using pdm(Recommended)
+If you are using `pdm`
+```fish
+pdm install
+```
+
 
 Activate the virtual environment:
 
@@ -125,6 +136,8 @@ Activate the virtual environment:
 $ eval $(pdm venv activate)
 ```
 
+
+### 3. 
 <div align="right">
 
 [![][back-to-top]](#readme-top)
