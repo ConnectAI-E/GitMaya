@@ -30,13 +30,20 @@ class IssueCard(FeishuMessageCard):
                 "关闭 Issue", type="danger", value={"command": f"/close"}
             )
         )
+        desc_block = (
+            [
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                ),
+                FeishuMessageMarkdown(description),
+            ]
+            if description
+            else []
+        )
         elements = [
             FeishuMessageColumnSet(
+                *desc_block,
                 FeishuMessageColumn(
-                    FeishuMessageDiv(
-                        "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
-                    ),
-                    FeishuMessageMarkdown(description),
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(

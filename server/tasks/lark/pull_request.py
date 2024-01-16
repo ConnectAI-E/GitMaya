@@ -67,7 +67,7 @@ def send_pull_request_success_tip(
     return bot.reply(message_id, message).json()
 
 
-def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
+def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
     assignees = pr.extra.get("assignees", [])
     reviewers = pr.extra.get("requested_reviewers", [])
     if len(assignees):
@@ -80,6 +80,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
                 CodeUser.id == TeamMember.code_user_id,
             )
             .filter(
+                TeamMember.team_id == team.id,
                 CodeUser.name.in_([assignee["login"] for assignee in assignees]),
             )
             .all()
@@ -95,6 +96,7 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, maunal=False):
                 CodeUser.id == TeamMember.code_user_id,
             )
             .filter(
+                TeamMember.team_id == team.id,
                 CodeUser.name.in_([reviewer["login"] for reviewer in reviewers]),
             )
             .all()
@@ -175,7 +177,7 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_pr_card_by_pr(pr, repo_url, maunal=True)
+    message = gen_pr_card_by_pr(pr, repo_url, team, maunal=True)
 
     # 回复到话题内部
     return bot.reply(message_id, message).json()
@@ -288,7 +290,7 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
 
-                message = gen_pr_card_by_pr(pr, repo_url)
+                message = gen_pr_card_by_pr(pr, repo_url, team)
 
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
@@ -371,7 +373,7 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
 
-                message = gen_pr_card_by_pr(pr, repo_url)
+                message = gen_pr_card_by_pr(pr, repo_url, team)
 
                 result = bot.update(pr.message_id, message).json()
                 return result
@@ -462,10 +464,6 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
         return send_pull_request_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
-    else:
-        send_pull_request_success_tip(
-            "同步消息成功", app_id, message_id, content, data, *args, **kwargs
-        )
     return response
 
 
@@ -493,7 +491,7 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(state="closed")
-        message = gen_pr_card_by_pr(pr, repo_url, True)
+        message = gen_pr_card_by_pr(pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -522,7 +520,7 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(merged=True)
-        message = gen_pr_card_by_pr(pr, repo_url, True)
+        message = gen_pr_card_by_pr(pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -551,7 +549,7 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(state="opened")
-        message = gen_pr_card_by_pr(pr, repo_url, True)
+        message = gen_pr_card_by_pr(pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
