@@ -1,5 +1,8 @@
+import json
+import os
+
 from app import app
-from flask import Blueprint, abort, jsonify, redirect, request, session
+from flask import Blueprint, abort, jsonify, make_response, redirect, request, session
 from model.team import (
     create_repo_chat_group_by_repo_id,
     get_application_info_by_team_id,
@@ -144,6 +147,86 @@ def install_im_application_to_team(team_id, platform):
     )
     app.logger.info("result %r", result)
     return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/<team_id>/<platform>/app", methods=["GET"])
+@authenticated
+def install_im_application_to_team_by_get_method(team_id, platform):
+    # install lark app
+    if platform not in ["lark"]:  # TODO lark/slack...
+        return abort(400, "params error")
+
+    redirect_uri = request.base_url
+    app_id = request.args.get("app_id", "")
+    name = request.args.get("name", "")
+    if app_id:
+        # 2. deploy server重定向过来：带app_id以及app_secret，保存，并带上redirect_uri重定向到deploy server
+        app_secret = request.args.get("app_secret")
+        if app_secret:
+            encrypt_key = request.args.get("encrypt_key", "")
+            verification_token = request.args.get("verification_token", "")
+            if not app_id or not app_secret:
+                return abort(400, "params error")
+
+            result = save_im_application(
+                team_id, platform, app_id, app_secret, encrypt_key, verification_token
+            )
+            app.logger.info("result %r", result)
+            events = ["im.message.message_read_v1", "im.message.receive_v1"]
+            scope_ids = [
+                "21001",
+                "7",
+                "21003",
+                "21002",
+                "20001",
+                "20011",
+                "3001",
+                "20012",
+                "6005",
+                "20010",
+                "3000",
+                "20013",
+                "20014",
+                "20015",
+                "20008",
+                "1000",
+                "1006",
+                "1005",
+                "20009",
+            ]
+            hook_url = f"{os.environ.get('DOMAIN')}/api/feishu/hook/{app_id}"
+            return redirect(
+                f"{os.environ.get('LARK_DEPLOY_SERVER')}/publish?redirect_uri={redirect_uri}&app_id={app_id}&events={','.join(events)}&encrypt_key={encrypt_key}&verification_token={verification_token}&scopes={','.join(scope_ids)}&hook_url={hook_url}"
+            )
+        else:
+            # 3. deploy server只带app_id重定向过来：说明已经安装成功，这个时候通知前端成功
+            if not name:
+                return make_response(
+                    """
+<script>
+try {
+  window.opener.postMessage("""
+                    + json.dumps(dict(event="installation", app_id=app_id))
+                    + """, '*')
+  setTimeout(() => window.close(), 3000)
+} catch(e) {
+  console.error(e)
+  location.replace('/')
+}
+</script>
+                                     """,
+                    {"Content-Type": "text/html"},
+                )
+
+    # 1. 前端重定向过来：重定向到deploy server
+    desc = request.args.get("desc", "")
+    avatar = request.args.get("avatar", "")
+    if not name and not desc:
+        return abort(400, "params error")
+    # 如果传app_id就是更新app
+    return redirect(
+        f"{os.environ.get('LARK_DEPLOY_SERVER')}?redirect_uri={redirect_uri}&app_id={app_id}&name={name}&desc={desc}&avatar={avatar}"
+    )
 
 
 @bp.route("/<team_id>/<platform>/user", methods=["POST"])
