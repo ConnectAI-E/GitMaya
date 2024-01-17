@@ -85,7 +85,7 @@ $ docker pull connectai/gitmaya-proxy
 
 ### 2. Run the Image
 
-It will start a detached Docker container named `gitmaya` using the `connectai-e/gitmaya` image, with port 8888 inside the container mapped to port 8888 on the host machine.
+You should run the proxy image first, then run the gitmaya image.
 
 ```fish
 $ docker run --name gitmaya-proxy connectai/gitmaya-proxy
@@ -96,13 +96,13 @@ $ docker run --name gitmaya connectai/gitmaya
 >
 > For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment)
 
-<details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
+<!-- <details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
 
 This project provides some additional configuration items set with environment variables:
 
 | Environment Variable | Required | Description                                              | Example              |
 | -------------------- | -------- | -------------------------------------------------------- | -------------------- |
-| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page | `sk-xxxxxx...xxxxxx` |
+| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page | `sk-xxxxxx...xxxxxx` | -->
 
 > \[!NOTE]
 >
@@ -207,7 +207,13 @@ GITHUB_APP_PRIVATE_KEY_PATH=/server/pem.pem
 GITHUB_CLIENT_ID=test
 GITHUB_CLIENT_SECRET=test
 GITHUB_WEBHOOK_SECRET=secret
+GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+<replace you private key>
+-----END RSA PRIVATE KEY-----"
 ```
+
+> \[!NOTE]
+> `.env` file supports multi-line string, so the .pem file could be pasted into .env file directly
 
 Configure server address
 
