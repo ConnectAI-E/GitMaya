@@ -33,7 +33,7 @@ Before deploying GitMaya, you need to create a Feishu bot application and obtain
 
 ### 1. Install GitHub Application
 
-You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb).
+You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch].
 
 ### 2. Install Feishu Bot Application
 
@@ -44,7 +44,7 @@ After installing the GitHub application, proceed to bind the Feishu application.
 npx botops deploy gitmaya.botops.example.json
 ```
 
-or by referring to [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink).
+or by referring to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch]
 
 ## 🛳 Self Hosting
 
@@ -206,7 +206,7 @@ CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/2
 ```
 
-Configure GitHub App, for details refer to: [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb)
+Configure GitHub App, for details refer to: [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch]
 
 ```fish
 # GitHub Settings
@@ -253,10 +253,10 @@ $ python server/server.py
 
 ## 📕 Reference
 
-- [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink)
-- [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb)
-- [Feishu App Official Doc](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process)
-- [GitHub App Official Doc](https://docs.github.com/en/developers/apps/creating-a-github-app)
+- [Deploy Feishu App Bot From Scratch][Deploy GitHub App From Scratch]
+- [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch]
+- [Feishu App Official Doc][Feishu App Official Doc]
+- [GitHub App Official Doc][GitHub App Official Doc]
 
 <div align="right">
 
@@ -355,13 +355,19 @@ This project is [MIT](./LICENSE) licensed.
 [github-releasedate-shield]: https://img.shields.io/github/release-date/connectai-e/gitmaya?labelColor=black&style=flat-square
 [github-stars-link]: https://github.com/connectai-e/gitmaya/network/stargazers
 [github-stars-shield]: https://img.shields.io/github/stars/connectai-e/gitmaya?color=ffcb47&labelColor=black&style=flat-square
-[docker-pulls-link]: https://hub.docker.com/r/connectai-e/gitmaya
-[docker-pulls-shield]: https://img.shields.io/docker/pulls/connectai-e/gitmaya?color=45cc11&labelColor=black&style=flat-square
-[docker-release-link]: https://hub.docker.com/r/connectai-e/gitmaya
-[docker-release-shield]: https://img.shields.io/docker/v/connectai-e/gitmaya?color=369eff&label=docker&labelColor=black&logo=docker&logoColor=white&style=flat-square
-[docker-size-link]: https://hub.docker.com/r/connectai-e/gitmaya
-[docker-size-shield]: https://img.shields.io/docker/image-size/connectai-e/gitmaya?color=369eff&labelColor=black&style=flat-square
+[docker-pulls-link]: https://hub.docker.com/r/connectai/gitmaya
+[docker-pulls-shield]: https://img.shields.io/docker/pulls/connectai/gitmaya?color=45cc11&labelColor=black&style=flat-square
+[docker-release-link]: https://hub.docker.com/r/connectai/gitmaya
+[docker-release-shield]: https://img.shields.io/docker/v/connectai/gitmaya?color=369eff&label=docker&labelColor=black&logo=docker&logoColor=white&style=flat-square
+[docker-size-link]: https://hub.docker.com/r/connectai/gitmaya
+[docker-size-shield]: https://img.shields.io/docker/image-size/connectai/gitmaya?color=369eff&labelColor=black&style=flat-square
 [deploy-on-sealos-button-image]: https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg
 [deploy-on-sealos-link]: https://cloud.sealos.io/?xxx
 [deploy-on-zeabur-button-image]: https://zeabur.com/button.svg
 [deploy-on-zeabur-link]: https://zeabur.com/templates/xxx
+[Deploy GitHub App From Scratch]: https://connect-ai.feishu.cn/wiki/OnVNwqZlhi5yM4keBWAcUF3ynFf?from=from_copylink
+[Deploy GitHub App From Scratch]: https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink
+[Deploy Feishu App Bot From Scratch]: https://connect-ai.feishu.cn/wiki/NQXywcS3Siqw60kYX8IcknDfn1e?from=from_copylink
+
+- [Feishu App Official Doc]: https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process
+- [GitHub App Official Doc]: https://docs.github.com/en/developers/apps/creating-a-github-app
