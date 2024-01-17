@@ -76,11 +76,20 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 
 We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
 
+### 1. Pull the Image
+
 ```fish
-$ docker run -d -p 3210:3210 \
-  -e OPENAI_API_KEY=sk-xxxx \
-  --name gitmaya \
-  connectai-e/gitmaya
+$ docker pull connectai/gitmaya
+$ docker pull connectai/gitmaya-proxy
+```
+
+### 2. Run the Image
+
+It will start a detached Docker container named `gitmaya` using the `connectai-e/gitmaya` image, with port 8888 inside the container mapped to port 8888 on the host machine.
+
+```fish
+$ docker run --name gitmaya-proxy connectai/gitmaya-proxy
+$ docker run --name gitmaya connectai/gitmaya
 ```
 
 > \[!NOTE]
@@ -137,7 +146,7 @@ $ cd GitMaya
 If you are using `pip`
 
 ```fish
-pip -r requirements.txt
+pip install -r requirements.txt
 ```
 
 #### Using pdm(Recommended)
@@ -158,7 +167,7 @@ $ eval $(pdm venv activate)
 
 Before starting, ensure you have the following configuration files in place:
 
-- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
+- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
 
 Configure Feishu Application, for details refer to: [Feishu Application](#📕-reference)
 
@@ -177,7 +186,7 @@ Configure database by replacing relevant variables
 
 ```fish
 # Database Settings
-FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://[root]:[passwd]@[mysql_host]:3306/[db_name]?charset=utf8mb4&binary_prefix=true"
+FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://root:gitmaya2023@mysql:3306/gitmaya?charset=utf8mb4&binary_prefix=true"
 ```
 
 Configure Celery, using Redis as Broker
