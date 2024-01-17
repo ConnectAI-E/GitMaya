@@ -31,20 +31,20 @@
 
 Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
 
-### 1. Feishu Bot Application
+### 1. Install GitHub Application
 
-The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
+You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb).
+
+### 2. Install Feishu Bot Application
+
+After installing the GitHub application, proceed to bind the Feishu application. The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
 
 ```fish
 # gitmaya.botops.example.json provided in the project
 npx botops deploy gitmaya.botops.example.json
 ```
 
-or by referring to the official [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink).
-
-### 2. GitHub Application
-
-For the GitHub app, please refer to [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb).
+or by referring to [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink).
 
 ## 🛳 Self Hosting
 
@@ -76,25 +76,47 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 
 We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
 
-### 1. Pull the Image
+### 1. Download the `docker-compose.yml` and `.env` File
+
+First, download the `docker-compose.yml` and `.env` file; they contain the configuration for the GitMaya services, including MySQL, Celery, and Redis.
 
 ```fish
-$ docker pull connectai/gitmaya
-$ docker pull connectai/gitmaya-proxy
+$ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
+$ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
 
-### 2. Run the Image
+### 2. Configure the Environment Variables
 
-You should run the proxy image first, then run the gitmaya image.
+Then, you need to configure the .env file.
 
 ```fish
-$ docker run --name gitmaya-proxy connectai/gitmaya-proxy
-$ docker run --name gitmaya connectai/gitmaya
+$ vim .env
+```
+
+**Replacing your own pem into .env file**
+
+```fish
+SECRET_KEY="<REPLACE>"
+FLASK_PERMANENT_SESSION_LIFETIME=86400*30
+FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://root:gitmaya2023@mysql:3306/gitmaya?charset=utf8mb4&binary_prefix=true"
+
+GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+<replace you private key>
+-----END RSA PRIVATE KEY-----"
 ```
 
 > \[!NOTE]
+> `.env` **file supports multi-line string, so the .pem file could be pasted into .env file directly**
+
+### 3. Run the Images
+
+```fish
+$ docker-compose up -d
+```
+
+<!-- > \[!NOTE]
 >
-> For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment)
+> For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment) -->
 
 <!-- <details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
 
@@ -103,10 +125,10 @@ This project provides some additional configuration items set with environment v
 | Environment Variable | Required | Description                                              | Example              |
 | -------------------- | -------- | -------------------------------------------------------- | -------------------- |
 | `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page | `sk-xxxxxx...xxxxxx` | -->
-
+<!--
 > \[!NOTE]
 >
-> The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable)
+> The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
 
 </details>
 <div align="right">
@@ -169,19 +191,6 @@ Before starting, ensure you have the following configuration files in place:
 
 - `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
 
-Configure Feishu Application, for details refer to: [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink)
-
-```fish
-# Feishu App Settings
-APP_ID='cli_xxxx'
-APP_SECRET='xxx'
-ENCRYPT_KEY='xxx'
-VERIFICATION_TOKEN='xxx'
-
-# For Feishu Bot Testing
-TEST_BOT_HOOK=https://open.feishu.cn/open-apis/bot/v2/hook/xxxx
-```
-
 Configure database by replacing relevant variables
 
 ```fish
@@ -211,9 +220,6 @@ GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 <replace you private key>
 -----END RSA PRIVATE KEY-----"
 ```
-
-> \[!NOTE]
-> `.env` file supports multi-line string, so the .pem file could be pasted into .env file directly
 
 Configure server address
 
