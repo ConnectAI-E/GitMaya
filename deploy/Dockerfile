@@ -8,8 +8,10 @@ ADD ./requirements.txt /tmp/requirements.txt
 RUN apt-get update && apt-get install -y libcurl4-openssl-dev libffi-dev libxml2-dev libmariadb-dev\
   && pip install -r /tmp/requirements.txt && pip install gunicorn gevent
 
-ADD ./server /server
+ADD ./deploy/wait-for-it.sh /wait-for-it.sh
 ADD ./deploy/entrypoint.sh /entrypoint.sh
+
+ADD ./server /server
 
 WORKDIR /server
 

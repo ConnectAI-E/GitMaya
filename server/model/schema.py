@@ -345,17 +345,12 @@ app.json = CustomJsonProvider(app)
 @click.command(name="create")
 @with_appcontext
 def create():
-    db.create_all()
+    try:
+        db.session.query(User).first()
+    except Exception as e:
+        if "exist" in str(e):
+            db.create_all()
 
 
 # add command function to cli commands
 app.cli.add_command(create)
-
-
-if __name__ == "__main__":
-    try:
-        with app.app_context():
-            db.session.query(User).first()
-    except Exception as e:
-        if "exist" in str(e):
-            db.create_all()
