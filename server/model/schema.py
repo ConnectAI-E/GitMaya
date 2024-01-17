@@ -350,3 +350,12 @@ def create():
 
 # add command function to cli commands
 app.cli.add_command(create)
+
+
+if __name__ == "__main__":
+    try:
+        with app.app_context():
+            db.session.query(User).first()
+    except Exception as e:
+        if "exist" in str(e):
+            db.create_all()
