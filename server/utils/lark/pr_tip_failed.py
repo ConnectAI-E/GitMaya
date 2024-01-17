@@ -4,7 +4,7 @@ from .base import *
 class PrTipFailed(FeishuMessageCard):
     def __init__(
         self,
-        content="无法重复合并 pr\n\n(这里说明操作失败的原因)",
+        content="无法重复合并 pr\n\n",
     ):
         elements = [
             FeishuMessageDiv(

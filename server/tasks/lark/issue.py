@@ -112,7 +112,7 @@ def send_issue_url_message(
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
         return send_issue_failed_tip(
-            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Issue", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -171,7 +171,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
         return send_issue_failed_tip(
-            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Issue", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -333,7 +333,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     _, issue, _ = get_git_object_by_message_id(root_id)
     if not issue:
         return send_issue_failed_tip(
-            "找不到Issue", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Issue", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -424,11 +424,11 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "关闭issue失败", app_id, message_id, content, data, *args, **kwargs
+            "关闭 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_issue_success_tip(
-            "关闭issue成功", app_id, message_id, content, data, *args, **kwargs
+            "关闭 issue 成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -454,11 +454,11 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "打开issue失败", app_id, message_id, content, data, *args, **kwargs
+            "打开 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_issue_success_tip(
-            "打开issue成功", app_id, message_id, content, data, *args, **kwargs
+            "打开 issue 成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -484,11 +484,11 @@ def change_issue_title(title, app_id, message_id, content, data, *args, **kwargs
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_issue_success_tip(
-            "更新issue成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -507,11 +507,11 @@ def change_issue_label(labels, app_id, message_id, content, data, *args, **kwarg
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_issue_success_tip(
-            "更新issue成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -530,11 +530,11 @@ def change_issue_desc(desc, app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_issue_failed_tip(
-            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_issue_success_tip(
-            "更新issue成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -548,7 +548,7 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
     assignees = get_assignees_by_openid(users)
     if len(assignees) == 0:
         return send_issue_failed_tip(
-            "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     response = github_app.update_issue(
         team.name,
@@ -579,5 +579,5 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
 def pin_issue(app_id, message_id, content, data, *args, **kwargs):
     # TODO 未找到pin相关API
     return send_issue_failed_tip(
-        "更新issue失败", app_id, message_id, content, data, *args, **kwargs
+        "更新 issue 失败", app_id, message_id, content, data, *args, **kwargs
     )

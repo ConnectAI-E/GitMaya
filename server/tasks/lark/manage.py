@@ -62,8 +62,8 @@ def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
             if not github_user or not github_user.access_token:
                 host = os.environ.get("DOMAIN")
                 message = ManageFaild(
-                    content=f"[请点击绑定GitHub账号]({host}/api/github/oauth)",
-                    title="🎉 欢迎使用GitMaya！",
+                    content=f"[请点击绑定 GitHub 账号]({host}/api/github/oauth)",
+                    title="🎉 欢迎使用 GitMaya！",
                 )
                 bot.send(open_id, message).json()
             repos = (
@@ -364,7 +364,7 @@ def create_chat_group_for_repo(
     ).json()
     chat_id = result.get("data", {}).get("chat_id")
     if not chat_id:
-        content = f"创建项目群失败:\n\n{result.get('msg')}"
+        content = f"创建项目群失败: \n\n{result.get('msg')}"
         return send_manage_fail_message(
             content, app_id, message_id, *args, bot=bot, **kwargs
         )

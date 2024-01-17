@@ -105,7 +105,7 @@ class RepoView(FeishuMessageCard):
     ):
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",
