@@ -159,40 +159,11 @@ This project provides some additional configuration items set with environment v
 
 ## ⌨️ Local Development
 
-<details>
-<summary>
-
-### Prerequisites
-
-</summary>
-
-Ensure you have the following installed:
-
-- MySQL
-- Celery
-- Redis
-
-We suggest you use `docker-compose`` to deploy the service
-
-**TODO**
-
-Download the `docker-compose.yml` File
-
-```fish
-$ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
-```
-
-```fish
-$ docker-compose up -d
-```
-
 <!-- You can use GitHub Codespaces for online development:
 
 [![][codespaces-shield]][codespaces-link]
 
 Or clone it for local development: -->
-
-</details>
 
 <details>
 <summary>
@@ -305,10 +276,36 @@ FLASK_PERMANENT_SESSION_LIFETIME=86400
 ### 4. Running the Server
 
 </summary>
-Then, run the following command to start the server:
+
+Start Redis：
 
 ```fish
-$ python server/server.py
+$ docker run -d -p 6379:6379 redis
+```
+
+Start Celery, using Redis as Broker：
+
+```fish
+$ cd server
+$ celery -A tasks.celery worker -l INFO -c 2
+```
+
+Start MySQL：
+
+```fish
+$ docker run -d -p 3306:3306 mysql
+```
+
+Create database and tables **(needed only once)**:
+
+```fish
+$ flask --app server/server:app create
+```
+
+Run the GitMaya server by using `gunicorn`:
+
+```fish
+$ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-alive 60 --log-level=info server:app
 ```
 
 </details>
