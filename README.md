@@ -369,5 +369,5 @@ This project is [MIT](./LICENSE) licensed.
 [Deploy GitHub App From Scratch]: https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink
 [Deploy Feishu App Bot From Scratch]: https://connect-ai.feishu.cn/wiki/NQXywcS3Siqw60kYX8IcknDfn1e?from=from_copylink
 
-- [Feishu App Official Doc]: https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process
+- [Feishu App Official Doc]: https://open.feishu.cn/document/home/develop-a-bot-in-5-minutes/step-1-create-app-and-enable-robot-capabilities
 - [GitHub App Official Doc]: https://docs.github.com/en/developers/apps/creating-a-github-app
