@@ -14,7 +14,7 @@ class PrManual(FeishuMessageCard):
         pr_url = f"{repo_url}/pull/{pr_id}"
         elements = [
             FeishuMessageDiv(
-                content="** 🤠 haloooo，我是Maya~ **\n对 GitMaya 有新想法? 来Github 贡献你的代码吧。",
+                content="** 🤠 haloooo，我是 Maya~ **\n对 GitMaya 有新想法? 来 GitHub 贡献你的代码吧。",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "⭐️ Star Maya",
@@ -160,7 +160,7 @@ class PullRequestView(FeishuMessageCard):
         pr_url = f"{repo_url}/pull/{pr_id}"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",
@@ -191,7 +191,7 @@ class PullRequestLog(FeishuMessageCard):
         pr_url = f"{repo_url}/pull/{pr_id}/commits"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",
@@ -222,7 +222,7 @@ class PullRequestDiff(FeishuMessageCard):
         pr_url = f"{repo_url}/pull/{pr_id}/files"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",

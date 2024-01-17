@@ -96,7 +96,7 @@ class ManageView(FeishuMessageCard):
         profile_url = f"{github_url}/{org_name}"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看个人主页 **",
+                content=f"** ⚡️ 前往 GitHub 查看个人主页 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",
@@ -124,7 +124,7 @@ class ManageNew(FeishuMessageCard):
         new_repo_url = f"{github_url}/new"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub新建Repo **",
+                content=f"** ⚡️ 前往 GitHub 新建 Repo **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",
@@ -152,7 +152,7 @@ class ManageSetting(FeishuMessageCard):
         setting_url = f"{gitmaya_host}/app/setting"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitMaya查看 **",
+                content=f"** ⚡️ 前往 GitMaya 查看 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",

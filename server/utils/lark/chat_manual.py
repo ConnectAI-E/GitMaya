@@ -21,7 +21,7 @@ class ChatManual(FeishuMessageCard):
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[FeishuMessageOption(value=action) for action in actions],
-                    placeholder="选择想要执行的Action",
+                    placeholder="选择想要执行的 Action",
                     value={
                         "key": "value",  # TODO
                     },
@@ -74,7 +74,7 @@ class ChatView(FeishuMessageCard):
     ):
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",

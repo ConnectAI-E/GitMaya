@@ -112,7 +112,7 @@ class IssueView(FeishuMessageCard):
         issue_url = f"{repo_url}/issues/{issue_id}"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往GitHub查看信息 **",
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",

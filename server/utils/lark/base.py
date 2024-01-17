@@ -5,7 +5,7 @@ class GitMayaTitle(FeishuMessageDiv):
     def __init__(self):
         repo_url = "https://github.com/ConnectAI-E/GitMaya"
         super().__init__(
-            content="** 🤠 haloooo，我是Maya~ **\n对 GitMaya 有新想法? 来Github 贡献你的代码吧。",
+            content="** 🤠 haloooo，我是 Maya~ **\n对 GitMaya 有新想法? 来 GitHub 贡献你的代码吧。",
             tag="lark_md",
             extra=FeishuMessageButton(
                 "⭐️ Star Maya",

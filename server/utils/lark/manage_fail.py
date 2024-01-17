@@ -4,7 +4,7 @@ from .base import *
 class ManageFaild(FeishuMessageCard):
     def __init__(
         self,
-        content="不允许重复创建项目群\n(这里说明操作失败的原因)",
+        content="不允许重复创建项目群\n",
         title="😕 操作失败！",
     ):
         elements = [

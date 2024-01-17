@@ -4,7 +4,7 @@ from .base import *
 class ChatTipFailed(FeishuMessageCard):
     def __init__(
         self,
-        content="没有执行此操作的权限\n\n(这里说明操作失败的原因)",
+        content="没有执行此操作的权限\n\n",
     ):
         elements = [
             FeishuMessageDiv(

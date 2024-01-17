@@ -144,7 +144,7 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
     _, _, pr = get_git_object_by_message_id(root_id)
     if not pr:
         return send_pull_request_failed_tip(
-            "找不到PullRequest", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Pull Request", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -190,7 +190,7 @@ def send_pull_request_url_message(
     _, _, pr = get_git_object_by_message_id(root_id)
     if not pr:
         return send_pull_request_failed_tip(
-            "找不到PullRequest", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Pull Request", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -392,7 +392,7 @@ def _get_github_app(app_id, message_id, content, data, *args, **kwargs):
     _, _, pr = get_git_object_by_message_id(root_id)
     if not pr:
         return send_pull_request_failed_tip(
-            "找不到PullRequest", app_id, message_id, content, data, *args, **kwargs
+            "找不到 Pull Request", app_id, message_id, content, data, *args, **kwargs
         )
     repo = (
         db.session.query(Repo)
@@ -483,11 +483,11 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "关闭PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "关闭 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "关闭PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "关闭 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -512,11 +512,11 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "merged" not in response:
         return send_pull_request_failed_tip(
-            "合并PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "合并 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "合并PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "合并 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     # maunal点按钮，需要更新maunal
     if root_id != message_id:
@@ -542,11 +542,11 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "打开PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "打开 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "打开PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "打开 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -573,11 +573,11 @@ def change_pull_request_title(
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -598,11 +598,11 @@ def change_pull_request_label(
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -621,11 +621,11 @@ def change_pull_request_desc(desc, app_id, message_id, content, data, *args, **k
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -641,7 +641,7 @@ def change_pull_request_assignees(
     assignees = get_assignees_by_openid(users)
     if len(assignees) == 0:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     response = github_app.update_issue(
         team.name,
@@ -651,11 +651,11 @@ def change_pull_request_assignees(
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "更新PullRequest成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response
 
@@ -672,7 +672,7 @@ def change_pull_request_reviewer(
     reviewers = get_assignees_by_openid(users)
     if len(reviewers) == 0:
         return send_pull_request_failed_tip(
-            "更新PullRequest失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 失败", app_id, message_id, content, data, *args, **kwargs
         )
     response = github_app.requested_reviewers(
         team.name,
@@ -682,10 +682,10 @@ def change_pull_request_reviewer(
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新PullRequest审核人失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 审核人失败", app_id, message_id, content, data, *args, **kwargs
         )
     else:
         send_pull_request_success_tip(
-            "更新PullRequest审核人成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 审核人成功", app_id, message_id, content, data, *args, **kwargs
         )
     return response

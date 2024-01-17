@@ -233,6 +233,6 @@ def create_issue(
     )
     if "id" not in response:
         return send_chat_failed_tip(
-            "创建issue失败", app_id, message_id, content, data, *args, **kwargs
+            "创建 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response

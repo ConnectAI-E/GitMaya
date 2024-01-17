@@ -55,7 +55,7 @@ class RepoInfo(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**🌐 Homepage：**\n{homepage}",
+                                f"**🌐 Homepage: **\n{homepage}",
                                 text_align="left",
                             ),
                             width="weighted",

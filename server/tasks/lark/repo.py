@@ -332,7 +332,7 @@ def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwarg
     )
     if "id" not in response:
         return send_repo_failed_tip(
-            f"修改 {repo.name} 仓库homepage 链接失败",
+            f"修改 {repo.name} 仓库 homepage 链接失败",
             app_id,
             message_id,
             content,
@@ -342,7 +342,7 @@ def change_repo_link(homepage, app_id, message_id, content, data, *args, **kwarg
         )
 
     send_repo_success_tip(
-        f"修改 {repo.name} 仓库homepage为 {homepage}",
+        f"修改 {repo.name} 仓库 homepage 为 {homepage}",
         app_id,
         message_id,
         content,

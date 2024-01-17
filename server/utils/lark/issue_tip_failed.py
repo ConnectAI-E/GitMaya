@@ -4,7 +4,7 @@ from .base import *
 class IssueTipFailed(FeishuMessageCard):
     def __init__(
         self,
-        content="不要重复关闭 issue\n(这里说明操作失败的原因)",
+        content="不要重复关闭 issue\n",
     ):
         elements = [
             FeishuMessageDiv(
