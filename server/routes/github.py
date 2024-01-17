@@ -67,7 +67,9 @@ def github_install():
 <script>
 try {
   window.opener.postMessage("""
-        + json.dumps(dict(event="installation", data=app_info))
+        + json.dumps(
+            dict(event="installation", data=app_info, team_id=team.id, task_id=task.id)
+        )
         + """, '*')
   setTimeout(() => window.close(), 3000)
 } catch(e) {

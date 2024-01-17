@@ -94,10 +94,15 @@ class BaseGitHubApp:
         ):
             self._jwt_created_at = datetime.now().timestamp()
 
-            with open(
-                os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH", "pem.pem"), "rb"
-            ) as pem_file:
-                signing_key = jwk_from_pem(pem_file.read())
+            if os.environ.get("GITHUB_APP_PRIVATE_KEY"):
+                signing_key = jwk_from_pem(
+                    os.environ.get("GITHUB_APP_PRIVATE_KEY").encode()
+                )
+            else:
+                with open(
+                    os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH", "pem.pem"), "rb"
+                ) as pem_file:
+                    signing_key = jwk_from_pem(pem_file.read())
 
             payload = {
                 # Issued at time
