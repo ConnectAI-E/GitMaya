@@ -110,6 +110,8 @@ GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 
 ### 3. Run the Images
 
+It will init database in first time, thus it may contain a few error messages in logs.
+
 ```fish
 $ docker-compose up -d
 ```
