@@ -1,3 +1,6 @@
+import json
+import os
+
 from app import app
 from flask import Blueprint, abort, jsonify, make_response, redirect, request, session
 from model.team import (
@@ -218,11 +221,11 @@ try {
     # 1. 前端重定向过来：重定向到deploy server
     desc = request.args.get("desc", "")
     avatar = request.args.get("avatar", "")
-    if not name or not desc:
+    if not name and not desc:
         return abort(400, "params error")
     # 如果传app_id就是更新app
     return redirect(
-        f"{os.environ.get('LARK_DEPLOY_SERVER')}/publish?redirect_uri={redirect_uri}&app_id={app_id}&name={name}&desc={desc}&avatar={avatar}"
+        f"{os.environ.get('LARK_DEPLOY_SERVER')}?redirect_uri={redirect_uri}&app_id={app_id}&name={name}&desc={desc}&avatar={avatar}"
     )
 
 
