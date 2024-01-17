@@ -27,7 +27,12 @@
     <a href="https://gitmaya.com">🖥 Use Now </a>
 </p>
 
+<details>
+<summary>
+
 ## 📃 Prerequisites
+
+</summary>
 
 Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
 
@@ -46,7 +51,14 @@ npx botops deploy gitmaya.botops.example.json
 
 or by referring to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch]
 
+</details>
+
+<details>
+<summary>
+
 ## 🛳 Self Hosting
+
+</summary>
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
@@ -67,9 +79,12 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 > \[!TIP]
 >
 > We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync). -->
+<details>
+<summary>
 
 ### Deploying with Docker-Compose
 
+</summary>
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
 [![][docker-pulls-shield]][docker-pulls-link]
@@ -138,8 +153,16 @@ This project provides some additional configuration items set with environment v
 [![][back-to-top]](#readme-top)
 
 </div>
+</details>
+
+</details>
+
+<details>
+<summary>
 
 ## ⌨️ Local Development
+
+</summary>
 
 ### Prerequisites
 
@@ -154,7 +177,12 @@ Ensure you have the following installed:
 
 Or clone it for local development: -->
 
+<details>
+<summary>
+
 ### 1. Clone the Repository
+
+</summary>
 
 Clone the repository to your local machine or server:
 
@@ -163,7 +191,14 @@ $ git clone https://github.com/ConnectAI-E/GitMaya.git
 $ cd GitMaya
 ```
 
+</details>
+
+<details>
+<summary>
+
 ### 2. Installing Dependencies
+
+</summary>
 
 #### Using pip
 
@@ -187,8 +222,14 @@ Activate the virtual environment:
 $ eval $(pdm venv activate)
 ```
 
+</details>
+
+<details>
+<summary>
+
 ### 3. Configuration Files
 
+</summary>
 Before starting, ensure you have the following configuration files in place:
 
 - `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
@@ -239,19 +280,23 @@ SECRET_KEY="test"
 FLASK_PERMANENT_SESSION_LIFETIME=86400
 ```
 
+</details>
+
+<details>
+<summary>
+
 ### 4. Running the Server
 
-Before running the server, ensure you have the following services running:
-
-- MySQL
-- Celery
-- Redis
-
+</summary>
 Then, run the following command to start the server:
 
 ```fish
 $ python server/server.py
 ```
+
+</details>
+
+</details>
 
 ## 📕 Reference
 
