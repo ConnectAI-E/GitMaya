@@ -6,6 +6,6 @@ location = / {
     try_files $uri /index.html;
 }
 
-location ~ ^/(index|locales|assets|logo|app) {
+location ~ ^/(index|locales|assets|logo|app|login) {
     try_files $uri $uri/ /index.html;
 }
