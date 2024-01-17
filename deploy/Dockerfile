@@ -9,9 +9,10 @@ RUN apt-get update && apt-get install -y libcurl4-openssl-dev libffi-dev libxml2
   && pip install -r /tmp/requirements.txt && pip install gunicorn gevent
 
 ADD ./server /server
+ADD ./deploy/entrypoint.sh /entrypoint.sh
 
 WORKDIR /server
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["gunicorn", "--worker-class=gevent", "--workers", "1", "--bind", "0.0.0.0:8888", "-t", "600", "--keep-alive", "60", "--log-level=debug", "server:app"]
+CMD ["gunicorn", "--worker-class=gevent", "--workers", "1", "--bind", "0.0.0.0:8888", "-t", "600", "--keep-alive", "60", "--log-level=info", "server:app"]
