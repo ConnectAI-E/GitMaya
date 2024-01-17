@@ -27,21 +27,26 @@
     <a href="https://gitmaya.com">🖥 Use Now </a>
 </p>
 
-<details>
-<summary>
-
 ## 📃 Prerequisites
-
-</summary>
 
 Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
 
+<details>
+<summary>
+
 ### 1. Install GitHub Application
 
+</summary>
 You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch].
+
+</details>
+
+<details>
+<summary>
 
 ### 2. Install Feishu Bot Application
 
+</summary>
 After installing the GitHub application, proceed to bind the Feishu application. The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
 
 ```fish
@@ -53,12 +58,7 @@ or by referring to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot Fr
 
 </details>
 
-<details>
-<summary>
-
 ## 🛳 Self Hosting
-
-</summary>
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
@@ -157,25 +157,42 @@ This project provides some additional configuration items set with environment v
 
 </details>
 
+## ⌨️ Local Development
+
 <details>
 <summary>
 
-## ⌨️ Local Development
+### Prerequisites
 
 </summary>
-
-### Prerequisites
 
 Ensure you have the following installed:
 
 - MySQL
 - Celery
 - Redis
+
+We suggest you use `docker-compose`` to deploy the service
+
+**TODO**
+
+Download the `docker-compose.yml` File
+
+```fish
+$ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
+```
+
+```fish
+$ docker-compose up -d
+```
+
 <!-- You can use GitHub Codespaces for online development:
 
 [![][codespaces-shield]][codespaces-link]
 
 Or clone it for local development: -->
+
+</details>
 
 <details>
 <summary>
