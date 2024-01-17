@@ -13,5 +13,6 @@ RUN pnpm install --frozen-lockfile && pnpm build
 FROM jwilder/nginx-proxy:alpine
 
 ADD ./deploy/default_location /etc/nginx/vhost.d/default_location
+ADD ./deploy/proxy.conf /etc/nginx/proxy.conf
 
 COPY --from=build /app/dist /var/www/html

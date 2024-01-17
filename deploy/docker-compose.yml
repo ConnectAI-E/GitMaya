@@ -53,5 +53,6 @@ services:
     image: connectai/gitmaya-proxy
     ports:
       - "8000:80"
+      - "8001:81"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
