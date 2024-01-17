@@ -280,7 +280,7 @@ FLASK_PERMANENT_SESSION_LIFETIME=86400
 Start Redis：
 
 ```fish
-$ docker run -d -p 6379:6379 redis
+$ docker run -d -p 6379:6379 redis:alpine
 ```
 
 Start Celery, using Redis as Broker：
@@ -293,7 +293,7 @@ $ celery -A tasks.celery worker -l INFO -c 2
 Start MySQL：
 
 ```fish
-$ docker run -d -p 3306:3306 mysql
+$ docker run --name mysql -e MYSQL_ROOT_PASSWORD=gitmaya2023 -e MYSQL_DATABASE=gitmaya -e TZ=Asia/Shanghai -p 3306:3306 -v /path/to/your/mysql/data:/var/lib/mysql -v /path/to/your/mysql/conf.d:/etc/mysql/conf.d -d mysql:5.7 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
 ```
 
 Create database and tables **(needed only once)**:
