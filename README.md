@@ -40,11 +40,11 @@ The Feishu bot application can be set up with the help of [**`botops`**](https:/
 npx botops deploy gitmaya.botops.example.json
 ```
 
-or by referring to the official [Feishu Application Doc](#📕-reference);
+or by referring to the official [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink).
 
 ### 2. GitHub Application
 
-For the GitHub app, please refer to [GitHub Application Doc](#📕-reference).
+For the GitHub app, please refer to [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb).
 
 ## 🛳 Self Hosting
 
@@ -146,7 +146,7 @@ $ cd GitMaya
 If you are using `pip`
 
 ```fish
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 
 #### Using pdm(Recommended)
@@ -154,7 +154,7 @@ pip install -r requirements.txt
 If you are using `pdm`
 
 ```fish
-pdm install
+$ pdm install
 ```
 
 Activate the virtual environment:
@@ -169,7 +169,7 @@ Before starting, ensure you have the following configuration files in place:
 
 - `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
 
-Configure Feishu Application, for details refer to: [Feishu Application](#📕-reference)
+Configure Feishu Application, for details refer to: [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink)
 
 ```fish
 # Feishu App Settings
@@ -197,7 +197,7 @@ CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/2
 ```
 
-Configure GitHub App, for details refer to: [GitHub App](#📕-reference)
+Configure GitHub App, for details refer to: [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb)
 
 ```fish
 # GitHub Settings
@@ -241,8 +241,10 @@ $ python server/server.py
 
 ## 📕 Reference
 
-- [Feishu Application Doc](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process)
-- [GitHub App Doc](https://docs.github.com/en/developers/apps/creating-a-github-app)
+- [Deploy Feishu App Bot From Scratch](https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink)
+- [Deploy GitHub App From Scratch](https://connect-ai.feishu.cn/wiki/SukVwnhlIiTaeHkFEi2c5JGinrb)
+- [Feishu App Official Doc](https://open.feishu.cn/document/home/introduction-to-custom-app-development/self-built-application-development-process)
+- [GitHub App Official Doc](https://docs.github.com/en/developers/apps/creating-a-github-app)
 
 <div align="right">
 
@@ -254,10 +256,10 @@ $ python server/server.py
 
 There are four repositories for gitmaya, and this is one of them:
 
-|     | Repository                                                          | Language   | Purpose                            |
-| --- | ------------------------------------------------------------------- | ---------- | ---------------------------------- |
-| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)                   | Python     | Server-side code                   |
-|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli)           | Python     | Super Git management tool          |
+|     | Repository                                                | Language | Purpose                   |
+| --- | --------------------------------------------------------- | -------- | ------------------------- |
+| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)         | Python   | Server-side code          |
+|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli) | Python   | Super Git management tool |
 
 <div align="right">
 
