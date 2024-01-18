@@ -86,7 +86,7 @@ You need to create a GitHub app at first, for details refer to [Deploy GitHub Ap
 
 </summary>
 
-You can choose to use [Self-Hosting](#🛳-self-hosting) or [Local Deployment](#⌨️-local-development) to deploy the front-end and back-end of GitMaya.
+You can choose to use [Self Hosting](#%F0%9F%9B%B3-self-hosting) or [Local Deployment](#%E2%8C%A8%EF%B8%8F-local-development) to deploy the front-end and back-end of GitMaya.
 
 </details>
 
@@ -127,11 +127,11 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 
 ### Deploying with Docker-Compose
 
-</summary>
-
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
 [![][docker-pulls-shield]][docker-pulls-link]
+
+</summary>
 
 We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
 
