@@ -50,23 +50,23 @@ def github_install():
         team = create_team(app_info, contact_id=session.get("contact_id"))
         code_application = create_code_application(team.id, installation_id)
 
-        if app_info == "organization":
-            # 在后台任务中拉取仓库
-            task = pull_github_repo.delay(
-                org_name=app_info["account"]["login"],
-                installation_id=installation_id,
-                application_id=code_application.id,
-                team_id=team.id,
-            )
+        # if app_info == "organization":
+        # 在后台任务中拉取仓库
+        task = pull_github_repo.delay(
+            org_name=app_info["account"]["login"],
+            installation_id=installation_id,
+            application_id=code_application.id,
+            team_id=team.id,
+        )
 
-            message = dict(
-                status=True,
-                event="installation",
-                data=app_info,
-                team_id=team.id,
-                task_id=task.id,
-                app_type=app_type,
-            )
+        message = dict(
+            status=True,
+            event="installation",
+            data=app_info,
+            team_id=team.id,
+            task_id=task.id,
+            app_type=app_type,
+        )
 
     except Exception as e:
         # 返回错误信息
