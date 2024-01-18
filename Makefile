@@ -19,7 +19,6 @@ push-gitmaya:
 
 push-proxy:
 	@echo "Push Image..."
-	docker push connectai/gitmaya
 	docker push connectai/gitmaya-proxy
 	@echo "Done."
 
