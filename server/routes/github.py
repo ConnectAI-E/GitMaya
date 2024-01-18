@@ -42,34 +42,51 @@ def github_install():
 
         # 判断安装者的身份是用户还是组织
         type: str = app_info["account"]["type"]
-        if type.lower() == "user":
+        app_type = type.lower()
+        if app_type == "user":
             app.logger.error("User is not allowed to install.")
             raise Exception("User is not allowed to install.")
 
         team = create_team(app_info, contact_id=session.get("contact_id"))
         code_application = create_code_application(team.id, installation_id)
 
+        # if app_info == "organization":
+        # 在后台任务中拉取仓库
+        task = pull_github_repo.delay(
+            org_name=app_info["account"]["login"],
+            installation_id=installation_id,
+            application_id=code_application.id,
+            team_id=team.id,
+        )
+
+        message = dict(
+            status=True,
+            event="installation",
+            data=app_info,
+            team_id=team.id,
+            task_id=task.id,
+            app_type=app_type,
+        )
+
     except Exception as e:
         # 返回错误信息
         app.logger.error(e)
         app_info = str(e)
-
-    # 在后台任务中拉取仓库
-    task = pull_github_repo.delay(
-        org_name=app_info["account"]["login"],
-        installation_id=installation_id,
-        application_id=code_application.id,
-        team_id=team.id,
-    )
+        message = dict(
+            status=False,
+            event="installation",
+            data=app_info,
+            team_id=None,
+            task_id=None,
+            app_type=app_type,
+        )
 
     return make_response(
         """
 <script>
 try {
   window.opener.postMessage("""
-        + json.dumps(
-            dict(event="installation", data=app_info, team_id=team.id, task_id=task.id)
-        )
+        + json.dumps(message)
         + """, '*')
   setTimeout(() => window.close(), 3000)
 } catch(e) {
