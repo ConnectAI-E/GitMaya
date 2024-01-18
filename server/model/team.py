@@ -415,7 +415,8 @@ def save_im_application(
         .limit(1)
         .scalar()
     ):
-        return abort(400, "already bind im_application for team")
+        logging.warning("already bind im_application for team")
+        # return abort(400, "already bind im_application for team")
     application = (
         db.session.query(IMApplication).filter(IMApplication.app_id == app_id).first()
     )
