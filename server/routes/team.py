@@ -208,7 +208,7 @@ def install_im_application_to_team_by_get_method(team_id, platform):
                     """
 <script>
 try {
-  window.opener.postMessage("""
+  (window.opener || window.parent).postMessage("""
                     + json.dumps(dict(event="installation", app_id=app_id, data=app_id))
                     + """, '*')
   setTimeout(() => window.close(), 3000)
