@@ -406,6 +406,16 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
 def save_im_application(
     team_id, platform, app_id, app_secret, encrypt_key, verification_token
 ):
+    if (
+        db.session.query(IMApplication.id)
+        .filter(
+            IMApplication.team_id == team_id,
+            IMApplication.status.in_([0, 1]),
+        )
+        .limit(1)
+        .scalar()
+    ):
+        return abort(400, "already bind im_application for team")
     application = (
         db.session.query(IMApplication).filter(IMApplication.app_id == app_id).first()
     )
