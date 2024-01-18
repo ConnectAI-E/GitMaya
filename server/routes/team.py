@@ -172,26 +172,29 @@ def install_im_application_to_team_by_get_method(team_id, platform):
                 team_id, platform, app_id, app_secret, encrypt_key, verification_token
             )
             app.logger.info("result %r", result)
-            events = ["im.message.message_read_v1", "im.message.receive_v1"]
+            events = [
+                "20",
+                "im.message.message_read_v1",
+                "im.message.reaction.created_v1",
+                "im.message.reaction.deleted_v1",
+                "im.message.recalled_v1",
+                "im.message.receive_v1",
+            ]
             scope_ids = [
+                "8002",
+                "100032",
+                "6081",
+                "14",
+                "1",
                 "21001",
-                "7",
-                "21003",
-                "21002",
                 "20001",
                 "20011",
                 "3001",
                 "20012",
-                "6005",
                 "20010",
                 "3000",
-                "20013",
-                "20014",
-                "20015",
                 "20008",
                 "1000",
-                "1006",
-                "1005",
                 "20009",
             ]
             hook_url = f"{os.environ.get('DOMAIN')}/api/feishu/hook/{app_id}"
@@ -206,7 +209,7 @@ def install_im_application_to_team_by_get_method(team_id, platform):
 <script>
 try {
   window.opener.postMessage("""
-                    + json.dumps(dict(event="installation", app_id=app_id))
+                    + json.dumps(dict(event="installation", app_id=app_id, data=app_id))
                     + """, '*')
   setTimeout(() => window.close(), 3000)
 } catch(e) {
