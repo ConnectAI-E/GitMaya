@@ -178,7 +178,7 @@ def install_im_application_to_team_by_get_method(team_id, platform):
                 "im.message.reaction.created_v1",
                 "im.message.reaction.deleted_v1",
                 "im.message.recalled_v1",
-                "im.message.receive_v1"
+                "im.message.receive_v1",
             ]
             scope_ids = [
                 "8002",
@@ -195,7 +195,7 @@ def install_im_application_to_team_by_get_method(team_id, platform):
                 "3000",
                 "20008",
                 "1000",
-                "20009"
+                "20009",
             ]
             hook_url = f"{os.environ.get('DOMAIN')}/api/feishu/hook/{app_id}"
             return redirect(
