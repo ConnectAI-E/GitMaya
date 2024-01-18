@@ -41,8 +41,9 @@ def github_install():
             raise Exception("Failed to get installation info.")
 
         # 判断安装者的身份是用户还是组织
-        app_type: str = app_info["account"]["type"]
-        if app_type.lower() == "user":
+        type: str = app_info["account"]["type"]
+        app_type = type.lower()
+        if app_type == "user":
             app.logger.error("User is not allowed to install.")
             raise Exception("User is not allowed to install.")
 
