@@ -10,9 +10,15 @@ build-proxy:
 	git submodule update --init && docker build -t connectai/gitmaya-proxy -f deploy/Dockerfile.proxy .
 	@echo "Done."
 
-push:
+push: push-gitmaya push-proxy
+
+push-gitmaya:
 	@echo "Push Image..."
 	docker push connectai/gitmaya
+	@echo "Done."
+
+push-proxy:
+	@echo "Push Image..."
 	docker push connectai/gitmaya-proxy
 	@echo "Done."
 

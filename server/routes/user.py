@@ -7,6 +7,19 @@ from utils.auth import authenticated
 bp = Blueprint("user", __name__, url_prefix="/api")
 
 
+@bp.route("/logout", methods=["GET"])
+@authenticated
+def logout():
+    # clear session
+    session.clear()
+    return jsonify(
+        {
+            "code": 0,
+            "msg": "success",
+        }
+    )
+
+
 @bp.route("/account", methods=["GET"])
 @authenticated
 def get_account():
