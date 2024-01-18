@@ -37,6 +37,7 @@ Before deploying GitMaya, you need to create a Feishu bot application and obtain
 ### 1. Install GitHub Application
 
 </summary>
+
 You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch].
 
 </details>
@@ -47,7 +48,8 @@ You need to create a GitHub app at first, for details refer to [Deploy GitHub Ap
 ### 2. Install Feishu Bot Application
 
 </summary>
-After installing the GitHub application, proceed to bind the Feishu application. The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops). (recommended)
+
+After installing the GitHub application, proceed to bind the Feishu application. The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops).**(recommended)**
 
 ```fish
 # gitmaya.botops.example.json provided in the project
@@ -85,6 +87,7 @@ If you want to deploy this service yourself on either Zeabur or Sealos, you can 
 ### Deploying with Docker-Compose
 
 </summary>
+
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
 [![][docker-pulls-shield]][docker-pulls-link]
@@ -218,6 +221,7 @@ $ eval $(pdm venv activate)
 ### 3. Configuration Files
 
 </summary>
+
 Before starting, ensure you have the following configuration files in place:
 
 - `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
