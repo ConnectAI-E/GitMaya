@@ -10,15 +10,14 @@ bp = Blueprint("user", __name__, url_prefix="/api")
 @bp.route("/logout", methods=["GET"])
 @authenticated
 def logout():
-    resp = jsonify(
+    # clear session
+    session.clear()
+    return jsonify(
         {
             "code": 0,
             "msg": "success",
         }
     )
-    # clear session
-    resp.set_cookie("session", "", expires=0)
-    return resp
 
 
 @bp.route("/account", methods=["GET"])
