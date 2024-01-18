@@ -16,19 +16,19 @@ class ChatManual(FeishuMessageCard):
                 content="**📄 创建 Issue **\n*群聊下回复「/issue + 新 Issue 标题 + @分配成员」 *",
                 tag="lark_md",
             ),
-            FeishuMessageDiv(
-                content="**🚀 运行 Action **\n*群聊下回复「/action」 *",
-                tag="lark_md",
-                extra=FeishuMessageSelect(
-                    *[FeishuMessageOption(value=action) for action in actions],
-                    placeholder="选择想要执行的 Action",
-                    value={
-                        "key": "value",  # TODO
-                    },
-                )
-                if len(actions) > 0
-                else None,
-            ),
+            # FeishuMessageDiv(
+            #     content="**🚀 运行 Action **\n*群聊下回复「/action」 *",
+            #     tag="lark_md",
+            #     extra=FeishuMessageSelect(
+            #         *[FeishuMessageOption(value=action) for action in actions],
+            #         placeholder="选择想要执行的 Action",
+            #         value={
+            #             "key": "value",  # TODO
+            #         },
+            #     )
+            #     if len(actions) > 0
+            #     else None,
+            # ),
             FeishuMessageDiv(
                 content=f"**⚡️ 前往 GitHub 查看 Repo 主页 **\n*群聊下回复「/view」 *",
                 tag="lark_md",
