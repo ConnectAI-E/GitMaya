@@ -30,32 +30,43 @@
 ## 🔥 Feature List
 
 ### 🧑🏻‍💻 For Developers, By Developers
+
 Embrace the power of collaboration with our developer-centric, fully open-source product designed by developers, for developers.
 
 ### 🌐 Cross-Platform Bliss
+
 Enjoy seamless communication across various platforms including **Feishu, Discord, Slack, Microsoft Teams, and Telegram**. Our commitment is to serve developers wherever they feel at home!
 
 ### 🔄 One Repo = One ChatGroup
+
 Experience the perfection of a 2-way sync with the mantra "One Repo = One ChatGroup". let the collaboration flow effortlessly!
 
 ### 💬 GitHub Msg Interaction, Simplified:
+
 Manage all your GitHub interactions right from your favorite chat platform. No more context-switching, just pure efficiency.
 
 ### 🚀 Instant Issue Reminders
+
 Say goodbye to delays! Receive instant issue reminders that make feedback and interaction a breeze. Stay in sync with your team effortlessly.
 
 ### 🔄 Pull Request Recap Magic
+
 Efficient stand-ups made easy! Get a quick recap of pull requests, ensuring that your team stays on the same page and moves forward with confidence.
 
 ### 🛠 CI/CD and GitHub Actions Integration
+
 Elevate your development workflow with seamless integration of CI/CD and GitHub Actions directly within your ChatPlatform. Boost productivity and streamline your processes effortlessly.
 
 ### 🚚 Stay in the Code Review Flow
+
 Maximize productivity with dedicated code review time slots. Stay focused, collaborate effectively, and ensure your codebase is always in its best shape!
 
-## 📃 Prerequisites
+## 📃 Deployment Workflow
 
-Before deploying GitMaya, you need to create a Feishu bot application and obtain authorization for your GitHub application.
+Deploying GitMaya requires a total of 3 steps.
+**First**, you need to install the GitHub app.
+**Then**, you need to deploy the front-end and back-end of GitMaya.
+**Finally**, deploy the Feishu App Bot.
 
 <details>
 <summary>
@@ -71,18 +82,22 @@ You need to create a GitHub app at first, for details refer to [Deploy GitHub Ap
 <details>
 <summary>
 
-### 2. Install Feishu Bot Application
+### 2. Deploy GitMaya
 
 </summary>
 
-After installing the GitHub application, proceed to bind the Feishu application. The Feishu bot application can be set up with the help of [**`botops`**](https://github.com/ConnectAI-E/botops).**(recommended)**
+You can choose to use [Self-Hosting](#🛳-self-hosting) or [Local Deployment](#⌨️-local-development) to deploy the front-end and back-end of GitMaya.
 
-```fish
-# gitmaya.botops.example.json provided in the project
-npx botops deploy gitmaya.botops.example.json
-```
+</details>
 
-or by referring to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch]
+<details>
+<summary>
+
+### 3. Deploy Feishu App Bot
+
+</summary>
+
+The steps for deploying the Feishu (Lark) bot application are already integrated into the onboarding process of GitMaya. Completing the onboarding will automatically complete the Feishu-related configuration. For more details, please refer to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch].
 
 </details>
 
