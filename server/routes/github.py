@@ -63,7 +63,7 @@ def github_install():
             app_type=app_type,
         )
 
-    if app_info.lower() == "organization":
+    if app_info == "organization":
         # 在后台任务中拉取仓库
         task = pull_github_repo.delay(
             org_name=app_info["account"]["login"],
