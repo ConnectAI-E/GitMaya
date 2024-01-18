@@ -223,7 +223,10 @@ try {
 
     # 1. 前端重定向过来：重定向到deploy server
     desc = request.args.get("desc", "")
-    avatar = request.args.get("avatar", "")
+    avatar = request.args.get(
+        "avatar",
+        "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0074_5ae2ba69-5729-445e-afe7-4a19d1fb0a2g",
+    )
     if not name and not desc:
         return abort(400, "params error")
     # 如果传app_id就是更新app
