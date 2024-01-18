@@ -24,8 +24,34 @@
 </div>
 
 <p align="center">
-    <a href="https://gitmaya.com">🖥 Use Now </a>
+    <a href="https://gitmaya.com">🖥 Try GitMaya Now </a>
 </p>
+
+## 🔥 Feature List
+
+### 🧑🏻‍💻 For Developers, By Developers
+Embrace the power of collaboration with our developer-centric, fully open-source product designed by developers, for developers.
+
+### 🌐 Cross-Platform Bliss
+Enjoy seamless communication across various platforms including **Feishu, Discord, Slack, Microsoft Teams, and Telegram**. Our commitment is to serve developers wherever they feel at home!
+
+### 🔄 One Repo = One ChatGroup
+Experience the perfection of a 2-way sync with the mantra "One Repo = One ChatGroup". let the collaboration flow effortlessly!
+
+### 💬 GitHub Msg Interaction, Simplified:
+Manage all your GitHub interactions right from your favorite chat platform. No more context-switching, just pure efficiency.
+
+### 🚀 Instant Issue Reminders
+Say goodbye to delays! Receive instant issue reminders that make feedback and interaction a breeze. Stay in sync with your team effortlessly.
+
+### 🔄 Pull Request Recap Magic
+Efficient stand-ups made easy! Get a quick recap of pull requests, ensuring that your team stays on the same page and moves forward with confidence.
+
+### 🛠 CI/CD and GitHub Actions Integration
+Elevate your development workflow with seamless integration of CI/CD and GitHub Actions directly within your ChatPlatform. Boost productivity and streamline your processes effortlessly.
+
+### 🚚 Stay in the Code Review Flow
+Maximize productivity with dedicated code review time slots. Stay focused, collaborate effectively, and ensure your codebase is always in its best shape!
 
 ## 📃 Prerequisites
 
