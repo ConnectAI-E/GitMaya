@@ -35,14 +35,19 @@ class PullCard(FeishuMessageCard):
         )
         desc_block = (
             [
-                FeishuMessageDiv(
-                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
-                ),
-                FeishuMessageMarkdown(
-                    # TODO 替换content
-                    description,
-                    text_align="left",
-                ),
+                FeishuMessageColumn(
+                    FeishuMessageDiv(
+                        "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                    ),
+                    FeishuMessageMarkdown(
+                        # TODO 替换content
+                        description,
+                        text_align="left",
+                    ),
+                    width="weighted",
+                    weight=1,
+                    vertical_align="top",
+                )
             ]
             if description
             else []
