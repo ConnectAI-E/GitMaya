@@ -32,17 +32,18 @@ class IssueCard(FeishuMessageCard):
         )
         desc_block = (
             [
-                FeishuMessageMarkdown(
-                    f"💬  <font color='black'>**主要内容**</font>\n{description}"
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
                 ),
+                FeishuMessageMarkdown(description),
             ]
             if description
             else []
         )
         elements = [
             FeishuMessageColumnSet(
-                *desc_block,
                 FeishuMessageColumn(
+                    *desc_block,
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
