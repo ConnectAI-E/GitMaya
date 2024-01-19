@@ -67,9 +67,8 @@ def send_pull_request_success_tip(
     return bot.reply(message_id, message).json()
 
 
-def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
+def get_assignees_by_pr(pr, team):
     assignees = pr.extra.get("assignees", [])
-    reviewers = pr.extra.get("requested_reviewers", [])
     if len(assignees):
         assignees = [
             openid
@@ -85,6 +84,12 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
             )
             .all()
         ]
+    return assignees
+
+
+def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
+    assignees = get_assignees_by_pr(pr, team)
+    reviewers = pr.extra.get("requested_reviewers", [])
 
     if len(reviewers):
         reviewers = [
@@ -268,7 +273,7 @@ def send_pull_request_diff_message(app_id, message_id, content, data, *args, **k
 
 
 @celery.task()
-def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
+def send_pull_request_card(pull_request_id: str):
     """send new PullRequest card message to user.
 
     Args:
@@ -301,6 +306,7 @@ def send_pull_request_card(pull_request_id: str, assignees: list[str] = []):
                     pr.message_id = message_id
                     db.session.commit()
 
+                    assignees = get_assignees_by_pr(pr, team)
                     users = (
                         "".join(
                             [f'<at user_id="{open_id}"></at>' for open_id in assignees]

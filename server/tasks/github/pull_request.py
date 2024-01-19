@@ -1,6 +1,6 @@
 from app import app, db
 from celery_app import celery
-from model.schema import CodeUser, IMUser, ObjID, PullRequest, Repo, TeamMember
+from model.schema import ObjID, PullRequest, Repo
 from tasks.lark.pull_request import send_pull_request_card, update_pull_request_card
 from utils.github.model import PullRequestEvent
 
@@ -75,25 +75,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     db.session.add(new_pr)
     db.session.commit()
 
-    assignees = pr_info.assignees if pr_info.assignees else []
-    if len(assignees):
-        assignees = [
-            openid
-            for openid, in db.session.query(IMUser.openid)
-            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
-            .join(
-                CodeUser,
-                CodeUser.id == TeamMember.code_user_id,
-            )
-            .filter(
-                CodeUser.name.in_([i.login for i in assignees]),
-            )
-            .all()
-        ]
-    else:
-        assignees = []
-
-    task = send_pull_request_card.delay(new_pr.id, assignees)
+    task = send_pull_request_card.delay(new_pr.id)
 
     return [task.id]
 
