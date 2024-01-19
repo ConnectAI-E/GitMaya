@@ -2,7 +2,7 @@ import os
 
 from app import app, db
 from celery_app import celery
-from model.schema import CodeUser, IMUser, Issue, ObjID, PullRequest, Repo, TeamMember
+from model.schema import Issue, ObjID, PullRequest, Repo
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
@@ -156,28 +156,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    assignees = issue_info.assignees if issue_info.assignees else []
-    if len(assignees):
-        assignees = [
-            openid
-            for openid, in db.session.query(IMUser.openid)
-            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
-            .join(
-                CodeUser,
-                CodeUser.id == TeamMember.code_user_id,
-            )
-            .filter(
-                CodeUser.name.in_([i.login for i in assignees]),
-            )
-            .all()
-        ]
-    else:
-        assignees = []
-
-    task = send_issue_card.delay(
-        issue_id=new_issue.id,
-        assignees=assignees,
-    )
+    task = send_issue_card.delay(issue_id=new_issue.id)
 
     return [task.id]
 

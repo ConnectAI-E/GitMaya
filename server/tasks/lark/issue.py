@@ -58,7 +58,7 @@ def send_issue_success_tip(content, app_id, message_id, *args, bot=None, **kwarg
     return bot.reply(message_id, message).json()
 
 
-def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
+def get_assignees_by_issue(issue, team):
     assignees = issue.extra.get("assignees", [])
     if len(assignees):
         assignees = [
@@ -75,6 +75,11 @@ def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
             )
             .all()
         ]
+    return assignees
+
+
+def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
+    assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
     if status == "closed":
@@ -210,12 +215,11 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
 
 
 @celery.task()
-def send_issue_card(issue_id, assignees: list[str] = []):
+def send_issue_card(issue_id):
     """send new issue card message to user.
 
     Args:
         issue_id: Issue.id.
-        assignees: list of IMUser.openid
     """
     issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
     if issue:
@@ -242,6 +246,7 @@ def send_issue_card(issue_id, assignees: list[str] = []):
                     issue.message_id = message_id
                     db.session.commit()
 
+                    assignees = get_assignees_by_issue(issue, team)
                     users = (
                         "".join(
                             [f'<at user_id="{open_id}"></at>' for open_id in assignees]

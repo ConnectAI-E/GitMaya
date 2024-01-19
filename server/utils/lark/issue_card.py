@@ -42,8 +42,8 @@ class IssueCard(FeishuMessageCard):
         )
         elements = [
             FeishuMessageColumnSet(
-                *desc_block,
                 FeishuMessageColumn(
+                    *desc_block,
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
