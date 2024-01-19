@@ -169,6 +169,7 @@ GITHUB_CLIENT_ID=your_client_id
 GITHUB_CLIENT_SECRET=your_client_secret
 
 GITHUB_WEBHOOK_SECRET=secret
+DOMAIN=127.0.0.1
 ```
 
 > \[!NOTE]
@@ -272,7 +273,7 @@ $ eval $(pdm venv activate)
 
 Before starting, ensure you have the following configuration files in place:
 
-- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [example.env](https://github.com/ConnectAI-E/GitMaya/blob/main/example.env) for referring**
+- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [.env.example](https://github.com/ConnectAI-E/GitMaya/blob/main/deploy/.env.example) for referring**
 
 Configure database by replacing relevant variables
 
@@ -295,7 +296,6 @@ Configure GitHub App, for details refer to: [Deploy GitHub App From Scratch][Dep
 # GitHub Settings
 GITHUB_APP_NAME=test
 GITHUB_APP_ID=1024
-GITHUB_APP_PRIVATE_KEY_PATH=/server/pem.pem
 GITHUB_CLIENT_ID=test
 GITHUB_CLIENT_SECRET=test
 GITHUB_WEBHOOK_SECRET=secret
@@ -307,9 +307,7 @@ GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 Configure server address
 
 ```fish
-HOST=0.0.0.0
-PORT=8888
-DOMAIN=http://localhost:8888
+DOMAIN=127.0.0.1
 ```
 
 (Optional) Configure Flask
