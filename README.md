@@ -359,7 +359,7 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 ## 📕 Reference
 
-- [Deploy Feishu App Bot From Scratch][Deploy GitHub App From Scratch]
+- [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch]
 - [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch]
 - [Feishu App Official Doc][Feishu App Official Doc]
 - [GitHub App Official Doc][GitHub App Official Doc]
