@@ -26,7 +26,7 @@ class PullCard(FeishuMessageCard):
             else "**<font color='red'>待分配</font>**"
         )
         reviewers = (
-            "".join([f"<at id={open_id}></at>" for open_id in assignees])
+            "".join([f"<at id={open_id}></at>" for open_id in reviewers])
             if len(reviewers) > 0
             else "**<font color='red'>待分配</font>**"
         )
