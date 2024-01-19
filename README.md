@@ -71,7 +71,7 @@ Deploying GitMaya requires a total of 3 steps.
 <details>
 <summary>
 
-### 1. Install GitHub Application
+### Step 1. Install GitHub Application
 
 </summary>
 
@@ -82,7 +82,7 @@ You need to create a GitHub app at first, for details refer to [Deploy GitHub Ap
 <details>
 <summary>
 
-### 2. Deploy GitMaya
+### Step 2. Deploy GitMaya
 
 </summary>
 
@@ -93,7 +93,7 @@ You can choose to use [Self Hosting](#%F0%9F%9B%B3-self-hosting) or [Local Deplo
 <details>
 <summary>
 
-### 3. Deploy Feishu App Bot
+### Step 3. Deploy Feishu App Bot
 
 </summary>
 
@@ -146,22 +146,29 @@ $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.ex
 
 ### 2. Configure the Environment Variables
 
-Then, you need to configure the .env file.
+Then, you need to configure the .env file. You should replace the variables with your own GitHub App information, which created in [Step 1](#step-1-install-github-application).
 
 ```fish
 $ vim .env
 ```
 
-**Replacing your own pem into .env file**
+**Replacing `GITHUB_APP_NAME`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_WEBHOOK_SECRET` into .env file**
 
 ```fish
 SECRET_KEY="<REPLACE>"
 FLASK_PERMANENT_SESSION_LIFETIME=86400*30
 FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://root:gitmaya2023@mysql:3306/gitmaya?charset=utf8mb4&binary_prefix=true"
 
+GITHUB_APP_NAME=your-deploy-name
+GITHUB_APP_ID=114514
 GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 <replace you private key>
 -----END RSA PRIVATE KEY-----"
+
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+
+GITHUB_WEBHOOK_SECRET=secret
 ```
 
 > \[!NOTE]
