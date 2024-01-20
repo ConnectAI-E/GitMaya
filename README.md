@@ -27,6 +27,10 @@
     <a href="https://gitmaya.com">🖥 Try GitMaya Now </a>
 </p>
 
+
+https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-737df359d67d
+
+
 ## 🔥 Feature List
 
 ### 🧑🏻‍💻 For Developers, By Developers
