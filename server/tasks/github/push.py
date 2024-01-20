@@ -24,7 +24,7 @@ def on_push(data: dict | None) -> list:
         db.session.query(PullRequest)
         .filter(
             PullRequest.repo_id == repo.id,
-            PullRequest.head == (event.ref).split("/")[-1],
+            PullRequest.head == "/".join((event.ref).split("/")[2:]),
             PullRequest.state == "open",
         )
         .first()
