@@ -187,7 +187,7 @@ This project provides some additional configuration items set with environment v
 
 We will soon support one-click deployment for Zeabur.
 
-<div align="center">
+<div align="left">
 
 |                     Deploy with Zeabur                      |
 | :---------------------------------------------------------: |
