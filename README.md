@@ -27,9 +27,7 @@
     <a href="https://gitmaya.com">🖥 Try GitMaya Now </a>
 </p>
 
-
 https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-737df359d67d
-
 
 ## 🔥 Feature List
 
@@ -109,27 +107,7 @@ The steps for deploying the Feishu (Lark) bot application are already integrated
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
-<!-- ### `A` Deploying with Zeabur or Sealos
-
-If you want to deploy this service yourself on either Zeabur or Sealos, you can follow these steps:
-
-- Prepare GitHub App
-- todo
-<div align="center">
-
-|                     Deploy with Zeabur                      |                     Deploy with Sealos                      |
-| :---------------------------------------------------------: | :---------------------------------------------------------: |
-| [![][deploy-on-zeabur-button-image]][deploy-on-zeabur-link] | [![][deploy-on-sealos-button-image]][deploy-on-sealos-link] |
-
-</div>
-
-> \[!TIP]
->
-> We suggest you redeploy using the following steps, [📘 Maintaining Updates with GitMaya Self-Deployment](https://github.com/connectai-e/gitmaya/wiki/Upstream-Sync). -->
-<details>
-<summary>
-
-### Deploying with Docker-Compose
+### `A` Deploying with Docker-Compose
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -204,6 +182,19 @@ This project provides some additional configuration items set with environment v
 > The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
 
 </details>
+
+### `B` Deploying with Zeabur or Sealos (Coming soon!)
+
+We will soon support one-click deployment for Zeabur.
+
+<div align="center">
+
+|                     Deploy with Zeabur                      |
+| :---------------------------------------------------------: |
+| [![][deploy-on-zeabur-button-image]][deploy-on-zeabur-link] |
+
+</div>
+
 <div align="right">
 
 [![][back-to-top]](#readme-top)
