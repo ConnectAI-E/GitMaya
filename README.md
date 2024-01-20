@@ -470,7 +470,7 @@ This project is [MIT](./LICENSE) licensed.
 [deploy-on-sealos-button-image]: https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg
 [deploy-on-sealos-link]: https://cloud.sealos.io/?xxx
 [deploy-on-zeabur-button-image]: https://zeabur.com/button.svg
-[deploy-on-zeabur-link]: https://zeabur.com/templates/xxx
+[deploy-on-zeabur-link]: https://zeabur.com/
 [Deploy GitHub App From Scratch]: https://connect-ai.feishu.cn/wiki/OnVNwqZlhi5yM4keBWAcUF3ynFf?from=from_copylink
 [Deploy GitHub App From Scratch]: https://connect-ai.feishu.cn/wiki/Qwq0wmamFiFTaXk1hfocwfpNnqf?from=from_copylink
 [Deploy Feishu App Bot From Scratch]: https://connect-ai.feishu.cn/wiki/NQXywcS3Siqw60kYX8IcknDfn1e?from=from_copylink
