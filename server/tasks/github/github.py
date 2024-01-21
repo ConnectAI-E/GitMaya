@@ -64,8 +64,8 @@ def pull_github_members(
 
     members = github_app.get_org_members(org_name)
 
-    members = create_github_member(members, application_id, team_id)
-    return len(members)
+    create_github_member(members, application_id, team_id)
+    return True
 
 
 @celery.task()
