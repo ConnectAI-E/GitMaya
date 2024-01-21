@@ -16,4 +16,4 @@ If your suggestion is aimed at solving a specific issue, kindly provide as much 
 
 ## 🌟 Advantages of Your Suggestions
 
-Briefly describe the strengths and features of your suggestions, and explain why we should consider adopting them.什么我们应该考虑采纳您的建议。
+Briefly describe the strengths and features of your suggestions, and explain why we should consider adopting them.
