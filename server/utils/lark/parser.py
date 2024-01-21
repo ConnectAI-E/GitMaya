@@ -56,6 +56,12 @@ class GitMayaLarkParser(object):
         parser_view = self.subparsers.add_parser("/view")
         parser_view.set_defaults(func=self.on_view)
 
+        parser_log = self.subparsers.add_parser("/log")
+        parser_log.set_defaults(func=self.on_log)
+
+        parser_diff = self.subparsers.add_parser("/diff")
+        parser_diff.set_defaults(func=self.on_diff)
+
         parser_setting = self.subparsers.add_parser("/setting")
         parser_setting.set_defaults(func=self.on_setting)
 
@@ -72,6 +78,11 @@ class GitMayaLarkParser(object):
         parser_assign = self.subparsers.add_parser("/assign")
         parser_assign.add_argument("users", nargs="*")
         parser_assign.set_defaults(func=self.on_assign)
+
+        # /review [@user_1] [@user_2]
+        parser_review = self.subparsers.add_parser("/review")
+        parser_review.add_argument("users", nargs="*")
+        parser_review.set_defaults(func=self.on_review)
 
         # /rename [title]  tit需要支持空格
         parser_rename = self.subparsers.add_parser("/rename")
@@ -93,6 +104,9 @@ class GitMayaLarkParser(object):
         parser_label = self.subparsers.add_parser("/label")
         parser_label.add_argument("labels", nargs="*")
         parser_label.set_defaults(func=self.on_label)
+
+        parser_pin = self.subparsers.add_parser("/pin")
+        parser_pin.set_defaults(func=self.on_pin)
 
         parser_archive = self.subparsers.add_parser("/archive")
         parser_archive.set_defaults(func=self.on_archive)
@@ -122,24 +136,12 @@ class GitMayaLarkParser(object):
         chat_type, topic = "", ""
         try:
             raw_message = args[3]
-            try:
-                chat_type = raw_message["event"]["message"]["chat_type"]
-            except Exception as e:
-                logging.error(e)
-                chat_type = ""
+            chat_type = raw_message["event"]["message"].get("chat_type", "")
             if "p2p" != chat_type:
                 # 判断 pr/issue/repo?
-                try:
-                    root_id = raw_message["event"]["message"].get("root_id")
-                except Exception as e:
-                    logging.error(e)
-                    message_id = args[2]["open_message_id"]
-                    bot, _ = tasks.get_bot_by_application_id(args[0])
-                    messages = bot.get(
-                        f"{bot.host}/open-apis/im/v1/messages/{message_id}"
-                    ).json()
-                    message = messages.get("data", {}).get("items", [])[0]
-                    root_id = message.get("root_id", message["message_id"])
+                root_id = raw_message["event"]["message"].get(
+                    "root_id", raw_message["event"]["message"]["message_id"]
+                )
 
                 if root_id:
                     repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
@@ -152,6 +154,10 @@ class GitMayaLarkParser(object):
         except Exception as e:
             logging.error(e)
         return chat_type, topic
+
+    def on_welcome(self, *args, **kwargs):
+        logging.info("on_welcome %r", args)
+        tasks.send_welcome_message.delay(*args, **kwargs)
 
     def on_comment(self, text, *args, **kwargs):
         logging.info("on_comment %r", text)
@@ -225,6 +231,33 @@ class GitMayaLarkParser(object):
             logging.error(e)
         return "issue", param, unkown
 
+    def on_review(self, param, unkown, *args, **kwargs):
+        logging.info("on_review %r %r", vars(param), unkown)
+        # /review [@user_1] [@user_2]
+        try:
+            raw_message = args[3]
+            chat_type = raw_message.get("event", {}).get("message", {}).get("chat_type")
+            mentions = {
+                m["key"].replace("@_user", "at_user"): m
+                for m in raw_message.get("event", {})
+                .get("message", {})
+                .get("mentions", [])
+            }
+            # 只有群聊才是指定的repo
+            if "p2p" != chat_type:
+                users = []
+                for user in param.users:
+                    if "at_user" in user and user in mentions:
+                        users.append(mentions[user]["id"]["open_id"])
+                    elif "ou_" == user[:3]:
+                        users.append(user)
+                chat_type, topic = self._get_topic_by_args(*args)
+                if TopicType.PULL_REQUEST == topic:
+                    tasks.change_pull_request_reviewer.delay(users, *args, **kwargs)
+        except Exception as e:
+            logging.error(e)
+        return "review", param, unkown
+
     def on_assign(self, param, unkown, *args, **kwargs):
         logging.info("on_assign %r %r", vars(param), unkown)
         # /assign [@user_1] [@user_2]
@@ -256,42 +289,47 @@ class GitMayaLarkParser(object):
 
     def on_new(self, param, unkown, *args, **kwargs):
         logging.info("on_new %r %r", vars(param), unkown)
+        chat_type, _ = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_new_message.delay(*args, **kwargs)
         return "new", param, unkown
 
     def on_view(self, param, unkown, *args, **kwargs):
         logging.info("on_view %r %r", vars(param), unkown)
-        try:
-            raw_message = args[3]
-            chat_type = raw_message["event"]["message"]["chat_type"]
-            user_id = raw_message["event"]["sender"]["sender_id"]["open_id"]
-            chat_id = raw_message["event"]["message"]["chat_id"]
-
-            # chat/repo 发送repo主页
-            if "p2p" == chat_type:
-                tasks.open_user_url.delay(user_id)
-
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_view_message.delay(*args, **kwargs)
+        else:
+            if TopicType.REPO == topic:
+                tasks.send_repo_view_message.delay(*args, **kwargs)
+            elif TopicType.ISSUE == topic:
+                tasks.send_issue_view_message.delay(*args, **kwargs)
+            elif TopicType.PULL_REQUEST == topic:
+                tasks.send_pull_request_view_message.delay(*args, **kwargs)
             else:
-                # 判断 pr/issue/repo
-                root_id = raw_message["event"]["message"].get("root_id")
-                if root_id:
-                    repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
-                    if repo:
-                        tasks.open_repo_url.delay(chat_id)
-                    elif issue:
-                        tasks.open_issue_url.delay(root_id)
-                    elif pr:
-                        tasks.open_pr_url.delay(root_id)
-                    else:
-                        tasks.open_repo_url.delay(chat_id)
-                else:
-                    tasks.open_repo_url.delay(chat_id)
+                tasks.send_chat_view_message.delay(*args, **kwargs)
 
-        except Exception as e:
-            logging.error(e)
         return "view", param, unkown
+
+    def on_log(self, param, unkown, *args, **kwargs):
+        logging.info("on_log %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.PULL_REQUEST == topic:
+            tasks.send_pull_request_log_message.delay(*args, **kwargs)
+        return "log", param, unkown
+
+    def on_diff(self, param, unkown, *args, **kwargs):
+        logging.info("on_log %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.PULL_REQUEST == topic:
+            tasks.send_pull_request_diff_message.delay(*args, **kwargs)
+        return "log", param, unkown
 
     def on_setting(self, param, unkown, *args, **kwargs):
         logging.info("on_setting %r %r", vars(param), unkown)
+        chat_type, _ = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            tasks.send_manage_setting_message.delay(*args, **kwargs)
         return "setting", param, unkown
 
     def on_visit(self, param, unkown, *args, **kwargs):
@@ -349,7 +387,7 @@ class GitMayaLarkParser(object):
         logging.info("on_edit %r %r", vars(param), unkown)
         desc = " ".join(param.desc)
         # 移除第一个换行字符
-        if "\n" == desc[0]:
+        if len(desc) > 0 and "\n" == desc[0]:
             desc = desc[1:]
         chat_type, topic = self._get_topic_by_args(*args)
         if TopicType.REPO == topic:
@@ -400,6 +438,13 @@ class GitMayaLarkParser(object):
             tasks.change_repo_archive.delay(True, *args, **kwargs)
         return "archive", param, unkown
 
+    def on_pin(self, param, unkown, *args, **kwargs):
+        logging.info("on_pin %r %r", vars(param), unkown)
+        _, topic = self._get_topic_by_args(*args)
+        if TopicType.ISSUE == topic:
+            tasks.pin_issue.delay(*args, **kwargs)
+        return "archive", param, unkown
+
     def on_unarchive(self, param, unkown, *args, **kwargs):
         logging.info("on_unarchive %r %r", vars(param), unkown)
         _, topic = self._get_topic_by_args(*args)
@@ -409,14 +454,18 @@ class GitMayaLarkParser(object):
 
     def on_insight(self, param, unkown, *args, **kwargs):
         logging.info("on_insight %r %r", vars(param), unkown)
-        try:
-            raw_message = args[3]
-            chat_id = raw_message["event"]["message"]["chat_id"]
-
-            tasks.open_repo_insight.delay(chat_id)
-
-        except Exception as e:
-            logging.error(e)
+        chat_type, topic = self._get_topic_by_args(*args)
+        if "p2p" == chat_type:
+            pass
+        else:
+            if TopicType.REPO == topic:
+                tasks.send_repo_insight_message.delay(*args, **kwargs)
+            elif TopicType.ISSUE == topic:
+                pass
+            elif TopicType.PULL_REQUEST == topic:
+                pass
+            else:
+                tasks.send_chat_insight_message.delay(*args, **kwargs)
         return "insight", param, unkown
 
     def on_merge(self, param, unkown, *args, **kwargs):
@@ -448,8 +497,8 @@ class GitMayaLarkParser(object):
         logging.info("on_at_user_1 %r %r", vars(param), unkown)
 
         raw_message = args[3]
-        user_id = raw_message["event"]["message"]["mention"][0]["id"]["user_id"]
-        user_key = raw_message["event"]["message"]["mention"][0]["key"]
+        user_id = raw_message["event"]["message"]["mentions"][0]["id"]["user_id"]
+        user_key = raw_message["event"]["message"]["mentions"][0]["key"]
         logging.info(f"user_id: {user_id}")
         logging.info(f"user_key: {user_key}")
         # command = param.command

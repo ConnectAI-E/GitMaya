@@ -1,10 +1,10 @@
 version: '2'
 services:
   worker:
-    image: gitmaya
+    image: connectai/gitmaya
     volumes:
       - .env:/server/.env
-    command: celery -A tasks.celery worker -l DEBUG -c 2
+    command: celery -A tasks.celery worker -l INFO -c 2
 
   beat:
     extends: worker
@@ -23,8 +23,8 @@ services:
     ports:
       - "8888"
     environment:
-      - VIRTUAL_HOST=api.gitmaya.com
-    command: gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-alive 60 --log-level=debug server:app
+      - VIRTUAL_HOST=gitmaya.com
+    command: gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-alive 60 --log-level=info server:app
 
   redis:
     restart: always
@@ -50,9 +50,9 @@ services:
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
 
   proxy:
-    image: jwilder/nginx-proxy:alpine
+    image: connectai/gitmaya-proxy
     ports:
       - "8000:80"
+      - "8001:81"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./dist:/var/www/html:ro

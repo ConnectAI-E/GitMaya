@@ -53,11 +53,17 @@ class GitHubAppRepo(BaseGitHubApp):
             list: The repo collaborators.
         https://docs.github.com/zh/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
         """
-
-        return self.base_github_rest_api(
-            f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
-            auth_type="install_token",
-        )
+        page = 1
+        while True:
+            collaborators = self.base_github_rest_api(
+                f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
+                auth_type="install_token",
+            )
+            if len(collaborators) == 0:
+                break
+            for collaborator in collaborators:
+                yield collaborator
+            page = page + 1
 
     def update_repo(
         self,
@@ -253,6 +259,34 @@ class GitHubAppRepo(BaseGitHubApp):
         return self.base_github_rest_api(
             f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
             "PATCH",
+            "user_token",
+            json=json,
+        )
+
+    def requested_reviewers(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        pull_number: int,
+        reviewers: list[str] = None,
+    ):
+        """Merge Pull Request
+        https://docs.github.com/en/rest/pulls/review-requests?apiVersion=2022-11-28#request-reviewers-for-a-pull-request
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            pull_number (int): The pull number.
+            reviewers list[str]: The reviewers.
+
+        Returns:
+            dict: The pull request info.
+        """
+        json = dict(reviewers=reviewers)
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/pulls/{pull_number}/requested_reviewers",
+            "POST",
             "user_token",
             json=json,
         )

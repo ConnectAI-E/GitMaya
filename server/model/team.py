@@ -29,6 +29,32 @@ class TeamMemberWithUser(TeamMember):
     )
 
 
+class RepoWithUsers(Repo):
+    users = relationship(
+        CodeUser,
+        primaryjoin=and_(
+            RepoUser.repo_id == Repo.id,
+            RepoUser.status == 0,
+        ),
+        secondary=RepoUser.__table__,
+        secondaryjoin=and_(
+            CodeUser.id == RepoUser.bind_user_id,
+            CodeUser.status == 0,
+        ),
+        viewonly=True,
+    )
+
+    group = relationship(
+        ChatGroup,
+        primaryjoin=and_(
+            ChatGroup.repo_id == Repo.id,
+            ChatGroup.status == 0,
+        ),
+        viewonly=True,
+        uselist=False,
+    )
+
+
 def get_team_list_by_user_id(user_id, page=1, size=100):
     query = (
         db.session.query(Team)
@@ -160,6 +186,46 @@ def _format_member(item):
     }
 
 
+def get_team_repo(team_id, user_id, page=1, size=20):
+    query = (
+        db.session.query(RepoWithUsers)
+        .options(
+            joinedload(RepoWithUsers.users),
+            joinedload(RepoWithUsers.group),
+        )
+        .join(
+            CodeApplication,
+            CodeApplication.id == RepoWithUsers.application_id,
+        )
+        .filter(
+            CodeApplication.team_id == team_id,
+            CodeApplication.status == 0,
+            RepoWithUsers.status == 0,
+        )
+    )
+    total = query.count()
+    if total == 0:
+        return [], 0
+    return [
+        _format_repo_user(item) for item in query_one_page(query, page, size)
+    ], total
+
+
+def _format_repo_user(item):
+    return {
+        "id": item.id,
+        "name": item.name,
+        "users": [{"id": i.id, "name": i.name, "avatar": i.avatar} for i in item.users],
+        "chat": {
+            "id": item.group.id,
+            "chat_id": item.group.chat_id,
+            "name": item.group.name,
+        }
+        if item.group
+        else None,
+    }
+
+
 def get_im_user_by_team_id(team_id, page=1, size=20):
     query = (
         db.session.query(BindUser)
@@ -226,7 +292,7 @@ def add_team_member(team_id, code_user_id):
     db.session.commit()
 
 
-def create_team(app_info: dict) -> Team:
+def create_team(app_info: dict, contact_id=None) -> Team:
     """Create a team.
 
     Args:
@@ -241,16 +307,40 @@ def create_team(app_info: dict) -> Team:
     if not current_user_id:
         abort(403, "can not found user by id")
 
+    # 根据 Org ID 查找是否已经存在
+    # 若存在，则返回当前的 team
+    current_team = (
+        db.session.query(Team)
+        .filter(
+            Team.platform_id == app_info["account"]["id"],
+            Team.status == 0,
+        )
+        .first()
+    )
+    if current_team:
+        if contact_id:
+            db.session.query(TeamContact).filter(
+                TeamContact.id == contact_id,
+            ).update(dict(team_id=current_team.id))
+        current_team.extra = app_info["account"]
+        db.session.commit()
+        return current_team
+
     new_team = Team(
         id=ObjID.new_id(),
         user_id=current_user_id,
         name=app_info["account"]["login"],
         description=None,
-        # extra=app_info,
+        platform_id=str(app_info["account"]["id"]),
+        extra=app_info["account"],
     )
 
     db.session.add(new_team)
     db.session.flush()
+    if contact_id:
+        db.session.query(TeamContact).filter(
+            TeamContact.id == contact_id,
+        ).update(dict(team_id=new_team.id))
 
     # 创建 TeamMember
     current_bind_user = BindUser.query.filter(
@@ -258,6 +348,7 @@ def create_team(app_info: dict) -> Team:
         BindUser.status == 0,
     ).first()
     if not current_bind_user:
+        db.rollback()
         abort(403, "can not found bind user by id")
 
     new_team_member = TeamMember(
@@ -284,6 +375,21 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
         CodeApplication: CodeApplication object.
     """
 
+    # 查询当前 team 是否已经存在 code application
+    current_code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.team_id == team_id,
+            CodeApplication.status.in_([0, 1]),
+        )
+        .first()
+    )
+    if current_code_application:
+        # 更新 installation_id
+        current_code_application.installation_id = installation_id
+        db.session.commit()
+        return current_code_application
+
     new_code_application = CodeApplication(
         id=ObjID.new_id(),
         team_id=team_id,
@@ -300,6 +406,17 @@ def create_code_application(team_id: str, installation_id: str) -> CodeApplicati
 def save_im_application(
     team_id, platform, app_id, app_secret, encrypt_key, verification_token
 ):
+    if (
+        db.session.query(IMApplication.id)
+        .filter(
+            IMApplication.team_id == team_id,
+            IMApplication.status.in_([0, 1]),
+        )
+        .limit(1)
+        .scalar()
+    ):
+        logging.warning("already bind im_application for team")
+        # return abort(400, "already bind im_application for team")
     application = (
         db.session.query(IMApplication).filter(IMApplication.app_id == app_id).first()
     )
@@ -329,6 +446,128 @@ def save_im_application(
             )
         )
         db.session.commit()
+
+
+def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None):
+    team = get_team_by_id(team_id, user_id)
+    repo = (
+        db.session.query(Repo)
+        .filter(
+            Repo.id == repo_id,
+            Repo.status == 0,
+        )
+        .first()
+    )
+    if not repo:
+        return abort(404, "can not found repo by id")
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.repo_id == repo.id,
+            ChatGroup.status == 0,
+        )
+        .first()
+    )
+    if chat_group:
+        return abort(400, "chat_group exists")
+
+    app_id = (
+        db.session.query(IMApplication.app_id)
+        .filter(
+            IMApplication.team_id == team.id,
+            IMApplication.status.in_([0, 1]),
+        )
+        .limit(1)
+        .scalar()
+    )
+    if not app_id:
+        return abort(404, "im_application not exists")
+
+    import tasks
+
+    bot, application = tasks.get_bot_by_application_id(app_id)
+    chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+    owner_id = (
+        db.session.query(IMUser.openid)
+        .filter(
+            IMUser.application_id == application.id,
+            IMUser.user_id == user_id,
+        )
+        .limit(1)
+        .scalar()
+        or None
+    )
+    user_id_list = list(
+        set(
+            [
+                openid
+                for openid, in db.session.query(IMUser.openid)
+                .join(
+                    TeamMember,
+                    TeamMember.im_user_id == IMUser.id,
+                )
+                .join(CodeUser, TeamMember.code_user_id == CodeUser.id)
+                .join(
+                    RepoUser,
+                    RepoUser.bind_user_id == CodeUser.id,
+                )
+                .filter(
+                    TeamMember.team_id == team.id,
+                    RepoUser.repo_id == repo.id,
+                )
+            ]
+        )
+    )
+    if len(user_id_list) == 0:
+        return abort(404, "member list is empty")
+
+    name = chat_name or f"{repo.name} 项目群"
+    description = f"{repo.description or ''}"
+    data = {
+        "name": name,
+        "description": description,
+        "edit_permission": "all_members",  # TODO all_members/only_owner
+        "set_bot_manager": True,  # 设置创建群的机器人为管理员
+        "owner_id": owner_id if owner_id else user_id_list[0],
+        "user_id_list": user_id_list,
+    }
+    result = bot.post(chat_group_url, json=data).json()
+    chat_id = result.get("data", {}).get("chat_id")
+    if not chat_id:
+        logging.error("create chat_group error %r %r", data, result)
+        return abort(400, "create chat group error")
+    chat_group_id = ObjID.new_id()
+    chat_group = ChatGroup(
+        id=chat_group_id,
+        repo_id=repo.id,
+        im_application_id=application.id,
+        chat_id=chat_id,
+        name=name,
+        description=description,
+        extra=result,
+    )
+    db.session.add(chat_group)
+    db.session.commit()
+    # send card message, and pin repo card
+    tasks.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)
+    return chat_id
+
+
+def save_team_contact(user_id, first_name, last_name, email, role, newsletter):
+    contact_id = ObjID.new_id()
+    db.session.add(
+        TeamContact(
+            id=contact_id,
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            role=role,
+            newsletter=1 if newsletter else 0,
+        )
+    )
+    db.session.commit()
+    return contact_id
 
 
 def get_code_users_by_openid(users):

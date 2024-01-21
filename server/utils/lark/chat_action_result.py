@@ -9,10 +9,10 @@ class PrTipSuccess(FeishuMessageCard):
     ):
         elements = [
             FeishuMessageDiv(
-                content=f'1. 已修改 Issue 标题为 "sss"\n2. 已分配任务给 @xx\n3. 已关闭 issue\n\n \n[查看更多WorkFlow运行信息](action_detail_url)',
+                content=f'1. 已修改 Issue 标题为 "sss"\n2. 已分配任务给 @xx\n3. 已关闭 issue\n\n \n[查看更多 WorkFlow 运行信息](action_detail_url)',
                 tag="lark_md",
             ),
-            GitMayaCardNote("GitMaya Chat Action"),
+            GitMayaCardNote("GitMaya Pr Action"),
         ]
         header = FeishuMessageCardHeader("🚀 Action 运行结果")
         config = FeishuMessageCardConfig()

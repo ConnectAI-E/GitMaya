@@ -1,10 +1,23 @@
 from app import app
-from flask import Blueprint, jsonify, session
+from flask import Blueprint, jsonify, request, session
 from model.team import get_team_list_by_user_id, is_team_admin
 from model.user import get_user_by_id
 from utils.auth import authenticated
 
 bp = Blueprint("user", __name__, url_prefix="/api")
+
+
+@bp.route("/logout", methods=["GET"])
+@authenticated
+def logout():
+    # clear session
+    session.clear()
+    return jsonify(
+        {
+            "code": 0,
+            "msg": "success",
+        }
+    )
 
 
 @bp.route("/account", methods=["GET"])
@@ -36,7 +49,7 @@ def set_account():
     current_team = request.json.get("current_team")
 
     if current_team:
-        session["team_id"] = user_id
+        session["team_id"] = current_team
         # 默认是会话级别的session，关闭浏览器直接就失效了
         session.permanent = True
 

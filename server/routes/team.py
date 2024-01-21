@@ -1,13 +1,19 @@
+import json
+import os
+
 from app import app
-from flask import Blueprint, abort, jsonify, redirect, request, session
+from flask import Blueprint, abort, jsonify, make_response, redirect, request, session
 from model.team import (
+    create_repo_chat_group_by_repo_id,
     get_application_info_by_team_id,
     get_im_user_by_team_id,
     get_team_by_id,
     get_team_list_by_user_id,
     get_team_member,
+    get_team_repo,
     is_team_admin,
     save_im_application,
+    save_team_contact,
     set_team_member,
 )
 from tasks import get_contact_by_lark_application, get_status_by_id, pull_github_members
@@ -143,6 +149,92 @@ def install_im_application_to_team(team_id, platform):
     return jsonify({"code": 0, "msg": "success"})
 
 
+@bp.route("/<team_id>/<platform>/app", methods=["GET"])
+@authenticated
+def install_im_application_to_team_by_get_method(team_id, platform):
+    # install lark app
+    if platform not in ["lark"]:  # TODO lark/slack...
+        return abort(400, "params error")
+
+    redirect_uri = request.base_url
+    app_id = request.args.get("app_id", "")
+    name = request.args.get("name", "")
+    if app_id:
+        # 2. deploy server重定向过来：带app_id以及app_secret，保存，并带上redirect_uri重定向到deploy server
+        app_secret = request.args.get("app_secret")
+        if app_secret:
+            encrypt_key = request.args.get("encrypt_key", "")
+            verification_token = request.args.get("verification_token", "")
+            if not app_id or not app_secret:
+                return abort(400, "params error")
+
+            result = save_im_application(
+                team_id, platform, app_id, app_secret, encrypt_key, verification_token
+            )
+            app.logger.info("result %r", result)
+            events = [
+                "20",
+                "im.message.message_read_v1",
+                "im.message.reaction.created_v1",
+                "im.message.reaction.deleted_v1",
+                "im.message.recalled_v1",
+                "im.message.receive_v1",
+            ]
+            scope_ids = [
+                "8002",
+                "100032",
+                "6081",
+                "14",
+                "1",
+                "21001",
+                "20001",
+                "20011",
+                "3001",
+                "20012",
+                "20010",
+                "3000",
+                "20008",
+                "1000",
+                "20009",
+            ]
+            hook_url = f"{os.environ.get('DOMAIN')}/api/feishu/hook/{app_id}"
+            return redirect(
+                f"{os.environ.get('LARK_DEPLOY_SERVER')}/publish?redirect_uri={redirect_uri}&app_id={app_id}&events={','.join(events)}&encrypt_key={encrypt_key}&verification_token={verification_token}&scopes={','.join(scope_ids)}&hook_url={hook_url}"
+            )
+        else:
+            # 3. deploy server只带app_id重定向过来：说明已经安装成功，这个时候通知前端成功
+            if not name:
+                return make_response(
+                    """
+<script>
+try {
+  (window.opener || window.parent).postMessage("""
+                    + json.dumps(dict(event="installation", app_id=app_id, data=app_id))
+                    + """, '*')
+  setTimeout(() => window.close(), 3000)
+} catch(e) {
+  console.error(e)
+  location.replace('/')
+}
+</script>
+                                     """,
+                    {"Content-Type": "text/html"},
+                )
+
+    # 1. 前端重定向过来：重定向到deploy server
+    desc = request.args.get("desc", "")
+    avatar = request.args.get(
+        "avatar",
+        "https://s1-imfile.feishucdn.com/static-resource/v1/v3_0074_5ae2ba69-5729-445e-afe7-4a19d1fb0a2g",
+    )
+    if not name and not desc:
+        return abort(400, "params error")
+    # 如果传app_id就是更新app
+    return redirect(
+        f"{os.environ.get('LARK_DEPLOY_SERVER')}?redirect_uri={redirect_uri}&app_id={app_id}&name={name}&desc={desc}&avatar={avatar}"
+    )
+
+
 @bp.route("/<team_id>/<platform>/user", methods=["POST"])
 @authenticated
 def refresh_im_user_by_team_id_and_platform(team_id, platform):
@@ -172,6 +264,43 @@ def get_task_result_by_id(team_id, task_id):
             },
         }
     )
+
+
+@bp.route("/<team_id>/repo", methods=["GET"])
+@authenticated
+def get_team_repo_by_team_id(team_id):
+    page = request.args.get("page", default=1, type=int)
+    size = request.args.get("size", default=20, type=int)
+
+    current_user = session["user_id"]
+    data, total = get_team_repo(team_id, current_user, page, size)
+    return jsonify({"code": 0, "msg": "success", "data": data, "total": total})
+
+
+@bp.route("/<team_id>/repo/<repo_id>/chat", methods=["POST"])
+@authenticated
+def create_repo_chat_group(team_id, repo_id):
+    name = request.json.get("name")
+    current_user = session["user_id"]
+    create_repo_chat_group_by_repo_id(current_user, team_id, repo_id, name)
+    return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/contact", methods=["POST"])
+@authenticated
+def _save_team_contact():
+    current_user = session["user_id"]
+    first_name = request.json.get("first_name")
+    last_name = request.json.get("last_name")
+    email = request.json.get("email")
+    role = request.json.get("role")
+    newsletter = request.json.get("newsletter")
+    contact_id = save_team_contact(
+        current_user, first_name, last_name, email, role, newsletter
+    )
+    session["contact_id"] = contact_id
+    session.permanent = True
+    return jsonify({"code": 0, "msg": "success"})
 
 
 app.register_blueprint(bp)

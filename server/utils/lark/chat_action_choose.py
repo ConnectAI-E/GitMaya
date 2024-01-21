@@ -14,7 +14,7 @@ class ChatActionChoose(FeishuMessageCard):
                 tag="lark_md",
                 extra=FeishuMessageSelect(
                     *[FeishuMessageOption(value=action) for action in actions],
-                    placeholder="选择想要执行的Action",
+                    placeholder="选择想要执行的 Action",
                     value={
                         "key": "value",  # TODO
                     },

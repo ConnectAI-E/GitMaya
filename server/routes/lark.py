@@ -9,6 +9,7 @@ from flask import session
 from model.lark import get_bot_by_app_id
 from tasks.lark import get_contact_by_lark_application
 from utils.lark.parser import GitMayaLarkParser
+from utils.lark.post_message import post_content_to_markdown
 
 
 def get_bot(app_id):
@@ -39,7 +40,7 @@ parser = GitMayaLarkParser()
 
 
 @hook.on_bot_event(event_type="card:action")
-def on_card_action(bot, token, data, *args, **kwargs):
+def on_card_action(bot, token, data, message, *args, **kwargs):
     # TODO 将action中的按钮，或者选择的东西，重新组织成 command 继续走parser的逻辑
     if "action" in data and "command" in data["action"].get("value", {}):
         command = data["action"]["value"]["command"]
@@ -49,26 +50,49 @@ def on_card_action(bot, token, data, *args, **kwargs):
             command = command + data["action"]["option"]
         try:
             parser.parse_args(
-                command, bot.app_id, data["open_message_id"], data, *args, **kwargs
+                command,
+                bot.app_id,
+                data["open_message_id"],
+                data,
+                message,
+                **kwargs,
             )
         except Exception as e:
             app.logger.exception(e)
     else:
-        app.logger.error("unkown card_action %r", (bot, token, data, *args))
+        app.logger.error("unkown card_action %r", (bot, token, data, message, *args))
+
+
+@hook.on_bot_message(message_type="post")
+def on_post_message(bot, message_id, content, message, *args, **kwargs):
+    text, _ = post_content_to_markdown(content, True)
+    content["text"] = text
+    try:
+        parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
+    except ArgumentError:
+        # 命令解析错误，直接调用里面的回复消息逻辑
+        parser.on_comment(text, bot.app_id, message_id, content, message, **kwargs)
+    except Exception as e:
+        app.logger.exception(e)
 
 
 @hook.on_bot_message(message_type="text")
-def on_text_message(bot, message_id, content, *args, **kwargs):
+def on_text_message(bot, message_id, content, message, *args, **kwargs):
     text = content["text"]
     # print("reply_text", message_id, text)
     # bot.reply_text(message_id, "reply: " + text)
     try:
-        parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
+        parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
     except ArgumentError:
         # 命令解析错误，直接调用里面的回复消息逻辑
-        parser.on_comment(text, bot.app_id, message_id, content, *args, **kwargs)
+        parser.on_comment(text, bot.app_id, message_id, content, message, **kwargs)
     except Exception as e:
         app.logger.exception(e)
+
+
+@hook.on_bot_event(event_type="p2p_chat_create")
+def on_bot_event(bot, event_id, event, message, *args, **kwargs):
+    parser.on_welcome(bot.app_id, event_id, event, message, **kwargs)
 
 
 @oauth.on_bot_event(event_type="oauth:user_info")

@@ -24,11 +24,9 @@ def on_issue_comment(data: dict) -> list:
         app.logger.error(f"Failed to parse issue event: {e}")
         raise e
 
-    if (
-        event.comment.performed_via_github_app
-        and event.comment.performed_via_github_app.name
-        == os.environ.get("GITHUB_APP_NAME")
-    ):
+    if event.comment.performed_via_github_app and (
+        event.comment.performed_via_github_app.name
+    ).replace(" ", "-") == (os.environ.get("GITHUB_APP_NAME")).replace(" ", "-"):
         return []
 
     action = event.action
@@ -136,6 +134,16 @@ def on_issue_opened(event_dict: dict | None) -> list:
     issue_info = event.issue
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    # 检查是否已经创建过 issue
+    issue = (
+        db.session.query(Issue)
+        .filter(Issue.repo_id == repo.id, Issue.issue_number == issue_info.number)
+        .first()
+    )
+    if issue:
+        app.logger.info(f"Issue already exists: {issue.id}")
+        return []
+
     # 创建 issue
     new_issue = Issue(
         id=ObjID.new_id(),
@@ -148,7 +156,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    task = send_issue_card.delay(new_issue.id)
+    task = send_issue_card.delay(issue_id=new_issue.id)
 
     return [task.id]
 

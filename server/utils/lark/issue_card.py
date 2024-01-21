@@ -17,8 +17,12 @@ class IssueCard(FeishuMessageCard):
         issue_url = f"{repo_url}/issues/{id}"
         template = "blue" if status == "已关闭" else "red"
         # 这里使用飞书的用户
-        # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
-        users = "".join([f"<at id={open_id}></at>" for open_id in assignees])
+        users = (
+            "".join([f"<at id={open_id}></at>" for open_id in assignees])
+            if len(assignees) > 0
+            else "**<font color='red'>待分配</font>**"
+        )
+        labels = "、".join(tags) if len(tags) > 0 else "**<font color='red'>待补充</font>**"
         action_button = (
             FeishuMessageButton("重新打开", type="primary", value={"command": f"/reopen"})
             if status == "已关闭"
@@ -26,10 +30,20 @@ class IssueCard(FeishuMessageCard):
                 "关闭 Issue", type="danger", value={"command": f"/close"}
             )
         )
+        desc_block = (
+            [
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                ),
+                FeishuMessageMarkdown(description),
+            ]
+            if description
+            else []
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
-                    FeishuMessageMarkdown(description),
+                    *desc_block,
                     FeishuMessageColumnSet(
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
@@ -51,7 +65,7 @@ class IssueCard(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"🏷 <font color='grey'>**标签** </font>\n{'、'.join(tags)}",
+                                f"🏷 <font color='grey'>**标签** </font>\n{labels}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -72,7 +86,7 @@ class IssueCard(FeishuMessageCard):
                 action_button,
                 FeishuMessageSelectPerson(
                     *[FeishuMessageOption(value=open_id) for open_id in persons],
-                    placeholder="",
+                    placeholder="修改负责人",
                     value={
                         # /match_repo_id + select repo_id, with chat_id
                         # 这里直接使用前面选中的项目名字拼接到github_url后面，就与用户输入match指令一致了

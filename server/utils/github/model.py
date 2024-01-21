@@ -50,6 +50,8 @@ class User(BaseModel):
     id: int
     login: str
     type: str
+    avatar_url: Optional[str] = None
+    email: Optional[str] = None
 
 
 class PRInIssue(BaseModel):
@@ -114,6 +116,30 @@ class PullRequest(BaseModel):
     requested_reviewers: Optional[list[User]] = []
 
 
+class MemberShip(BaseModel):
+    role: str
+    state: str
+    user: User
+
+
+class Committer(BaseModel):
+    date: Optional[str] = None
+    name: str
+    email: str
+    username: str
+
+
+Author = Committer
+
+
+class Commit(BaseModel):
+    id: str
+    message: str
+    author: Author
+    committer: Committer
+    url: str
+
+
 class RepoEvent(BaseEvent):
     action: str
     repository: Repository
@@ -135,4 +161,18 @@ class IssueCommentEvent(BaseEvent):
 class PullRequestEvent(BaseEvent):
     action: str
     pull_request: PullRequest
+    repository: Repository
+
+
+class OrganizationEvent(BaseEvent):
+    action: str
+    organization: Organization
+    membership: Optional[MemberShip] = None
+
+
+class PushEvent(BaseEvent):
+    after: str
+    before: str
+    ref: str
+    commits: list[Commit]
     repository: Repository

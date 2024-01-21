@@ -60,7 +60,7 @@ class JSONStr(String):
     def result_processor(self, dialect, coltype):
         def processor(value):
             try:
-                return json.loads(value)
+                return json.loads(value) if value else value
             except Exception as e:
                 logging.exception(e)
                 return value
@@ -152,11 +152,29 @@ class Team(Base):
         db.String(128), nullable=True, comment="名称"
     )  # 同时也是 GitHub Org 的 name
     description = db.Column(db.String(1024), nullable=True, comment="描述")
+    platform_id = db.Column(
+        db.String(128), nullable=True, comment="平台ID, 如GitHub Org ID"
+    )
     extra = db.Column(
         JSONStr(2048),
         nullable=True,
         server_default=text("'{}'"),
         comment="其他字段，可能有一些前期没想好的配置项放这里",
+    )
+
+
+class TeamContact(Base):
+    __tablename__ = "team_contact"
+    team_id = db.Column(
+        ObjID(12), ForeignKey("team.id"), nullable=True, comment="属于哪一个组"
+    )
+    user_id = db.Column(ObjID(12), ForeignKey("user.id"), nullable=True, comment="用户ID")
+    first_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    last_name = db.Column(db.String(128), nullable=True, comment="First Name")
+    email = db.Column(db.String(128), nullable=True, comment="邮箱")
+    role = db.Column(db.String(128), nullable=True, comment="角色")
+    newsletter = db.Column(
+        db.Integer, nullable=True, default=0, server_default=text("0"), comment="是否接收邮件"
     )
 
 
@@ -230,33 +248,6 @@ class CodeApplication(Base):
     )
 
 
-class CodeEvent(Base):
-    __tablename__ = "code_event"
-    application_id = db.Column(
-        ObjID(12), ForeignKey("code_application.id"), nullable=True, comment="应用id"
-    )
-    event_id = db.Column(db.String(128), nullable=True, comment="event_id")
-    event_type = db.Column(db.String(128), nullable=True, comment="event_type")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class CodeAction(Base):
-    __tablename__ = "code_action"
-    event_id = db.Column(
-        ObjID(12), ForeignKey("code_event.id"), nullable=True, comment="事件ID"
-    )
-    action_type = db.Column(
-        db.String(128), nullable=True, comment="action_type: 主要是飞书那边的消息等"
-    )
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
 class IMApplication(Base):
     __tablename__ = "im_application"
     team_id = db.Column(
@@ -265,34 +256,6 @@ class IMApplication(Base):
     platform = db.Column(db.String(128), nullable=True, comment="平台：lark")
     app_id = db.Column(db.String(128), nullable=True, comment="app_id")
     app_secret = db.Column(db.String(128), nullable=True, comment="app_id")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class IMEvent(Base):
-    __tablename__ = "im_event"
-    application_id = db.Column(
-        ObjID(12), ForeignKey("im_application.id"), nullable=True, comment="应用id"
-    )
-    event_id = db.Column(db.String(128), nullable=True, comment="event_id")
-    event_type = db.Column(db.String(128), nullable=True, comment="event_type")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
-    extra = db.Column(
-        JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
-    )
-
-
-class IMAction(Base):
-    __tablename__ = "im_action"
-    event_id = db.Column(
-        ObjID(12), ForeignKey("im_event.id"), nullable=True, comment="事件ID"
-    )
-    action_type = db.Column(
-        db.String(128), nullable=True, comment="action_type: 主要是github那边的动作等"
-    )
-    message_id = db.Column(db.String(128), nullable=True, comment="message_id")
-    content = db.Column(db.String(128), nullable=True, comment="主要内容")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
@@ -347,19 +310,15 @@ class PullRequest(Base):
     title = db.Column(db.String(128), nullable=True, comment="名称")
     description = db.Column(db.String(1024), nullable=True, comment="描述")
     message_id = db.Column(db.String(128), nullable=True, comment="message_id")
+
+    base = db.Column(db.String(128), nullable=True, comment="PR 的基分支")
+    head = db.Column(db.String(128), nullable=True, comment="PR 的分支")
+
+    state = db.Column(db.String(128), nullable=True, comment="PR 的状态")
+
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
-
-
-class GitObjectMessageIdRelation(db.Model):
-    __abstract__ = True
-    __tablename__ = "git_object_message_id_relation"
-    __table_args__ = {"info": dict(is_view=True)}
-    repo_id = db.Column(ObjID(12), nullable=True, comment="repo.id")
-    issue_id = db.Column(ObjID(12), nullable=True, comment="issue.id")
-    pull_request_id = db.Column(ObjID(12), nullable=True, comment="pull_request.id")
-    message_id = db.Column(db.String(128), nullable=True, comment="message_id")
 
 
 CodeUser = aliased(BindUser)
@@ -386,22 +345,11 @@ app.json = CustomJsonProvider(app)
 @click.command(name="create")
 @with_appcontext
 def create():
-    db.create_all()
     try:
-        connection = db.session.connection()
-        result = connection.execute(
-            text(
-                """
-create view `git_object_message_id_relation` as select * from (
-select id as repo_id, null as issue_id, null as pull_request_id, message_id from `repo`
-union all(select null as repo_id, id as issue_id, null as pull_request_id, message_id from `issue`)
-union all(select null as repo_id, null as issue_id, id as pull_request_id, message_id from `pull_request`)
-) as t
-                                   """
-            )
-        )
+        db.session.query(User).first()
     except Exception as e:
-        logging.error(e)
+        if "exist" in str(e):
+            db.create_all()
 
 
 # add command function to cli commands

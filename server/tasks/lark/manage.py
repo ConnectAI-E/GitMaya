@@ -1,14 +1,15 @@
 import logging
-import webbrowser
-from math import log
+import os
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot, FeishuTextMessage
+from connectai.lark.sdk import Bot, FeishuShareChatMessage, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
     CodeApplication,
+    CodeUser,
     IMApplication,
+    IMUser,
     ObjID,
     Repo,
     RepoUser,
@@ -17,13 +18,80 @@ from model.schema import (
     db,
 )
 from sqlalchemy.orm import aliased
+from utils.lark.chat_manual import ChatManual
 from utils.lark.manage_fail import ManageFaild
-from utils.lark.manage_manual import ManageManual
+from utils.lark.manage_manual import ManageManual, ManageNew, ManageSetting, ManageView
 from utils.lark.manage_repo_detect import ManageRepoDetect
 from utils.lark.manage_success import ManageSuccess
 from utils.lark.repo_info import RepoInfo
+from utils.lark.repo_manual import RepoManual
 
 from .base import get_bot_by_application_id
+
+
+@celery.task()
+def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+    if application:
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+                Team.status == 0,
+            )
+            .first()
+        )
+        if team:
+            # p2p_chat_create v1.0
+            open_id = message["event"]["operator"].get("open_id", None)
+            github_user = (
+                db.session.query(CodeUser)
+                .join(
+                    TeamMember,
+                    TeamMember.code_user_id == CodeUser.id,
+                )
+                .join(
+                    IMUser,
+                    IMUser.id == TeamMember.im_user_id,
+                )
+                .filter(
+                    IMUser.openid == open_id,
+                    TeamMember.team_id == team.id,
+                )
+                .first()
+            )
+            if not github_user or not github_user.access_token:
+                host = os.environ.get("DOMAIN")
+                message = ManageFaild(
+                    content=f"[请点击绑定 GitHub 账号]({host}/api/github/oauth)",
+                    title="🎉 欢迎使用 GitMaya！",
+                )
+                bot.send(open_id, message).json()
+            repos = (
+                db.session.query(Repo)
+                .join(
+                    CodeApplication,
+                    Repo.application_id == CodeApplication.id,
+                )
+                .join(Team, CodeApplication.team_id == team.id)
+                .filter(
+                    Team.id == team.id,
+                    Repo.status == 0,
+                )
+                .order_by(
+                    Repo.modified.desc(),
+                )
+                .limit(20)
+                .all()
+            )
+            message = ManageManual(
+                org_name=team.name,
+                repos=[(repo.id, repo.name) for repo in repos],
+                team_id=team.id,
+            )
+            # 这里不是回复，而是直接创建消息
+            return bot.send(open_id, message).json()
+    return False
 
 
 @celery.task()
@@ -66,6 +134,38 @@ def send_manage_manual(app_id, message_id, *args, **kwargs):
 
 
 @celery.task()
+def send_manage_new_message(app_id, message_id, *args, **kwargs):
+    bot, _ = get_bot_by_application_id(app_id)
+    message = ManageNew()
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_manage_setting_message(app_id, message_id, *args, **kwargs):
+    bot, _ = get_bot_by_application_id(app_id)
+    message = ManageSetting()
+    return bot.reply(message_id, message).json()
+
+
+@celery.task()
+def send_manage_view_message(app_id, message_id, *args, **kwargs):
+    bot, application = get_bot_by_application_id(app_id)
+    if application:
+        team = (
+            db.session.query(Team)
+            .filter(
+                Team.id == application.team_id,
+                Team.status == 0,
+            )
+            .first()
+        )
+        if team:
+            message = ManageView(org_name=team.name)
+            return bot.reply(message_id, message).json()
+    return False
+
+
+@celery.task()
 def send_detect_repo(
     repo_id, app_id, open_id="", topics: list = [], visibility: str = "private"
 ):
@@ -99,6 +199,7 @@ def send_detect_repo(
             repo_description=repo.description,
             repo_topic=topics,
             visibility=visibility,
+            homepage=repo.extra.get("homepage", None),
         )
         return bot.send(
             open_id,
@@ -109,7 +210,9 @@ def send_detect_repo(
 
 
 @celery.task()
-def send_manage_fail_message(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_manage_fail_message(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo card message to user.
 
     Args:
@@ -120,11 +223,14 @@ def send_manage_fail_message(content, app_id, message_id, *args, bot=None, **kwa
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = ManageFaild(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
 @celery.task()
-def send_manage_success_message(content, app_id, message_id, *args, bot=None, **kwargs):
+def send_manage_success_message(
+    content, app_id, message_id, data, raw_message, *args, bot=None, **kwargs
+):
     """send new repo card message to user.
 
     Args:
@@ -135,7 +241,8 @@ def send_manage_success_message(content, app_id, message_id, *args, bot=None, **
     if not bot:
         bot, _ = get_bot_by_application_id(app_id)
     message = ManageSuccess(content=content)
-    return bot.reply(message_id, message).json()
+    open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+    return bot.send(open_id, message).json()
 
 
 @celery.task()
@@ -197,6 +304,13 @@ def create_chat_group_for_repo(
         .first()
     )
     if chat_group:
+        try:
+            message = FeishuShareChatMessage(chat_id=chat_group.chat_id)
+            raw_message = args[1]
+            open_id = raw_message["event"]["sender"]["sender_id"].get("open_id", None)
+            bot.send(open_id, message).json()
+        except Exception as e:
+            logging.error(e)
         return send_manage_fail_message(
             "不允许重复创建项目群", app_id, message_id, *args, bot=bot, **kwargs
         )
@@ -233,7 +347,10 @@ def create_chat_group_for_repo(
             TeamMember.team_id == team.id,
             RepoUser.repo_id == repo.id,
         )
-    ] + [owner_id]
+    ]
+
+    if owner_id not in user_id_list:
+        user_id_list += [owner_id]
 
     result = bot.post(
         chat_group_url,
@@ -248,7 +365,7 @@ def create_chat_group_for_repo(
     ).json()
     chat_id = result.get("data", {}).get("chat_id")
     if not chat_id:
-        content = f"创建项目群失败:\n\n{result.get('msg')}"
+        content = f"创建项目群失败: \n\n{result.get('msg')}"
         return send_manage_fail_message(
             content, app_id, message_id, *args, bot=bot, **kwargs
         )
@@ -270,10 +387,25 @@ def create_chat_group_for_repo(
     1. 给操作的用户发成功的消息
     2. 给群发送repo 卡片消息，并pin
     """
+
+    # 把user_id_list中的每个user_id查User表，获取每个人的名字
+    user_name_list = [
+        name
+        for name, in db.session.query(IMUser.name).filter(
+            IMUser.openid.in_(user_id_list),
+        )
+    ]
+    invite_message = (
+        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
+        if len(user_name_list) > 0
+        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+    )
+
     content = "\n".join(
         [
             f"1. 成功创建名为「{name}」的新项目群",
             # TODO 这里需要给人发邀请???创建群的时候，可以直接拉群...
+            invite_message,
         ]
     )
     # 这里可以再触发一个异步任务给群发卡片，不过为了保存结果，就同步调用
@@ -343,6 +475,23 @@ def send_repo_to_chat_group(repo_id, app_id, chat_id=""):
                 reply_in_thread=True,
             ).json()
             logging.info("debug first_message_result %r", first_message_result)
+
+            # 向群内发送 chat manual
+            message = ChatManual(
+                repo_url=f"https://github.com/{team.name}/{repo.name}",
+                repo_name=repo.name,
+                actions=[],  # TODO 获取actions
+            )
+
+            man_result = bot.send(
+                chat_id,
+                message,
+                receive_id_type="chat_id",
+            ).json()
+        else:
+            logging.error("debug result %r", result)
+            return False
+
         # 一共有3个result需要存到imaction里面
-        return [result, pin_result, first_message_result]
+        return [result, pin_result, first_message_result, man_result]
     return False

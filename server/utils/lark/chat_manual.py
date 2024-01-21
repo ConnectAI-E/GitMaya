@@ -13,24 +13,24 @@ class ChatManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="** 📄  创建 Issue **\n*话题下回复「/issue + 新 Issue 标题 + @分配成员」 *",
+                content="**📄 创建 Issue **\n*群聊下回复「/issue + 新 Issue 标题 + @分配成员」 *",
                 tag="lark_md",
             ),
+            # FeishuMessageDiv(
+            #     content="**🚀 运行 Action **\n*群聊下回复「/action」 *",
+            #     tag="lark_md",
+            #     extra=FeishuMessageSelect(
+            #         *[FeishuMessageOption(value=action) for action in actions],
+            #         placeholder="选择想要执行的 Action",
+            #         value={
+            #             "key": "value",  # TODO
+            #         },
+            #     )
+            #     if len(actions) > 0
+            #     else None,
+            # ),
             FeishuMessageDiv(
-                content="** 🚀  运行 Action **\n*话题下回复「/action」 *",
-                tag="lark_md",
-                extra=FeishuMessageSelect(
-                    *[FeishuMessageOption(value=action) for action in actions],
-                    placeholder="选择想要执行的Action",
-                    value={
-                        "key": "value",  # TODO
-                    },
-                )
-                if len(actions) > 0
-                else None,
-            ),
-            FeishuMessageDiv(
-                content=f"** ⚡️ 前往 GitHub 查看 Repo 主页 **\n*话题下回复「/view」 *",
+                content=f"**⚡️ 前往 GitHub 查看 Repo 主页 **\n*群聊下回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 GitHub 主页",
@@ -45,7 +45,7 @@ class ChatManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"** 📈 前往 GitMaya 查看 Repo Insight **\n*话题下回复「/insight」 *",
+                content=f"**📈 前往 GitMaya 查看 Repo Insight **\n*群聊下回复「/insight」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 Insight 面板",
@@ -62,6 +62,35 @@ class ChatManual(FeishuMessageCard):
             GitMayaCardNote("GitMaya Chat Manual"),
         ]
         header = FeishuMessageCardHeader("GitMaya Chat Manual\n", template="grey")
+        config = FeishuMessageCardConfig()
+
+        super().__init__(*elements, header=header, config=config)
+
+
+class ChatView(FeishuMessageCard):
+    def __init__(
+        self,
+        repo_url="https://github.com/ConnectAI-E/GitMaya",
+    ):
+        elements = [
+            FeishuMessageDiv(
+                content=f"** ⚡️ 前往 GitHub 查看信息 **",
+                tag="lark_md",
+                extra=FeishuMessageButton(
+                    "在浏览器打开",
+                    tag="lark_md",
+                    type="default",
+                    multi_url={
+                        "url": repo_url,
+                        "android_url": repo_url,
+                        "ios_url": repo_url,
+                        "pc_url": repo_url,
+                    },
+                ),
+            ),
+            GitMayaCardNote("GitMaya Chat Action"),
+        ]
+        header = FeishuMessageCardHeader("🎉 操作成功！")
         config = FeishuMessageCardConfig()
 
         super().__init__(*elements, header=header, config=config)

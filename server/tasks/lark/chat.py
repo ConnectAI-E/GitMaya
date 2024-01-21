@@ -16,11 +16,16 @@ from model.schema import (
 from model.team import get_code_users_by_openid
 from sqlalchemy.orm import aliased
 from utils.github.repo import GitHubAppRepo
-from utils.lark.chat_manual import ChatManual
+from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
 
-from .base import get_bot_by_application_id
+from .base import (
+    get_bot_by_application_id,
+    get_chat_group_by_chat_id,
+    get_repo_name_by_repo_id,
+    with_authenticated_github,
+)
 
 
 @celery.task()
@@ -91,7 +96,59 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     return bot.reply(message_id, message).json()
 
 
+def send_chat_url_message(
+    app_id, message_id, content, data, *args, typ="view", **kwargs
+):
+    chat_id = data["event"]["message"]["chat_id"]
+    chat_group = get_chat_group_by_chat_id(chat_id)
+    repo_name = get_repo_name_by_repo_id(chat_group.repo_id)
+    # TODO repo_name可能为空
+    # if not repo:
+    #     return send_chat_failed_tip(
+    #         "找不到Repo", app_id, message_id, content, data, *args, **kwargs
+    #     )
+    bot, application = get_bot_by_application_id(app_id)
+    if not application:
+        return send_chat_failed_tip(
+            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_chat_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+        )
+
+    repo_url = f"https://github.com/{team.name}/{repo_name}"
+    if "view" == typ:
+        message = ChatView(repo_url=repo_url)
+    elif "insight" == typ:
+        message = ChatView(repo_url=f"{repo_url}/pulse")
+    return bot.reply(message_id, message).json()
+
+
 @celery.task()
+def send_chat_view_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_chat_url_message(
+        app_id, message_id, content, data, *args, typ="view", **kwargs
+    )
+
+
+@celery.task()
+def send_chat_insight_message(app_id, message_id, content, data, *args, **kwargs):
+    return send_chat_url_message(
+        app_id, message_id, content, data, *args, typ="insight", **kwargs
+    )
+
+
+@celery.task()
+@with_authenticated_github()
 def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
@@ -99,6 +156,7 @@ def create_issue(
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
         if parent_id:
+            bot, _ = get_bot_by_application_id(app_id)
             parent_message_url = f"{bot.host}/open-apis/im/v1/messages/{parent_id}"
             result = bot.get(parent_message_url).json()
             if len(result["data"].get("items", [])) > 0:
@@ -175,6 +233,6 @@ def create_issue(
     )
     if "id" not in response:
         return send_chat_failed_tip(
-            "创建issue失败", app_id, message_id, content, data, *args, **kwargs
+            "创建 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response

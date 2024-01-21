@@ -9,7 +9,7 @@ class PullCard(FeishuMessageCard):
         title="",
         base=None,
         head=None,
-        description="",
+        description=None,
         persons=[],
         assignees=[],
         reviewers=[],
@@ -20,20 +20,40 @@ class PullCard(FeishuMessageCard):
     ):
         pr_url = f"{repo_url}/pull/{id}"
         template = "red"
-        # users = " ".join([f"[@{name}]({url})" for name, url in assignees])
-        assignees = "".join([f"<at id={open_id}></at>" for open_id in assignees])
-        reviewers = "".join([f"<at id={open_id}></at>" for open_id in reviewers])
+        assignees = (
+            "".join([f"<at id={open_id}></at>" for open_id in assignees])
+            if len(assignees) > 0
+            else "**<font color='red'>待分配</font>**"
+        )
+        reviewers = (
+            "".join([f"<at id={open_id}></at>" for open_id in reviewers])
+            if len(reviewers) > 0
+            else "**<font color='red'>待分配</font>**"
+        )
+        label = (
+            "、".join(labels) if len(labels) > 0 else "**<font color='red'>待补充</font>**"
+        )
+        desc_block = (
+            [
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                ),
+                FeishuMessageMarkdown(
+                    # TODO 替换content
+                    description,
+                    text_align="left",
+                ),
+            ]
+            if description
+            else []
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(
+                    *desc_block,
                     FeishuMessageMarkdown(
                         # TODO 替换content
                         f"🌿  <font color='black'>**分支合并**</font>\n[{head['ref']}]({repo_url}/tree/{head['ref']}) -> [{base['ref']}]({repo_url}/tree/{base['ref']})",
-                        text_align="left",
-                    ),
-                    FeishuMessageMarkdown(
-                        # TODO 替换content
-                        description,
                         text_align="left",
                     ),
                     FeishuMessageColumnSet(
@@ -70,7 +90,7 @@ class PullCard(FeishuMessageCard):
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
                                 # TODO
-                                f"🏷 <font color='grey'>**标签** </font>\n*{'、'.join(labels)}*",
+                                f"🏷 <font color='grey'>**标签** </font>\n{label}",
                                 text_align="left",
                             ),
                             width="weighted",
@@ -134,6 +154,14 @@ class PullCard(FeishuMessageCard):
                     placeholder="修改负责人",
                     value={
                         "command": f"/assign ",
+                        "suffix": "$option",
+                    },
+                ),
+                FeishuMessageSelectPerson(
+                    *[FeishuMessageOption(value=open_id) for open_id in persons],
+                    placeholder="修改审核人",
+                    value={
+                        "command": f"/review ",
                         "suffix": "$option",
                     },
                 ),

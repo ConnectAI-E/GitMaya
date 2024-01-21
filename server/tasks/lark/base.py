@@ -1,40 +1,15 @@
 import json
 import logging
+import os
 from functools import wraps
 
 from connectai.lark.sdk import Bot
-from model.schema import (
-    ChatGroup,
-    GitObjectMessageIdRelation,
-    IMAction,
-    IMApplication,
-    IMEvent,
-    Issue,
-    ObjID,
-    PullRequest,
-    Repo,
-    db,
-)
+from model.schema import ChatGroup, IMApplication, Issue, ObjID, PullRequest, Repo, db
 from sqlalchemy import or_
-
-# def get_topic_type_by_message_id(message_id):
-#     """根据message_id获取话题类型和话题id(root_id)"""
-#     results = (
-#         db.session.query(GitObjectMessageIdRelation)
-#         .filter(GitObjectMessageIdRelation.message_id == message_id)
-#         .first()
-#     )
-#     # 判断results的repo_id,issue_id,pul_request_id 是否为否空来判断topic_tupe
-#     topic_type = None
-#     if results.repo_id:
-#         return "repo", results.repo_id
-#     elif results.issue_id:
-#         return "issue", results.issue_id
-#     elif results.pull_request_id:
-#         return "pull_request", results.pull_request_id
+from utils.constant import GitHubPermissionError
 
 
-def get_repo_id_by_chat_group(chat_id):
+def get_chat_group_by_chat_id(chat_id):
     chat_group = (
         db.session.query(ChatGroup)
         .filter(
@@ -82,6 +57,17 @@ def get_bot_by_application_id(app_id):
 
 
 def get_git_object_by_message_id(message_id):
+    """
+    根据message_id区分Repo、Issue、PullRequest对象
+
+    参数：
+    message_id：消息ID
+
+    返回值：
+    repo：Repo对象，如果存在
+    issue：Issue对象，如果存在
+    pr：PullRequest对象，如果存在
+    """
     issue = (
         db.session.query(Issue)
         .filter(
@@ -113,68 +99,34 @@ def get_git_object_by_message_id(message_id):
     return None, None, None
 
 
-def with_lark_storage(event_type="message"):
+def with_authenticated_github():
     def decorate(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             """
-            1. 按默认的规则，args[-3:]  message_id/card_event_token, message_content/card_event, raw_message/raw_card_event
-            2. 可以尝试读取message_id + message_content存 event数据库
-            3. result = func(*args, **kwargs)
-            4. result默认当成数组处理，然后，就可以把result的每一项存action数据表
+            1. 这个装饰器用来统一处理错误消息
+            2. github rest api调用出错的时候抛出异常
+            3. 这个装饰器捕获特定的异常，给操作者特定的报错消息
             """
-            event_id = None
             try:
-                app_id, message_id, content, raw_message = args[-4:]
-                application = (
-                    db.session.query(IMApplication)
-                    .filter(
-                        IMApplication.app_id == app_id,
-                    )
-                    .first()
-                )
-                if "om_" in message_id and application:
-                    event_id = ObjID.new_id()
-                    db.session.add(
-                        IMEvent(
-                            id=event_id,
-                            application_id=application.id,
-                            event_id=message_id,
-                            event_type=event_type,  # TODO 这里要不只存parser里面的command算了
-                            content=json.dumps(content)[:128],
-                            extra=raw_message,
-                        )
-                    )
-                    db.session.commit()
-            except Exception as e:
-                logging.error(e)
+                return func(*args, **kwargs)
+            except GitHubPermissionError as e:
+                try:
+                    from .manage import send_manage_fail_message
 
-            result = func(*args, **kwargs)
-
-            try:
-                # try save result
-                if event_id:
-                    results = result if isinstance(result, list) else [result]
-                    for action_result in results:
-                        message_id = (
-                            action_result.get("data", {}).get("message_id", "")
-                            if isinstance(action_result, dict)
-                            else ""
-                        )
-                        db.session.add(
-                            IMAction(
-                                id=ObjID.new_id(),
-                                event_id=event_id,
-                                message_id=message_id,
-                                action_type=func.__name__,
-                                content=json.dumps(action_result)[:128],
-                                extra=action_result,
-                            )
-                        )
-                    db.session.commit()
+                    app_id, message_id, content, raw_message = args[-4:]
+                    host = os.environ.get("DOMAIN")
+                    send_manage_fail_message(
+                        f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
+                        app_id,
+                        message_id,
+                        content,
+                        raw_message,
+                    )
+                except Exception as e:
+                    logging.error(e)
             except Exception as e:
-                logging.error(e)
-            return result
+                raise e
 
         return wrapper
 

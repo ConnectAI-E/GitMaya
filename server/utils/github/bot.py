@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from datetime import datetime
@@ -5,6 +6,7 @@ from datetime import datetime
 import httpx
 from jwt import JWT, jwk_from_pem
 from model.schema import BindUser
+from utils.constant import GitHubPermissionError
 
 
 class BaseGitHubApp:
@@ -56,7 +58,10 @@ class BaseGitHubApp:
                     "auth_type must be 'jwt' or 'install_token' or 'user_token'"
                 )
 
-        with httpx.Client() as client:
+        with httpx.Client(
+            timeout=httpx.Timeout(10.0, connect=10.0, read=10.0),
+            transport=httpx.HTTPTransport(retries=3),
+        ) as client:
             response = client.request(
                 method,
                 url,
@@ -67,6 +72,9 @@ class BaseGitHubApp:
                 },
                 json=json,
             )
+            if response.status_code == 401:
+                logging.error("base_github_rest_api: GitHub Permission Error")
+                raise GitHubPermissionError(response.json().get("message"))
             if raw:
                 return response
             return response.json()
@@ -86,10 +94,15 @@ class BaseGitHubApp:
         ):
             self._jwt_created_at = datetime.now().timestamp()
 
-            with open(
-                os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH", "pem.pem"), "rb"
-            ) as pem_file:
-                signing_key = jwk_from_pem(pem_file.read())
+            if os.environ.get("GITHUB_APP_PRIVATE_KEY"):
+                signing_key = jwk_from_pem(
+                    os.environ.get("GITHUB_APP_PRIVATE_KEY").encode()
+                )
+            else:
+                with open(
+                    os.environ.get("GITHUB_APP_PRIVATE_KEY_PATH", "pem.pem"), "rb"
+                ) as pem_file:
+                    signing_key = jwk_from_pem(pem_file.read())
 
             payload = {
                 # Issued at time
@@ -159,6 +172,7 @@ class BaseGitHubApp:
 
         Returns:
             dict: The installation info.
+        https://docs.github.com/zh/rest/apps/apps?apiVersion=2022-11-28#get-an-installation-for-the-authenticated-app
         """
 
         return self.base_github_rest_api(
