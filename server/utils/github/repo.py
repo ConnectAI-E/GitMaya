@@ -53,11 +53,17 @@ class GitHubAppRepo(BaseGitHubApp):
             list: The repo collaborators.
         https://docs.github.com/zh/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
         """
-
-        return self.base_github_rest_api(
-            f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
-            auth_type="install_token",
-        )
+        page = 1
+        while True:
+            collaborators = self.base_github_rest_api(
+                f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
+                auth_type="install_token",
+            )
+            if len(collaborators) == 0:
+                break
+            for collaborator in collaborators:
+                yield collaborator
+            page = page + 1
 
     def update_repo(
         self,
