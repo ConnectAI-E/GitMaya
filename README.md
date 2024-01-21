@@ -14,7 +14,7 @@
 </p>
 
 <!-- SHIELD GROUP -->
-
+[![][github-logo-shield]][github-logo-link]
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-forks-shield]][github-forks-link]
 [![][github-stars-shield]][github-stars-link]
@@ -447,6 +447,8 @@ This project is [MIT](./LICENSE) licensed.
 [pr-welcome-shield]: https://img.shields.io/badge/🤯_pr_welcome-%E2%86%92-ffcb47?labelColor=black&style=for-the-badge
 [codespaces-link]: https://codespaces.new/connectai-e/gitmaya
 [codespaces-shield]: https://github.com/codespaces/badge.svg
+[github-logo-shield]: https://img.shields.io/badge/gitmaya-enabled?style=flat-square&logo=github&color=F9DC4E&logoColor=D9E0EE&labelColor=302D41
+[github-logo-link]: https://github.com/connectai-e/gitmaya
 [github-contributors-link]: https://github.com/connectai-e/gitmaya/graphs/contributors
 [github-contributors-shield]: https://img.shields.io/github/contributors/connectai-e/gitmaya?color=c4f042&labelColor=black&style=flat-square
 [github-forks-link]: https://github.com/connectai-e/gitmaya/network/members
