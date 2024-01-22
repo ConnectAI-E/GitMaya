@@ -47,7 +47,7 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
 
-Git计划支持**GIthub, GitLab, SourceForge和Bitbucket** 
+Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 
 开发者在哪里，GitMaya在哪里
 
