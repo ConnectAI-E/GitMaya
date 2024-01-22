@@ -171,8 +171,7 @@ GITHUB_WEBHOOK_SECRET=secret
 DOMAIN=127.0.0.1
 ```
 
-> \[!NOTE]
-> `.env` **文件支持多行字符串，因此.pem 文件可以直接粘贴到 .env 文件中**
+> **NOTE**: **文件支持多行字符串，因此.pem 文件可以直接粘贴到 `.env` 文件中**
 
 </details>
 
