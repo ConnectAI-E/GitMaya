@@ -47,9 +47,9 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
 
-Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
+Git计划支持**GIthub, GitLab, SourceForge 和 Bitbucket**
 
-开发者在哪里，GitMaya在哪里
+开发者在哪里，GitMaya就在哪里
 
 ### 🔄 One Repo = One Chat
 体验 "One Repo = One Chat" 的完美同步，让协作流畅无阻！
@@ -58,7 +58,7 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 从您喜爱的聊天平台直接管理所有 GitHub 互动，不再需要切换上下文。
 
 ### 🚀 Issue 全集成
-即时收到Issue提醒，随时同步处理进度。
+即时处理Issue，随时同步处理进度。
 
 ### 🔄 Pr 全集成
 高效的PR处理流程，code-diff、comment、merge，一应俱全。
@@ -67,7 +67,7 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 通过在您的聊天平台中直接集成 CI/CD 和 GitHub Actions。
 
 ### 🚚 保持在代码审查流程中
-最大化生产力，保持专注有效协作。
+最大化生产力，有效协作保持注意力。
 
 ## 📃 部署流程
 
