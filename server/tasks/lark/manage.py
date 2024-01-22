@@ -2,7 +2,7 @@ import logging
 import os
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot, FeishuShareChatMessage, FeishuTextMessage
+from connectai.lark.sdk import FeishuShareChatMessage, FeishuTextMessage
 from model.schema import (
     BindUser,
     ChatGroup,
