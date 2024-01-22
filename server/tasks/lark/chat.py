@@ -149,7 +149,7 @@ def send_chat_insight_message(app_id, message_id, content, data, *args, **kwargs
 @celery.task()
 @with_authenticated_github()
 def create_issue(
-    title, users, labels, app_id, message_id, content, data, *args, **kwargs
+    title, des, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
     if not title:
         # 如果title是空的，尝试从parent_message拿到内容
@@ -225,7 +225,7 @@ def create_issue(
         code_application.installation_id, user_id=current_code_user_id
     )
     # TODO
-    body = ""
+    body = des if des is not None else ""
     assignees = [code_users[openid][1] for openid in users if openid in code_users]
     response = github_app.create_issue(
         team.name, repo.name, title, body, assignees, labels

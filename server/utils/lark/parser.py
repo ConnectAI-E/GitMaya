@@ -213,20 +213,28 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, users, labels = [], [], []
+                title, des, users, labels = [], [], [], []
+
                 for arg in param.argv:
                     if not "at_user" in arg and len(users) == 0:
-                        title.append(arg)
+                         for item in param.argv:
+                            if 'name\n' in item:
+                                title.append(item.replace('name\n', '').strip())
+                            elif 'des\n' in item:
+                                des.append(item.replace('des\n', '').strip())
+                            elif 'label\n' in item:
+                                labels.append(item.replace('label\n', '').strip())
+                        # title.append(arg)
                     elif "at_user" in arg:
                         users.append(
                             mentions[arg]["id"]["open_id"] if arg in mentions else ""
                         )
-                    else:
-                        labels = arg.split(",")
+                    # else:
+                    #     labels = arg.split(",")
                 # 支持title中间有空格
-                title = " ".join(title)
+                # title = " ".join(title)
                 users = [open_id for open_id in users if open_id]
-                tasks.create_issue.delay(title, users, labels, *args, **kwargs)
+                tasks.create_issue.delay(title, des, users, labels, *args, **kwargs)
         except Exception as e:
             logging.error(e)
         return "issue", param, unkown
