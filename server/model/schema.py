@@ -271,7 +271,7 @@ class ChatGroup(Base):
     )
     chat_id = db.Column(db.String(128), nullable=True, comment="chat_id")
     name = db.Column(db.String(128), nullable=True, comment="群名称")
-    description = db.Column(db.String(128), nullable=True, comment="群描述")
+    description = db.Column(db.String(256), nullable=True, comment="群描述")
     extra = db.Column(
         JSONStr(2048), nullable=True, server_default=text("'{}'"), comment="其他字段"
     )
