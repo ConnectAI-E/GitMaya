@@ -1,7 +1,6 @@
 import logging
 
 from celery_app import app, celery
-from connectai.lark.sdk import Bot
 from model.schema import (
     BindUser,
     ChatGroup,
@@ -15,6 +14,8 @@ from model.schema import (
 )
 from sqlalchemy import func, or_
 from utils.lark.manage_manual import ManageManual
+
+from .base import get_bot_by_application_id
 
 
 def get_contact_by_bot_and_department(bot, department_id):
@@ -67,22 +68,8 @@ def get_contact_by_lark_application(application_id):
     4. 标记已经拉取过应用人员
     """
     user_ids = []
-    application = (
-        db.session.query(IMApplication)
-        .filter(
-            or_(
-                IMApplication.id == application_id,
-                IMApplication.app_id == application_id,
-            ),
-            IMApplication.status.in_([0, 1]),
-        )
-        .first()
-    )
+    bot, application = get_bot_by_application_id(application_id)
     if application:
-        bot = Bot(
-            app_id=application.app_id,
-            app_secret=application.app_secret,
-        )
         try:
             for item in get_contact_by_bot(bot):
                 # add bind_user and user

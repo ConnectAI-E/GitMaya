@@ -7,6 +7,7 @@ from connectai.lark.sdk import Bot
 from model.schema import ChatGroup, IMApplication, Issue, ObjID, PullRequest, Repo, db
 from sqlalchemy import or_
 from utils.constant import GitHubPermissionError
+from utils.redis import RedisStorage
 
 
 def get_chat_group_by_chat_id(chat_id):
@@ -50,6 +51,9 @@ def get_bot_by_application_id(app_id):
             Bot(
                 app_id=application.app_id,
                 app_secret=application.app_secret,
+                encrypt_key=application.extra.get("encrypt_key"),
+                verification_token=application.extra.get("verification_token"),
+                storage=RedisStorage(),
             ),
             application,
         )
