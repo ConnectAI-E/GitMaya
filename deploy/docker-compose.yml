@@ -12,11 +12,13 @@ services:
 
   flower:
     extends: worker
-    command: bash -c 'pip install flower && celery -A tasks.celery flower --basic-auth="gitmaya:gitmaya2023"'
+    command: bash -c 'pip install flower && celery -A tasks.celery flower --basic-auth="gitmaya:gitmaya2023" --persistent=True --db="/data/flower_db"'
     ports:
       - "5555"
     environment:
       - VIRTUAL_HOST=flower.gitmaya.com
+    volumes:
+      - ./data/flower:/data
 
   gitmaya:
     extends: worker
