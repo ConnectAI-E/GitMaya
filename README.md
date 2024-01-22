@@ -173,10 +173,10 @@ GITHUB_WEBHOOK_SECRET=secret
 DOMAIN=127.0.0.1
 ```
 
-</details>
-
 > \[!NOTE]
 > `.env` **file supports multi-line string, so the .pem file could be pasted into .env file directly**
+
+</details>
 
 <details>
 <summary>
