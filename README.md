@@ -93,7 +93,7 @@ You need to create a GitHub app at first, for details refer to [Deploy GitHub Ap
 
 </summary>
 
-You can choose to use [Self Hosting](#%F0%9F%9B%B3-self-hosting) or [Local Deployment](#%E2%8C%A8%EF%B8%8F-local-development) to deploy the front-end and back-end of GitMaya.
+You can choose to use [Self Hosting](#self-hosting) or [Local Deployment](#local-development) to deploy the front-end and back-end of GitMaya.
 
 </details>
 
@@ -108,7 +108,7 @@ The steps for deploying the Feishu (Lark) bot application are already integrated
 
 </details>
 
-## 🛳 Self Hosting
+<h2 id="self-hosting">🛳 Self Hosting</h2>
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
@@ -231,7 +231,7 @@ We will soon support one-click deployment for Zeabur.
 
 </details>
 
-## ⌨️ Local Development
+<h2 id="local-development">⌨️ Local Development</h2>
 
 <!-- You can use GitHub Codespaces for online development:
 

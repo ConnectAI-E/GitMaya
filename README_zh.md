@@ -91,7 +91,7 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 
 </summary>
 
-您可以选择使用 [自托管](#%F0%9F%9B%B3-自托管) 或 [本地部署](#%E2%8C%A8%EF%B8%8F-本地开发) 来部署 GitMaya 的前端和后端。
+您可以选择使用 [自托管](#self-hosting) 或 [本地部署](#local-development) 来部署 GitMaya 的前端和后端。
 
 </details>
 
@@ -107,7 +107,7 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 </details>
 
 
-## 🛳 自托管
+<h2 id="self-hosting">🛳 自托管</h2>
 
 GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
 
@@ -146,7 +146,7 @@ $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.ex
 
 </summary>
 
-接下来，您需要配置 `.env` 文件。您应该用您在 [步骤 1](#step-1-install-github-application) 中创建的 GitHub App 信息替换这些变量。
+接下来，您需要配置 `.env` 文件。您应该用您在 [步骤 1](#步骤-1-安装-github-应用) 中创建的 GitHub App 信息替换这些变量。
 
 ```fish
 $ vim .env
@@ -230,7 +230,7 @@ $ docker-compose up -d
 
 </details>
 
-## ⌨️ 本地开发
+<h2 id="local-development">⌨️ 本地部署</h2>
 
 <!-- 您可以使用 GitHub Codespaces 进行在线开发：
 
