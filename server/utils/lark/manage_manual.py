@@ -152,7 +152,7 @@ class ManageSetting(FeishuMessageCard):
         setting_url = f"{gitmaya_host}/app/setting"
         elements = [
             FeishuMessageDiv(
-                content=f"** ⚡️ 前往 GitMaya 查看 **",
+                content=f"** ⚡️ 前往 GitHub 查看 **",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "在浏览器打开",

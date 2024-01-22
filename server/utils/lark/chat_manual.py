@@ -45,7 +45,7 @@ class ChatManual(FeishuMessageCard):
                 ),
             ),
             FeishuMessageDiv(
-                content=f"**📈 前往 GitMaya 查看 Repo Insight **\n*群聊下回复「/insight」 *",
+                content=f"**📈 前往 GitHub 查看 Repo Insight **\n*群聊下回复「/insight」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
                     "打开 Insight 面板",

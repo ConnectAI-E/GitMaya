@@ -28,6 +28,27 @@ class GitHubAppOrg(BaseGitHubApp):
                 yield repo
             page = page + 1
 
+    def get_org_repos_accessible(self) -> list | None:
+        """Get accessible org repos.
+
+        Returns:
+            list: The accessible org repos.
+        https://docs.github.com/zh/rest/apps/installations?apiVersion=2022-11-28#list-repositories-accessible-to-the-app-installation
+        """
+
+        page = 1
+        while True:
+            repos_json = self.base_github_rest_api(
+                f"https://api.github.com/installation/repositories?page={page}",
+                auth_type="install_token",
+            )
+            repos = repos_json.get("repositories", [])
+            if len(repos) == 0:
+                break
+            for repo in repos:
+                yield repo
+            page = page + 1
+
     def get_org_members(self, org_name: str) -> list | None:
         """Get a list of members of an organization.
 

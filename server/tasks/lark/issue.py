@@ -258,7 +258,7 @@ def send_issue_card(issue_id):
                         message_id,
                         # 第一条话题消息，直接放repo_url
                         FeishuTextMessage(
-                            users + f"{repo_url}/issue/{issue.issue_number}"
+                            users + f"{repo_url}/issues/{issue.issue_number}"
                         ),
                         reply_in_thread=True,
                     ).json()
