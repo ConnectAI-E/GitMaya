@@ -1,3 +1,5 @@
+import logging
+
 from celery_app import celery
 from model.repo import create_repo_from_github
 from model.schema import CodeApplication, Team, db
@@ -23,15 +25,15 @@ def pull_github_repo(
 
     # 拉取所有组织成员，创建 User 和 BindUser
     members = github_app.get_org_members(org_name)
-    if members is None:
+    if list(members) is None:
         raise Exception("Failed to get org members.")
 
     # 创建 user 和 team member
     create_github_member(members, application_id, team_id)
 
     # 拉取所有组织仓库，创建 Repo
-    repos = github_app.get_org_repos(org_name)
-
+    repos = github_app.get_org_repos_accessible(org_name)
+    logging.info(f"repos: {repos}")
     github_app = GitHubAppRepo(installation_id)
     try:
         for repo in repos:
