@@ -28,15 +28,12 @@ class GitHubAppOrg(BaseGitHubApp):
                 yield repo
             page = page + 1
 
-    def get_org_repos_accessible(self, org_name: str) -> list | None:
-        """Get org repos.
-
-        Args:
-            org_name (str): The name of the org.
+    def get_org_repos_accessible(self) -> list | None:
+        """Get accessible org repos.
 
         Returns:
-            list: The org repos.
-        https://docs.github.com/zh/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
+            list: The accessible org repos.
+        https://docs.github.com/zh/rest/apps/installations?apiVersion=2022-11-28#list-repositories-accessible-to-the-app-installation
         """
 
         page = 1

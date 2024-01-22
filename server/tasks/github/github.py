@@ -31,7 +31,7 @@ def pull_github_repo(
     create_github_member(members, application_id, team_id)
 
     # 拉取所有组织仓库，创建 Repo
-    repos = github_app.get_org_repos_accessible(org_name)
+    repos = github_app.get_org_repos_accessible()
     github_app = GitHubAppRepo(installation_id)
     try:
         for repo in repos:
