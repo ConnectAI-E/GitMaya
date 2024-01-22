@@ -74,9 +74,6 @@ Maximize productivity with dedicated code review time slots. Stay focused, colla
 ## 📃 Deployment Workflow
 
 Deploying GitMaya requires a total of 3 steps.
-**First**, you need to install the GitHub app.
-**Then**, you need to deploy the front-end and back-end of GitMaya.
-**Finally**, deploy the Feishu App Bot.
 
 <details>
 <summary>

@@ -72,9 +72,6 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 ## 📃 部署流程
 
 部署 GitMaya 需要共计 3 个步骤。
-**首先**，您需要安装 GitHub 应用。
-**然后**，您需要部署 GitMaya 的前端和后端。
-**最后**，部署飞书 App 机器人。
 
 <details>
 <summary>
