@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 
 import tasks
 from utils.constant import TopicType
@@ -204,6 +205,12 @@ class GitMayaLarkParser(object):
     def on_issue(self, param, unkown, *args, **kwargs):
         logging.info("on_issue %r %r", vars(param), unkown)
         # /issue [title] [@user_1] [@user_2] [[label_1],[label2]]
+
+        user_pattern = r"@([\w\s]+)"
+        title_pattern = r"//name\s+(.*)"
+        description_pattern = r"//des\s+(.*)"
+        label_pattern = r"//label\s+(.*)"
+
         try:
             raw_message = args[3]
             chat_type = raw_message["event"]["message"]["chat_type"]
@@ -211,22 +218,44 @@ class GitMayaLarkParser(object):
                 m["key"].replace("@_user", "at_user"): m
                 for m in raw_message["event"]["message"].get("mentions", [])
             }
+
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, users, labels = [], [], []
-                for arg in param.argv:
-                    if not "at_user" in arg and len(users) == 0:
-                        title.append(arg)
-                    elif "at_user" in arg:
-                        users.append(
-                            mentions[arg]["id"]["open_id"] if arg in mentions else ""
-                        )
-                    else:
-                        labels = arg.split(",")
+                title, des, users, labels = [], [], [], []
+
+                combined_string = " ".join(param.argv)
+                user_match = re.search(user_pattern, combined_string)
+                title_match = re.search(title_pattern, combined_string)
+                description_match = re.search(description_pattern, combined_string)
+                label_match = re.search(label_pattern, combined_string)
+
+                # users.append(
+                #     mentions[arg]["id"]["open_id"]
+                #     if arg in mentions
+                #     else ""
+                #     if user_match
+                #     else None
+                # )
+                title = title_match.group(1).strip() if title_match else None
+                des.append(
+                    description_match.group(1).strip() if description_match else None
+                )
+                labels = label_match.group(1).strip() if label_match else None
+                labels = labels.split(",")
+
+                # for arg in param.argv:
+                #     if not "at_user" in arg and len(users) == 0:
+                #         title.append(arg)
+                #     elif "at_user" in arg:
+                #         users.append(
+                #             mentions[arg]["id"]["open_id"] if arg in mentions else ""
+                #         )
+                #     else:
+                #         labels = arg.split(",")
                 # 支持title中间有空格
                 title = " ".join(title)
-                users = [open_id for open_id in users if open_id]
-                tasks.create_issue.delay(title, users, labels, *args, **kwargs)
+                # users = [open_id for open_id in users if open_id]
+                tasks.create_issue.delay(title, des, users, labels, *args, **kwargs)
         except Exception as e:
             logging.error(e)
         return "issue", param, unkown
