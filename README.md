@@ -125,7 +125,12 @@ GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-re
 
 We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
 
+<details>
+<summary>
+
 ### 1. Download the `docker-compose.yml` and `.env` File
+
+</summary>
 
 First, download the `docker-compose.yml` and `.env` file; they contain the configuration for the GitMaya services, including MySQL, Celery, and Redis.
 
@@ -133,8 +138,14 @@ First, download the `docker-compose.yml` and `.env` file; they contain the confi
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
+</details>
+
+<details>
+<summary>
 
 ### 2. Configure the Environment Variables
+
+</summary>
 
 Then, you need to configure the .env file. You should replace the variables with your own GitHub App information, which created in [Step 1](#step-1-install-github-application).
 
@@ -162,16 +173,24 @@ GITHUB_WEBHOOK_SECRET=secret
 DOMAIN=127.0.0.1
 ```
 
+</details>
+
 > \[!NOTE]
 > `.env` **file supports multi-line string, so the .pem file could be pasted into .env file directly**
 
+<details>
+<summary>
+
 ### 3. Run the Images
+
+</summary>
 
 It will init database in first time, thus it may contain a few error messages in logs.
 
 ```fish
 $ docker-compose up -d
 ```
+</details>
 
 <!-- > \[!NOTE]
 >
@@ -380,7 +399,7 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 ## 📦 Ecosystem
 
-There are four repositories for gitmaya, and this is one of them:
+There is a series of gitmaya repositories, and this is one of them:
 
 |     | Repository                                                | Language | Purpose                   |
 | --- | --------------------------------------------------------- | -------- | ------------------------- |

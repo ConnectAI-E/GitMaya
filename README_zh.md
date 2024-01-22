@@ -127,7 +127,12 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 
 我们提供了一个 Docker 镜像，用于在您自己的私人设备上部署 GitMaya 服务。使用以下命令启动 GitMaya 服务：
 
+<details>
+<summary>
+
 ### 1. 下载 `docker-compose.yml` 和 `.env` 文件
+
+</summary>
 
 首先，下载 `docker-compose.yml` 和 `.env` 文件；它们包含 GitMaya 服务的配置，包括 MySQL、Celery 和 Redis。
 
@@ -135,7 +140,14 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
+</details>
+
+<details>
+<summary>
+
 ### 2. 配置环境变量
+
+</summary>
 
 接下来，您需要配置 `.env` 文件。您应该用您在 [步骤 1](#step-1-install-github-application) 中创建的 GitHub App 信息替换这些变量。
 
@@ -162,16 +174,24 @@ GITHUB_WEBHOOK_SECRET=secret
 DOMAIN=127.0.0.1
 ```
 
+</details>
+
 > \[!NOTE]
 > `.env` **文件支持多行字符串，因此.pem 文件可以直接粘贴到 .env 文件中**
 
+<details>
+<summary>
+
 ### 3. 运行镜像
+
+</summary>
 
 第一次运行时，它将初始化数据库，因此日志中可能包含一些错误消息。
 
 ```fish
 $ docker-compose up -d
 ```
+</details>
 
 <!-- > \[!NOTE]
 >
@@ -381,7 +401,7 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 ## 📦 生态系统
 
-GitMaya 有四个仓库，这是其中之一：
+GitMaya 有一系列仓库，这是其中之一：
 
 |     | 仓库                                                    | 语言    | 用途                       |
 | --- | -------------------------------------------------------- | ------- | ------------------------- |
