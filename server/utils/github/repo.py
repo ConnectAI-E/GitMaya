@@ -56,7 +56,7 @@ class GitHubAppRepo(BaseGitHubApp):
         page = 1
         while True:
             collaborators = self.base_github_rest_api(
-                f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators",
+                f"https://api.github.com/repos/{owner_name}/{repo_name}/collaborators?page={page}",
                 auth_type="install_token",
             )
             if len(collaborators) == 0:
