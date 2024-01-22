@@ -8,9 +8,9 @@
   </picture>
 </a>
 <p align='center'>
-  <samp>一个开源的、高性能的GitOps工具，用于提升开发团队的生产力</samp>
+  <samp>一个开源的、高性能的GitOps工具 one chat = one repo 从此告别双边协同</samp>
 <br/>
- <samp>支持 lark、discord、slack 等 <sup><em>(完全开源)</em></sup></samp>
+ <samp>支持飞书、discord、slack 等 <sup><em>(完全开源)</em></sup></samp>
 </p>
 
 <!-- SHIELD GROUP -->
@@ -24,7 +24,7 @@
 </div>
 
 <p align="center">
-    <a href="https://gitmaya.com">🖥 立即尝试 GitMaya </a>
+    <a href="https://gitmaya.com"> 🖥 立即尝试 GitMaya </a>
 </p>
 
 <strong align="center">
@@ -39,37 +39,35 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 ## 🔥 功能列表
 
-### 🧑🏻‍💻 由开发者，为开发者
+### 🧑🏻‍💻 所有代码完全开源
 
 拥抱与我们以开发者为中心的、完全开源的产品协作的力量，由开发者设计，为开发者打造。
 
 ### 🌐 跨平台的愉悦体验
 
-享受在不同平台上的无缝沟通，包括 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。我们的承诺是为开发者服务，无论他们在哪里感到舒适！
+享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
 
-### 🔄 一个仓库 = 一个聊天组
+Git计划支持**GIthub, GitLab, SourceForge和Bitbucket** 
 
-体验 "一个仓库 = 一个聊天组" 的完美同步，让协作流畅无阻！
+开发者在哪里，GitMaya在哪里
+
+### 🔄 One Repo = One Chat
+体验 "One Repo = One Chat" 的完美同步，让协作流畅无阻！
 
 ### 💬 简化 GitHub 消息互动：
+从您喜爱的聊天平台直接管理所有 GitHub 互动，不再需要切换上下文。
 
-从您喜爱的聊天平台直接管理所有 GitHub 互动。不再需要切换上下文，纯粹高效。
+### 🚀 Issue 全集成
+即时收到Issue提醒，随时同步处理进度。
 
-### 🚀 瞬间问题提醒
+### 🔄 Pr 全集成
+高效的PR处理流程，code-diff、comment、merge，一应俱全。
 
-告别延迟！接收即时问题提醒，使反馈和互动变得轻松自如。轻松与团队保持同步。
-
-### 🔄 Pull 请求总结魔法
-
-高效的站立会议变得轻松！快速总结拉取请求，确保您的团队保持一致并充满信心前进。
-
-### 🛠 CI/CD 和 GitHub Actions 集成
-
-通过在您的聊天平台中直接集成 CI/CD 和 GitHub Actions，提升您的开发工作流程。轻松提高生产力并简化流程。
+### 🛠 CI/CD 和 GitHub Actions 全集成
+通过在您的聊天平台中直接集成 CI/CD 和 GitHub Actions。
 
 ### 🚚 保持在代码审查流程中
-
-最大化生产力，保持专注，有效协作，确保您的代码库始终保持最佳状态！
+最大化生产力，保持专注有效协作。
 
 ## 📃 部署流程
 
@@ -96,7 +94,7 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 </summary>
 
-您可以选择使用 [自托管](#%F0%9F%9B%B3-self-hosting) 或 [本地部署](#%E2%8C%A8%EF%B8%8F-local-development) 来部署 GitMaya 的前端和后端。
+您可以选择使用 [自托管](#%F0%9F%9B%B3-自托管) 或 [本地部署](#%E2%8C%A8%EF%B8%8F-本地开发) 来部署 GitMaya 的前端和后端。
 
 </details>
 
@@ -117,7 +115,6 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
 
 ### `A` 使用 Docker-Compose 部署
-
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -381,7 +378,7 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 ## 📦 生态系统
 
-GitMaya 有四个仓库，这是其中之一：
+GitMaya 系列有多个仓库，这是其中之一：
 
 |     | 仓库                                                    | 语言    | 用途                       |
 | --- | -------------------------------------------------------- | ------- | ------------------------- |
@@ -396,7 +393,7 @@ GitMaya 有四个仓库，这是其中之一：
 
 ## 🤝 立即参与贡献
 
-Gitmaya 是一个开源平台，自由可用，由开发者们共同打造，就像你一样。请随时展示你设想的功能，并通过代码将它们变为现实。
+Gitmaya 是完全开源的，由开发者们共同打造。请随时通过代码将你想要的功能变为现实。
 
 [![][pr-welcome-shield]][pr-welcome-link]
 
@@ -434,7 +431,7 @@ Gitmaya 是一个开源平台，自由可用，由开发者们共同打造，就
 - [graphite](https://graphite.dev/)
 - [typoapp](https://typoapp.io/)
 
-它们都运作良好，但关注的重点和功能集合不同，也可以试试它们 :)
+它们都很棒，但关注的重点和功能集合不同，有兴趣也可以试试 :)
 
 <details><summary><h4>📝 License</h4></summary>
 
