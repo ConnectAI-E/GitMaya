@@ -41,15 +41,15 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 ### 🧑🏻‍💻 所有代码完全开源
 
-拥抱与我们以开发者为中心的、完全开源的产品协作的力量，由开发者设计，为开发者打造。
+以开发者为中心，由开发者设计，为开发者打造。
 
 ### 🌐 跨平台的愉悦体验
 
 享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
 
-Git计划支持**GIthub, GitLab, SourceForge 和 Bitbucket**
+Git计划支持**GIthub, GitLab, SourceForge 和 Bitbucket**。
 
-开发者在哪里，GitMaya就在哪里
+开发者在哪里，GitMaya就在哪里。
 
 ### 🔄 One Repo = One Chat
 体验 "One Repo = One Chat" 的完美同步，让协作流畅无阻！
