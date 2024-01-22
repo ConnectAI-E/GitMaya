@@ -45,7 +45,9 @@ Embrace the power of collaboration with our developer-centric, fully open-source
 
 ### 🌐 Cross-Platform Bliss
 
-Enjoy seamless communication across various platforms including **Feishu, Discord, Slack, Microsoft Teams, and Telegram**. Our commitment is to serve developers wherever they feel at home!
+Enjoy seamless communication across various platforms including **Feishu, Discord, Slack, Microsoft Teams, and Telegram**. 
+
+Our commitment is to serve developers wherever they feel at home!
 
 ### 🔄 One Repo = One ChatGroup
 
