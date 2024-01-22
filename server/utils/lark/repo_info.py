@@ -100,7 +100,7 @@ class RepoInfo(FeishuMessageCard):
                         ),
                         FeishuMessageColumn(
                             FeishuMessageMarkdown(
-                                f"**Star 热度**\n累计 {stargazers_count} 条",
+                                f"**Star 热度**\n累计 {stargazers_count} 颗",
                             ),
                             width="auto",
                             weight=1,
