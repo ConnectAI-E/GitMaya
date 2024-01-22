@@ -1,5 +1,3 @@
-import logging
-
 from celery_app import celery
 from model.repo import create_repo_from_github
 from model.schema import CodeApplication, Team, db
