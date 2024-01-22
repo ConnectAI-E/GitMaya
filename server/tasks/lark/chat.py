@@ -187,7 +187,7 @@ def create_issue(
         .first()
     )
     if not repo:
-        return send_issue_failed_tip(
+        return send_chat_failed_tip(
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
         )
 
@@ -199,7 +199,7 @@ def create_issue(
         .first()
     )
     if not code_application:
-        return send_issue_failed_tip(
+        return send_chat_failed_tip(
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
@@ -211,7 +211,7 @@ def create_issue(
         .first()
     )
     if not team:
-        return send_issue_failed_tip(
+        return send_chat_failed_tip(
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
 
