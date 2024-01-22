@@ -150,6 +150,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
         repo_id=repo.id,
         issue_number=issue_info.number,
         title=issue_info.title,
+        # TODO 这里超过1024的长度了，暂时不想单纯的增加字段长度，因为飞书那边消息也是有限制的
         description=issue_info.body[:1000] if issue_info.body else None,
         extra=issue_info.model_dump(),
     )
