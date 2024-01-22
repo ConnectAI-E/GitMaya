@@ -24,7 +24,7 @@ def pull_github_repo(
     # 拉取所有组织成员，创建 User 和 BindUser
     members = github_app.get_org_members(org_name)
     # org 只有一个人的时候，members = 0
-    if list(members) is None:
+    if members is None:
         raise Exception("Failed to get org members.")
 
     # 创建 user 和 team member
