@@ -112,6 +112,9 @@ The steps for deploying the Feishu (Lark) bot application are already integrated
 
 GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
+<details>
+<summary>
+
 ### `A` Deploying with Docker-Compose
 
 [![][docker-release-shield]][docker-release-link]

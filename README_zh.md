@@ -111,6 +111,9 @@ Git计划支持**GIthub, GitLab, SourceForge和Bitbucket**
 
 GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
 
+<details>
+<summary>
+
 ### `A` 使用 Docker-Compose 部署
 
 [![][docker-release-shield]][docker-release-link]
