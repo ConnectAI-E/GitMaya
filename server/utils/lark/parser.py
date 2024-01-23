@@ -216,8 +216,8 @@ class GitMayaLarkParser(object):
                 title, des, users, labels = [], [], [], []
 
                 for arg in param.argv:
-                    if not "at_user" in arg and len(users) == 0:
-                        split_argv = param.argv.split("//")
+                    if not "at_user" in arg:
+                        split_argv = arg.split("//")
                         for item in split_argv:
                             if "name\n" in item:
                                 title.append(item.replace("name\n", "").strip())
