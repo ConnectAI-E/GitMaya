@@ -217,14 +217,15 @@ class GitMayaLarkParser(object):
 
                 for arg in param.argv:
                     if not "at_user" in arg and len(users) == 0:
-                         for item in param.argv:
-                            if 'name\n' in item:
-                                title.append(item.replace('name\n', '').strip())
-                            elif 'des\n' in item:
-                                des.append(item.replace('des\n', '').strip())
-                            elif 'label\n' in item:
-                                labels.append(item.replace('label\n', '').strip())
-                        # title.append(arg)
+                        split_argv = param.argv.split("//")
+                        for item in split_argv:
+                            if "name\n" in item:
+                                title.append(item.replace("name\n", "").strip())
+                            elif "des\n" in item:
+                                des.append(item.replace("des\n", "").strip())
+                            elif "label\n" in item:
+                                labels.append(item.replace("label\n", "").strip())
+                    # title.append(arg)
                     elif "at_user" in arg:
                         users.append(
                             mentions[arg]["id"]["open_id"] if arg in mentions else ""
