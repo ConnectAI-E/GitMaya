@@ -61,12 +61,12 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
 def on_post_message(bot, message_id, content, message, *args, **kwargs):
     # post 消息统一在标题中解析命令，正文内容放到content进行传输
     text, title = post_content_to_markdown(content, False)
-    content["text"] = text
+    content["text"] = title
     try:
-        parser.parse_args(title, bot.app_id, message_id, content, message, **kwargs)
+        parser.parse_args(text, bot.app_id, message_id, content, message, **kwargs)
     except ArgumentError:
         # 命令解析错误，直接调用里面的回复消息逻辑
-        parser.on_comment(title, bot.app_id, message_id, content, message, **kwargs)
+        parser.on_comment(text, bot.app_id, message_id, content, message, **kwargs)
     except Exception as e:
         app.logger.exception(e)
 

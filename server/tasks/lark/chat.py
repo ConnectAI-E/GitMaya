@@ -18,6 +18,7 @@ from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
 from utils.lark.issue_card import IssueCard
+from utils.lark.post_message import post_content_to_markdown
 
 from .base import (
     get_bot_by_application_id,
@@ -152,6 +153,12 @@ def create_issue(
     title, des, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
     if not title:
+        # 判断是否为 post
+        if "post" == data["event"]["message"]["message_type"]:
+            content, title = post_content_to_markdown()
+            des = content.split("\n")[1:]
+            des.join("")
+
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
         if parent_id:

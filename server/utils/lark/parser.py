@@ -213,38 +213,20 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, users, labels, des = [], [], [], []
-
-                title_end = False
+                title, users, labels = [], [], []
                 for arg in param.argv:
-                    # label 和 at 有可能出现 \n, des 一定有 \n
-                    if "\n" in arg:
-                        title_end = True
-
-                        if arg.startswith("\n#"):
-                            labels.append(arg.lstrip().replace("#", ""))
-                        elif arg.startswith("\nat"):
-                            arg.lstrip()
-                            users.append(
-                                mentions[arg]["id"]["open_id"]
-                                if arg in mentions
-                                else ""
-                            )
-                        else:
-                            des.append(arg)
-                    elif arg.startswith("#"):
-                        labels.append(arg.replace("#", ""))
-                    elif arg.startswith("at"):
+                    if not "at_user" in arg and len(users) == 0:
+                        title.append(arg)
+                    elif "at_user" in arg:
                         users.append(
                             mentions[arg]["id"]["open_id"] if arg in mentions else ""
                         )
-                    elif not title_end:
-                        title.append(arg)
+                    else:
+                        labels = arg.split(",")
                 # 支持title中间有空格
                 title = " ".join(title)
-                des = "".join(des).lstrip("\n")
                 users = [open_id for open_id in users if open_id]
-                tasks.create_issue.delay(title, des, users, labels, *args, **kwargs)
+                tasks.create_issue.delay(title, users, labels, *args, **kwargs)
         except Exception as e:
             logging.error(e)
         return "issue", param, unkown
