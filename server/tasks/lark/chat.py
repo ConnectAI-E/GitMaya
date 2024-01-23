@@ -150,7 +150,7 @@ def send_chat_insight_message(app_id, message_id, content, data, *args, **kwargs
 @celery.task()
 @with_authenticated_github()
 def create_issue(
-    title, des, users, labels, app_id, message_id, content, data, *args, **kwargs
+    title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
     des = ""
     if not title:
