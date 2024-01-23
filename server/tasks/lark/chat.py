@@ -152,13 +152,13 @@ def send_chat_insight_message(app_id, message_id, content, data, *args, **kwargs
 def create_issue(
     title, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
-    des = ""
+    body = ""
     if not title:
         # 判断是否为 post
         message_type = data["event"]["message"].get("message_type", None)
         if "post" == message_type:
             content, title = post_content_to_markdown(content, False)
-            des = "\n".join(content.split("\n")[1:])
+            body = "\n".join(content.split("\n")[1:])
 
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
@@ -232,8 +232,6 @@ def create_issue(
     github_app = GitHubAppRepo(
         code_application.installation_id, user_id=current_code_user_id
     )
-    # TODO
-    body = des if des is not None else ""
     assignees = [code_users[openid][1] for openid in users if openid in code_users]
     response = github_app.create_issue(
         team.name, repo.name, title, body, assignees, labels
