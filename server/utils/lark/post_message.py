@@ -8,7 +8,8 @@ def post_content_to_markdown(content, merge_title=True, on_at=None, on_img=None)
                 item_text = item["text"]
             elif "at" == item["tag"]:
                 user_name = on_at(item) if on_at else item["user_name"]
-                item_text = f"@{user_name}"
+                user_id = on_at(item) if on_at else item["user_id"]
+                item_text = f"{user_id}"
             elif "a" == item["tag"]:
                 item_text = f"[{item['text']}]({item['href']})"
             elif "img" == item["tag"]:
