@@ -9,7 +9,7 @@ billiard==4.2.0
 blinker==1.7.0
 bson==0.5.10
 ca-lark-oauth==0.0.6
-ca-lark-sdk==0.0.22
+ca-lark-sdk==0.0.23
 ca-lark-webhook==0.0.5
 celery==5.3.6
 certifi==2023.11.17
