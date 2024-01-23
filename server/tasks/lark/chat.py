@@ -158,11 +158,7 @@ def create_issue(
         message_type = data["event"]["message"].get("message_type", None)
         if "post" == message_type:
             content, title = post_content_to_markdown(content, False)
-            logging.info(f"content: {content}")
-            logging.info(f"title: {title}")
-            des = content.split("\n")[1:]
-            logging.info(f"des: {des}")
-            des = "\n".join(des)
+            des = "\n".join(content.split("\n")[1:])
 
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
