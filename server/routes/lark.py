@@ -59,7 +59,6 @@ def on_card_action(bot, token, data, message, *args, **kwargs):
 
 @hook.on_bot_message(message_type="post")
 def on_post_message(bot, message_id, content, message, *args, **kwargs):
-    # post 消息统一在标题中解析命令，正文内容放到content进行传输
     text, title = post_content_to_markdown(content, False)
     content["text"] = text
     try:
