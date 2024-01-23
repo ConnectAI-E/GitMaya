@@ -213,16 +213,16 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
-                title, des, users, labels = [], [], [], []
+                users, labels = [], []
 
                 for arg in param.argv:
                     if not "at_user" in arg:
                         split_argv = arg.split("//")
                         for item in split_argv:
                             if "name\n" in item:
-                                title.append(item.replace("name\n", "").strip())
+                                title = item.replace("name\n", "").strip()
                             elif "des\n" in item:
-                                des.append(item.replace("des\n", "").strip())
+                                des = item.replace("des\n", "").strip()
                             elif "label\n" in item:
                                 labels.append(item.replace("label\n", "").strip())
                     # title.append(arg)
