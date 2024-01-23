@@ -215,14 +215,17 @@ class GitMayaLarkParser(object):
             if "group" == chat_type:
                 title, users, labels = [], [], []
                 for arg in param.argv:
-                    if not "at_user" in arg and len(users) == 0:
-                        title.append(arg)
-                    elif "at_user" in arg:
-                        users.append(
-                            mentions[arg]["id"]["open_id"] if arg in mentions else ""
-                        )
-                    else:
-                        labels = arg.split(",")
+                    if not "\n" in arg:
+                        if not "at_user" in arg and len(users) == 0:
+                            title.append(arg)
+                        elif "at_user" in arg:
+                            users.append(
+                                mentions[arg]["id"]["open_id"]
+                                if arg in mentions
+                                else ""
+                            )
+                        else:
+                            labels = arg.split(",")
                 # 支持title中间有空格
                 title = " ".join(title)
                 users = [open_id for open_id in users if open_id]

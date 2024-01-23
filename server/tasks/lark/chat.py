@@ -152,12 +152,17 @@ def send_chat_insight_message(app_id, message_id, content, data, *args, **kwargs
 def create_issue(
     title, des, users, labels, app_id, message_id, content, data, *args, **kwargs
 ):
+    des = ""
     if not title:
         # 判断是否为 post
-        if "post" == data["event"]["message"]["message_type"]:
-            content, title = post_content_to_markdown()
+        message_type = data["event"]["message"].get("message_type", None)
+        if "post" == message_type:
+            content, title = post_content_to_markdown(content, False)
+            logging.info(f"content: {content}")
+            logging.info(f"title: {title}")
             des = content.split("\n")[1:]
-            des.join("")
+            logging.info(f"des: {des}")
+            des = "\n".join(des)
 
         # 如果title是空的，尝试从parent_message拿到内容
         parent_id = data["event"]["message"].get("parent_id")
