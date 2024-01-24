@@ -483,12 +483,18 @@ class GitMayaLarkParser(object):
         logging.info("on_close %r %r", vars(param), unkown)
         _, topic = self._get_topic_by_args(*args)
         if TopicType.ISSUE == topic:
-            if param.issue_comment:
-                # 过滤 comment 中的 /close
-                args[2]["text"] = param.issue_comment
-                tasks.create_issue_comment.delay(*args, **kwargs)
-
-            tasks.close_issue.delay(*args, **kwargs)
+            if TopicType.ISSUE == topic:
+                if param.issue_comment:
+                    # 过滤 comment 中的 /close
+                    args[2]["text"] = param.issue_comment
+                    # 创建一个链式任务
+                    tasks.chain(
+                        tasks.create_issue_comment.s(*args, **kwargs),
+                        tasks.close_issue.s(*args, **kwargs)
+                    ).delay()
+                else:
+                    # 如果没有 issue comment，直接关闭 issue
+                    tasks.close_issue.delay(*args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
             tasks.close_pull_request.delay(*args, **kwargs)
         return "close", param, unkown
