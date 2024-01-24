@@ -484,7 +484,9 @@ class GitMayaLarkParser(object):
         _, topic = self._get_topic_by_args(*args)
         if TopicType.ISSUE == topic:
             if param.issue_comment:
+                args[3]["event"]["message"]["content"]["text"] = param.issue_comment
                 tasks.create_issue_comment.delay(*args, **kwargs)
+
             tasks.close_issue.delay(*args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
             tasks.close_pull_request.delay(*args, **kwargs)
