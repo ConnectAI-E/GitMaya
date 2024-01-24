@@ -9,7 +9,7 @@ from tasks.github.issue import on_issue, on_issue_comment
 from tasks.github.organization import on_organization
 from tasks.github.pull_request import on_pull_request
 from tasks.github.push import on_push
-from tasks.github.repo import on_repository, on_star, on_fork
+from tasks.github.repo import on_fork, on_repository, on_star
 from utils.auth import authenticated
 from utils.github.application import verify_github_signature
 from utils.github.bot import BaseGitHubApp

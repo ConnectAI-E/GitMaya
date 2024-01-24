@@ -147,12 +147,13 @@ class RepoEvent(BaseEvent):
 
 class StarEvent(BaseEvent):
     action: str
-    starred_at: str
+    starred_at: Optional[str] = None
     repository: Repository
 
 
 class ForkEvent(BaseEvent):
-    forkee: dict
+    action: Optional[str] = None
+    forkee: object
     repository: Repository
 
 

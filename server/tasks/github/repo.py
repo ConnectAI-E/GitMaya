@@ -170,7 +170,7 @@ def on_star(data: dict) -> list:
     task = on_repository_updated.delay(event.model_dump())
 
     return [task.id]
-        
+
 
 @celery.task()
 def on_fork(data: dict) -> list:
@@ -188,6 +188,9 @@ def on_fork(data: dict) -> list:
         app.logger.error(f"Failed to parse fork event: {e}")
         raise e
 
+    # fork 事件没有action属性，先暂时添加一个
+    # TODO unfork 事件实际是 delete repo事件，比较复杂，需求比较边缘，目前还没实现，暂且放着
+    event.action = "fork"
     task = on_repository_updated.delay(event.model_dump())
 
     return [task.id]
