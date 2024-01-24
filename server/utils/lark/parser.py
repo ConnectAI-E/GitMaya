@@ -487,10 +487,10 @@ class GitMayaLarkParser(object):
                 if param.issue_comment:
                     # 过滤 comment 中的 /close
                     args[2]["text"] = param.issue_comment
-                    # 创建一个链式任务
+                    # 链式任务, 先创建 issue comment，再关闭 issue
                     tasks.chain(
-                        tasks.create_issue_comment.s(*args, **kwargs) |
-                        tasks.close_issue.s(*args, **kwargs)
+                        tasks.create_issue_comment.si(*args, **kwargs)
+                        | tasks.close_issue.si(*args, **kwargs)
                     ).delay()
                 else:
                     # 如果没有 issue comment，直接关闭 issue
