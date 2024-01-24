@@ -489,7 +489,7 @@ class GitMayaLarkParser(object):
                     args[2]["text"] = param.issue_comment
                     # 创建一个链式任务
                     tasks.chain(
-                        tasks.create_issue_comment.s(*args, **kwargs),
+                        tasks.create_issue_comment.s(*args, **kwargs) |
                         tasks.close_issue.s(*args, **kwargs)
                     ).delay()
                 else:
