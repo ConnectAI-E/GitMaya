@@ -152,8 +152,30 @@ def on_repository_created(event_dict: dict | list | None) -> list:
 
 
 @celery.task()
+def on_repository_star(data: dict) -> list:
+    """Handler for repository starred event.
+
+    Args:
+        data (dict): Payload from GitHub webhook.
+
+    Returns:
+        str: Celery task ID.
+    """
+    try:
+        event = RepoEvent(**data)
+    except Exception as e:
+        app.logger.error(f"Failed to parse repository event: {e}")
+        raise e
+
+    task = on_repository_updated.delay(event.model_dump())
+
+    return [task.id]
+        
+
+
+@celery.task()
 def on_repository_updated(event_dict: dict | None) -> list[str]:
-    """Handler for repository created event.
+    """Handler for repository update.
 
     Update info for repo ino card.
 

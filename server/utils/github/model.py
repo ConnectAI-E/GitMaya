@@ -145,6 +145,11 @@ class RepoEvent(BaseEvent):
     repository: Repository
 
 
+class StarEvent(BaseEvent):
+    action: str
+    repository: Repository
+
+
 class IssueEvent(BaseEvent):
     action: str
     issue: Issue
