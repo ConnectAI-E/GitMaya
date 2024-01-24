@@ -162,7 +162,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
 
     # 新建issue之后也要更新 repo info
     on_repository_updated(event.model_dump())
-    
+
     return [task.id]
 
 
