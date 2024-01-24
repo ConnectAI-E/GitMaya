@@ -155,7 +155,7 @@ def on_repository_created(event_dict: dict | list | None) -> list:
 def on_repository_updated(event_dict: dict | None) -> list[str]:
     """Handler for repository created event.
 
-    Send message to Repo Owner and create chat group for repo.
+    Update info for repo ino card.
 
     Args:
         event_dict (dict): Payload from GitHub webhook.
