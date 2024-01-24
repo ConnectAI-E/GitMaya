@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from celery_app import celery
 from celery import chain
+from celery_app import celery
 
 from .github import *
 from .lark import *
