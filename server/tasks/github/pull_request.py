@@ -1,7 +1,6 @@
 from app import app, db
 from celery_app import celery
 from model.schema import ObjID, PullRequest, Repo
-from tasks.github.repo import on_repository_updated
 from tasks.lark.pull_request import send_pull_request_card, update_pull_request_card
 from utils.github.model import PullRequestEvent
 
@@ -77,9 +76,6 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     db.session.commit()
 
     task = send_pull_request_card.delay(new_pr.id)
-
-    # 新建 PR 之后也要更新 repo info
-    on_repository_updated(event.model_dump())
 
     return [task.id]
 

@@ -147,6 +147,12 @@ class RepoEvent(BaseEvent):
 
 class StarEvent(BaseEvent):
     action: str
+    starred_at: str
+    repository: Repository
+
+
+class ForkEvent(BaseEvent):
+    forkee: dict
     repository: Repository
 
 
