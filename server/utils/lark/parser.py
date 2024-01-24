@@ -121,6 +121,7 @@ class GitMayaLarkParser(object):
         parser_merge.set_defaults(func=self.on_merge)
 
         parser_close = self.subparsers.add_parser("/close")
+        parser_close.add_argument("issue_comment", nargs="?")
         parser_close.set_defaults(func=self.on_close)
 
         parser_reopen = self.subparsers.add_parser("/reopen")
@@ -482,7 +483,18 @@ class GitMayaLarkParser(object):
         logging.info("on_close %r %r", vars(param), unkown)
         _, topic = self._get_topic_by_args(*args)
         if TopicType.ISSUE == topic:
-            tasks.close_issue.delay(*args, **kwargs)
+            if TopicType.ISSUE == topic:
+                if param.issue_comment:
+                    # 过滤 comment 中的 /close
+                    args[2]["text"] = param.issue_comment
+                    # 链式任务, 先创建 issue comment，再关闭 issue
+                    tasks.chain(
+                        tasks.create_issue_comment.si(*args, **kwargs)
+                        | tasks.close_issue.si(*args, **kwargs)
+                    ).delay()
+                else:
+                    # 如果没有 issue comment，直接关闭 issue
+                    tasks.close_issue.delay(*args, **kwargs)
         elif TopicType.PULL_REQUEST == topic:
             tasks.close_pull_request.delay(*args, **kwargs)
         return "close", param, unkown
