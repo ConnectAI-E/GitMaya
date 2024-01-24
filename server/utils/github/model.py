@@ -145,6 +145,18 @@ class RepoEvent(BaseEvent):
     repository: Repository
 
 
+class StarEvent(BaseEvent):
+    action: str
+    starred_at: Optional[str] = None
+    repository: Repository
+
+
+class ForkEvent(BaseEvent):
+    action: Optional[str] = None
+    forkee: object
+    repository: Repository
+
+
 class IssueEvent(BaseEvent):
     action: str
     issue: Issue

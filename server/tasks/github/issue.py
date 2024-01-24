@@ -3,6 +3,7 @@ import os
 from app import app, db
 from celery_app import celery
 from model.schema import Issue, ObjID, PullRequest, Repo
+from tasks.github.repo import on_repository_updated
 from tasks.lark.issue import send_issue_card, send_issue_comment, update_issue_card
 from tasks.lark.pull_request import send_pull_request_comment
 from utils.github.model import IssueCommentEvent, IssueEvent
@@ -158,6 +159,9 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.commit()
 
     task = send_issue_card.delay(issue_id=new_issue.id)
+
+    # 新建issue之后也要更新 repo info
+    on_repository_updated(event.model_dump())
 
     return [task.id]
 
