@@ -4,6 +4,7 @@ from celery import Celery
 
 app.config.setdefault("CELERY_BROKER_URL", "redis://redis:6379/0")
 app.config.setdefault("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+app.conf.timezone = "Asia/Shanghai"
 celery = Celery(
     app.import_name,
     broker=app.config["CELERY_BROKER_URL"],
