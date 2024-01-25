@@ -75,7 +75,7 @@ class ChunkedDownloader(object):
         return b"".join(result)
 
 
-async def upload_image(self, img_url):
+async def upload_image(img_url, bot):
     # https://open.feishu.cn/document/server-docs/im-v1/image/create
     try:
         # file_response = await AsyncHTTPClient().fetch(img_url, request_timeout=60)
@@ -84,20 +84,12 @@ async def upload_image(self, img_url):
         logging.exception(e)
         file_content = await ChunkedDownloader.download(img_url)
     logging.info("download file %r %r", img_url, len(file_content))
-    return await self.upload_image_binary(file_content)
+    return await upload_image_binary(file_content, bot)
 
 
-async def upload_image_binary(self, img_bin, bot):
-    url = f"{Bot.LARK_HOST}/open-apis/im/v1/images"
-    encoded, content_type = encode_multipart_formdata(
-        [
-            ("image", ("image", img_bin)),
-            ("image_type", "message"),
-        ]
-    )
-    response = await self.request(
-        url, encoded, method="POST", content_type=content_type
-    )
+async def upload_image_binary(img_bin, bot):
+    url = f"{bot.HOST}/open-apis/im/v1/images"
+    response = bot.post(url, json={"image_type": "message", "image": img_bin}).json()
     return response["data"]["image_key"]
 
 

@@ -40,7 +40,7 @@ class GitMayaCardNote(FeishuMessageNote):
 
 def desc_to_feishu_message(desc):
     messages = []
-    message.append(
+    messages.append(
         FeishuMessageDiv("💬  <font color='black'>**主要内容**</font>", tag="lark_md")
     )
 
