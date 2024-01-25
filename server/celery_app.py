@@ -11,7 +11,7 @@ celery = Celery(
     backend=app.config["CELERY_RESULT_BACKEND"],
 )
 
-celery.conf.update(app.config.get("CELERY_CONFIG", {}))
+celery.conf.update(app.config.get("CELERY_CONFIG", {}), timezone="Asia/Shanghai")
 TaskBase = celery.Task
 
 
