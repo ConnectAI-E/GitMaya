@@ -1,6 +1,8 @@
 import logging
 
 import httpx
+from httpx import MultipartRequest
+from requests_toolbelt import MultipartEncoder
 
 
 def upload_image(url, application_id):
@@ -25,13 +27,9 @@ def upload_image_binary(img_bin, application_id):
         "image_type": "message",
         "image": img_bin,
     }
-    headers = []
-    headers["Content-Type"] = "multipart/form-data; boundary=---7MA4YWxkTrZu0gW"
-    response = bot.post(
-        url,
-        json=data,
-        headers=headers,
-    ).json()
+    headers = {}
+    headers["Content-Type"] = "multipart/form-data"
+    response = bot.post(url, files=data, headers=headers).json()
     return response["data"]["image_key"]
 
 
