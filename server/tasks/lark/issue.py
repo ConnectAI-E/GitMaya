@@ -17,6 +17,7 @@ from model.schema import (
 )
 from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
+from utils.lark.base import desc_to_feishu_message
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
@@ -318,9 +319,10 @@ def send_issue_comment(issue_id, comment, user_name: str):
             comment = replace_images_and_split_text(
                 comment, chat_group.im_application_id
             )
+            comment_block = desc_to_feishu_message(comment) if comment else []
             result = bot.reply(
                 issue.message_id,
-                FeishuTextMessage(f"@{user_name}: {comment}"),
+                *comment_block,
             ).json()
             return result
     return False
