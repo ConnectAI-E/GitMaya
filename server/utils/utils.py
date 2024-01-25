@@ -3,7 +3,7 @@ import logging
 
 from connectai.lark.sdk import Bot
 from httpx import AsyncClient
-from urllib3 import encode_multipart_formdata
+from tasks.lark.base import get_bot_by_application_id
 
 
 class ChunkedDownloader(object):
@@ -75,7 +75,7 @@ class ChunkedDownloader(object):
         return b"".join(result)
 
 
-async def upload_image(img_url, bot):
+async def upload_image(img_url, application_id):
     # https://open.feishu.cn/document/server-docs/im-v1/image/create
     try:
         # file_response = await AsyncHTTPClient().fetch(img_url, request_timeout=60)
@@ -84,10 +84,11 @@ async def upload_image(img_url, bot):
         logging.exception(e)
         file_content = await ChunkedDownloader.download(img_url)
     logging.info("download file %r %r", img_url, len(file_content))
-    return await upload_image_binary(file_content, bot)
+    return await upload_image_binary(file_content, application_id)
 
 
-async def upload_image_binary(img_bin, bot):
+async def upload_image_binary(img_bin, application_id):
+    bot, _ = get_bot_by_application_id(application_id)
     url = f"{bot.HOST}/open-apis/im/v1/images"
     response = bot.post(url, json={"image_type": "message", "image": img_bin}).json()
     return response["data"]["image_key"]

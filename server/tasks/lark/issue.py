@@ -80,7 +80,7 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -101,7 +101,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
         )
 
     # 处理description
-    description = replace_images_and_split_text.delay(issue.description, bot)
+    description = replace_images_and_split_text.delay(issue.description, application_id)
 
     return IssueCard(
         repo_url=repo_url,
@@ -236,7 +236,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+    message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -263,7 +263,9 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                message = gen_issue_card_by_issue(
+                    chat_group.im_application_id, issue, repo_url, team
+                )
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -345,7 +347,9 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                message = gen_issue_card_by_issue(
+                    chat_group.im_application_id, issue, repo_url, team
+                )
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -466,7 +470,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -496,7 +500,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
