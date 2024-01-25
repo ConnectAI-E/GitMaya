@@ -1,8 +1,6 @@
 import logging
 
 import httpx
-from httpx import MultipartRequest
-from requests_toolbelt import MultipartEncoder
 
 
 def upload_image(url, application_id):
@@ -12,6 +10,7 @@ def upload_image(url, application_id):
         return upload_image(new_url, application_id)
     # 确保请求成功
     elif response.status_code == 200:
+        logging.info(f"image_bin: {response.content}")
         return upload_image_binary(response.content, application_id)
     else:
         return None
@@ -23,13 +22,11 @@ def upload_image_binary(img_bin, application_id):
     bot, _ = get_bot_by_application_id(application_id)
     url = f"{bot.host}/open-apis/im/v1/images"
 
-    data = {
+    files = {
         "image_type": "message",
-        "image": img_bin,
+        "image": (img_bin, "image/png"),
     }
-    headers = {}
-    headers["Content-Type"] = "multipart/form-data"
-    response = bot.post(url, files=data, headers=headers).json()
+    response = bot.post(url, files=files).json()
     return response["data"]["image_key"]
 
 
