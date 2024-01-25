@@ -48,6 +48,6 @@ def desc_to_feishu_message(desc):
         if part.startswith("img_"):
             messages.append(FeishuMessageImage(img_key=part, tag="img"))
         else:
-            messages.append(FeishuMessageMarkdown(part.replace("\n", "")))
+            messages.append(FeishuMessageMarkdown(part))
     logging.info(messages)
     return messages

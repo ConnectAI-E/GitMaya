@@ -315,6 +315,9 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            comment = replace_images_and_split_text(
+                comment, chat_group.im_application_id
+            )
             result = bot.reply(
                 issue.message_id,
                 FeishuTextMessage(f"@{user_name}: {comment}"),
