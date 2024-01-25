@@ -1,78 +1,76 @@
 import asyncio
 import logging
 
-import requests
 from connectai.lark.sdk import Bot
-from httpx import AsyncClient
+from httpx import request
 
+# class ChunkedDownloader(object):
+#     def __init__(
+#         self,
+#         chunk_size=1 * 1024**2,
+#         max_chunk=10,
+#         timeout=10,
+#         proxy=None,
+#         proxies=None,
+#     ):
+#         self.chunk_size = chunk_size
+#         self.max_chunk = max_chunk
+#         self.timeout = timeout
+#         self.proxy = proxy  # 废弃的参数
+#         self.proxies = proxies
 
-class ChunkedDownloader(object):
-    def __init__(
-        self,
-        chunk_size=1 * 1024**2,
-        max_chunk=10,
-        timeout=10,
-        proxy=None,
-        proxies=None,
-    ):
-        self.chunk_size = chunk_size
-        self.max_chunk = max_chunk
-        self.timeout = timeout
-        self.proxy = proxy  # 废弃的参数
-        self.proxies = proxies
+#     @property
+#     def client(self):
+#         # 尝试使用tornado的httpclient，底层是curlasynchttpclient
+#         return AsyncClient()
+#         # return httpx.AsyncClient(proxies=self.proxies)
 
-    @property
-    def client(self):
-        # 尝试使用tornado的httpclient，底层是curlasynchttpclient
-        return AsyncClient()
-        # return httpx.AsyncClient(proxies=self.proxies)
+#     async def get_content_length(self, url):
+#         async with self.client as client:
+#             response = await client.head(url)
+#             if response.status_code >= 300:
+#                 raise Exception()
+#             return (
+#                 int(response.headers.get("content-length")),
+#                 response.headers.get("accept-ranges", "") == "bytes",
+#             )
 
-    async def get_content_length(self, url):
-        async with self.client as client:
-            response = await client.head(url)
-            if response.status_code >= 300:
-                raise Exception()
-            return (
-                int(response.headers.get("content-length")),
-                response.headers.get("accept-ranges", "") == "bytes",
-            )
+#     def parts_generator(self, size, start=0, part_size=1 * 1024**2):
+#         while size - start > part_size:
+#             yield start, start + part_size - 1
+#             start += part_size
+#         yield start, size
 
-    def parts_generator(self, size, start=0, part_size=1 * 1024**2):
-        while size - start > part_size:
-            yield start, start + part_size - 1
-            start += part_size
-        yield start, size
+#     async def download_chunk(self, url, headers):
+#         logging.debug("download %r %r", url, headers)
+#         try:
+#             async with self.client as client:
+#                 response = await client.get(url, headers=headers, timeout=self.timeout)
+#                 return response.content
+#         except Exception as e:
+#             logging.error(e)
+#             async with self.client as client:
+#                 response = await client.get(url, headers=headers, timeout=self.timeout)
+#                 return response.content
 
-    async def download_chunk(self, url, headers):
-        logging.debug("download %r %r", url, headers)
-        try:
-            async with self.client as client:
-                response = await client.get(url, headers=headers, timeout=self.timeout)
-                return response.content
-        except Exception as e:
-            logging.error(e)
-            async with self.client as client:
-                response = await client.get(url, headers=headers, timeout=self.timeout)
-                return response.content
-
-    async def download(self, url):
-        try:
-            size, support_range = await self.get_content_length(url)
-        except Exception as e:
-            size, support_range = await self.get_content_length(url)
-        chunk_size = self.chunk_size
-        if size / self.chunk_size > self.max_chunk:
-            chunk_size = int((size + self.max_chunk + 1) / self.max_chunk)
-        tasks = []
-        for number, sizes in enumerate(
-            self.parts_generator(size, part_size=chunk_size if support_range else size)
-        ):
-            tasks.append(
-                self.download_chunk(url, {"Range": f"bytes={sizes[0]}-{sizes[1]}"})
-            )
-        logging.info("download file %r in %r chunks", url, len(tasks))
-        result = await asyncio.gather(*tasks)
-        return b"".join(result)
+#     async def download(self, url):
+#         try:
+#             size, support_range = await self.get_content_length(url)
+#         except Exception as e:
+#             size, support_range = await self.get_content_length(url)
+#         chunk_size = self.chunk_size
+#         if size / self.chunk_size > self.max_chunk:
+#             chunk_size = int((size + self.max_chunk + 1) / self.max_chunk)
+#         tasks = []
+#         for number, sizes in enumerate(
+#             self.parts_generator(size, part_size=chunk_size if support_range else size)
+#         ):
+#             tasks.append(
+#                 self.download_chunk(url, {"Range": f"bytes={sizes[0]}-{sizes[1]}"})
+#             )
+#         logging.info("download file %r in %r chunks", url, len(tasks))
+#         result = await asyncio.gather(*tasks)
+#         return b"".join(result)
 
 
 # async def upload_image(img_url, application_id):
@@ -88,7 +86,7 @@ class ChunkedDownloader(object):
 
 
 def upload_image(url, application_id):
-    response = requests.get(url)
+    response = request.get(url)
     # 确保请求成功
     if response.status_code == 200:
         return upload_image_binary(response.content, application_id)
