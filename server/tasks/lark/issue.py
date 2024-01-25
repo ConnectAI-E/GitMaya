@@ -80,7 +80,7 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -101,7 +101,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
         )
 
     # 处理description
-    description = replace_images_and_split_text.delay(bot, issue.description)
+    description = replace_images_and_split_text.delay(issue.description)
 
     return IssueCard(
         repo_url=repo_url,
@@ -116,7 +116,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
 
 
 @celery.task()
-def replace_images_and_split_text(bot, text):
+def replace_images_and_split_text(text):
     # 查找所有 Markdown 图片格式并替换为 image_key，同时分割文本
     pattern = r"!\[.*?\]\((.*?)\)"
     parts = []
@@ -127,7 +127,7 @@ def replace_images_and_split_text(bot, text):
         parts.append(text[last_index : match.start()])
         # 获取图片 URL，并替换为 image_key
         image_url = match.group(1)
-        image_key = upload_image(image_url, bot)
+        image_key = upload_image(image_url)
         parts.append(image_key)
         last_index = match.end()
 
@@ -236,7 +236,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+    message = gen_issue_card_by_issue(issue, repo_url, team, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -263,7 +263,7 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                message = gen_issue_card_by_issue(issue, repo_url, team)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -345,7 +345,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                message = gen_issue_card_by_issue(issue, repo_url, team)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -466,7 +466,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -496,7 +496,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
