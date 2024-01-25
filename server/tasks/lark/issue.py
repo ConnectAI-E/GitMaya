@@ -127,6 +127,7 @@ def replace_images_and_split_text(text, bot):
         # 获取图片 URL，并替换为 image_key
         image_url = match.group(1)
         image_key = upload_image(image_url, bot)
+        logging.info("debug image_key: %r", image_key)
         parts.append(image_key)
         last_index = match.end()
 

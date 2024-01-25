@@ -49,4 +49,5 @@ def desc_to_feishu_message(desc):
             messages.append(FeishuMessageImage(img_key=part, tag="img"))
         else:
             messages.append(FeishuMessageMarkdown(part))
+    logging.info(messages)
     return messages
