@@ -1,6 +1,7 @@
 import logging
 
 import httpx
+from requests_toolbelt import MultipartEncoder
 
 
 def upload_image(url, application_id):
@@ -20,8 +21,19 @@ def upload_image_binary(img_bin, application_id):
 
     bot, _ = get_bot_by_application_id(application_id)
     url = f"{bot.host}/open-apis/im/v1/images"
-    logging.info(f"url: {url}")
-    response = bot.post(url, json={"image_type": "message", "image": img_bin}).json()
+
+    data = {
+        "image_type": "message",
+        "image": img_bin,
+    }
+    multi_form = MultipartEncoder(data)
+    headers = []
+    headers["Content-Type"] = multi_form.content_type
+    response = bot.post(
+        url,
+        json=data,
+        headers=headers,
+    ).json()
     return response["data"]["image_key"]
 
 
