@@ -316,13 +316,11 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
-            comment = replace_images_and_split_text(
-                comment, chat_group.im_application_id
-            )
-            comment_block = desc_to_feishu_message(comment) if comment else []
+
+            # TODO 判断是否有图片
             result = bot.reply(
                 issue.message_id,
-                *comment_block,
+                FeishuTextMessage(f"@{user_name}: {comment}"),
             ).json()
             return result
     return False
