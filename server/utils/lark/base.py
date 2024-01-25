@@ -36,3 +36,17 @@ class GitMayaCardNote(FeishuMessageNote):
             ),
             FeishuMessagePlainText(content),
         )
+
+
+def desc_to_feishu_message(desc):
+    messages = []
+    message.append(
+        FeishuMessageDiv("💬  <font color='black'>**主要内容**</font>", tag="lark_md")
+    )
+
+    for part in desc:
+        if part.startswith("img_"):
+            messages.append(FeishuMessageImage(img_key=part, tag="img"))
+        else:
+            messages.append(FeishuMessageMarkdown(part))
+    return messages

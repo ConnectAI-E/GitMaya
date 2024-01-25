@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 
 from celery_app import app, celery
 from connectai.lark.sdk import FeishuTextMessage
@@ -20,6 +21,7 @@ from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
 from utils.lark.issue_tip_success import IssueTipSuccess
+from utils.utils import upload_image
 
 from .base import (
     get_bot_by_application_id,
@@ -98,16 +100,41 @@ def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
+    # 处理description
+    description = replace_images_and_split_text.delay(issue.description)
+
     return IssueCard(
         repo_url=repo_url,
         id=issue.issue_number,
         title=issue.title,
-        description=issue.description,
+        description=description,
         status=status,
         assignees=assignees,
         tags=tags,
         updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
     )
+
+
+@celery.task()
+def replace_images_and_split_text(text):
+    # 查找所有 Markdown 图片格式并替换为 image_key，同时分割文本
+    pattern = r"!\[.*?\]\((.*?)\)"
+    parts = []
+    last_index = 0
+
+    for match in re.finditer(pattern, text):
+        # 添加图片之前的文本
+        parts.append(text[last_index : match.start()])
+        # 获取图片 URL，并替换为 image_key
+        image_url = match.group(1)
+        image_key = upload_image(image_url)
+        parts.append(image_key)
+        last_index = match.end()
+
+    # 添加最后一部分文本
+    parts.append(text[last_index:])
+
+    return [part.replace("\r\n", "") for part in parts if part]
 
 
 def send_issue_url_message(
