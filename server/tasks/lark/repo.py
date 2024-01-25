@@ -541,7 +541,7 @@ def update_repo_info(repo_id: str) -> dict | None:
             repo_name=repo.name,
             repo_description=repo.description,
             repo_topic=repo.extra.get("topics", []),
-            homepage=repo.extra.get("homepage", repo_url),
+            homepage=repo.extra.get("homepage", None),
             open_issues_count=repo.extra.get("open_issues_count", 0),
             stargazers_count=repo.extra.get("stargazers_count", 0),
             forks_count=repo.extra.get("forks_count", 0),

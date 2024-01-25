@@ -28,7 +28,7 @@ class RepoInfo(FeishuMessageCard):
         )
         homepage = (
             f"[{homepage}]({homepage})"
-            if homepage is not None
+            if homepage is not None and homepage != ""
             else "**<font color='red'>待补充</font>**"
         )
         elements = [
