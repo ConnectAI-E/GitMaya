@@ -157,6 +157,8 @@ def install_im_application_to_team_by_get_method(team_id, platform):
         return abort(400, "params error")
 
     redirect_uri = request.base_url
+    if request.headers.get("X-Forwarded-Proto") == "https":
+        redirect_uri = redirect_uri.replace("http://", "https://")
     app_id = request.args.get("app_id", "")
     name = request.args.get("name", "")
     if app_id:
