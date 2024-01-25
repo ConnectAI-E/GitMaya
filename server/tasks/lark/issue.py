@@ -80,7 +80,7 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-async def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -101,7 +101,7 @@ async def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=
         )
 
     # 处理description
-    description = await replace_images_and_split_text(issue.description, application_id)
+    description = replace_images_and_split_text(issue.description, application_id)
 
     return IssueCard(
         repo_url=repo_url,
@@ -115,8 +115,7 @@ async def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=
     )
 
 
-# @celery.task()
-async def replace_images_and_split_text(text, bot):
+def replace_images_and_split_text(text, bot):
     # 查找所有 Markdown 图片格式并替换为 image_key，同时分割文本
     pattern = r"!\[.*?\]\((.*?)\)"
     parts = []
@@ -127,7 +126,7 @@ async def replace_images_and_split_text(text, bot):
         parts.append(text[last_index : match.start()])
         # 获取图片 URL，并替换为 image_key
         image_url = match.group(1)
-        image_key = await upload_image(image_url, bot)
+        image_key = upload_image(image_url, bot)
         parts.append(image_key)
         last_index = match.end()
 

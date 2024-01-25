@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+import requests
 from connectai.lark.sdk import Bot
 from httpx import AsyncClient
 
@@ -74,19 +75,28 @@ class ChunkedDownloader(object):
         return b"".join(result)
 
 
-async def upload_image(img_url, application_id):
-    # https://open.feishu.cn/document/server-docs/im-v1/image/create
-    try:
-        # file_response = await AsyncHTTPClient().fetch(img_url, request_timeout=60)
-        file_content = await ChunkedDownloader.download(img_url)
-    except Exception as e:
-        logging.exception(e)
-        file_content = await ChunkedDownloader.download(img_url)
-    logging.info("download file %r %r", img_url, len(file_content))
-    return await upload_image_binary(file_content, application_id)
+# async def upload_image(img_url, application_id):
+#     # https://open.feishu.cn/document/server-docs/im-v1/image/create
+#     try:
+#         # file_response = await AsyncHTTPClient().fetch(img_url, request_timeout=60)
+#         file_content = await ChunkedDownloader.download(img_url)
+#     except Exception as e:
+#         logging.exception(e)
+#         file_content = await ChunkedDownloader.download(img_url)
+#     logging.info("download file %r %r", img_url, len(file_content))
+#     return await upload_image_binary(file_content, application_id)
 
 
-async def upload_image_binary(img_bin, application_id):
+def upload_image(url, application_id):
+    response = requests.get(url)
+    # 确保请求成功
+    if response.status_code == 200:
+        return upload_image_binary(response.content, application_id)
+    else:
+        return None
+
+
+def upload_image_binary(img_bin, application_id):
     from tasks.lark.base import get_bot_by_application_id
 
     bot, _ = get_bot_by_application_id(application_id)
