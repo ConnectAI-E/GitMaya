@@ -81,7 +81,7 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -102,7 +102,7 @@ def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False)
         )
 
     # 处理description
-    description = replace_images_and_split_text(issue.description, application_id)
+    description = replace_images_with_keys(issue.description, bot)
 
     return IssueCard(
         repo_url=repo_url,
@@ -116,26 +116,19 @@ def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False)
     )
 
 
-def replace_images_and_split_text(text, bot):
-    # 查找所有 Markdown 图片格式并替换为 image_key，同时分割文本
+def replace_images_with_keys(text, bot):
+    # 查找所有 Markdown 图片格式
     pattern = r"!\[.*?\]\((.*?)\)"
-    parts = []
-    last_index = 0
+    matches = re.findall(pattern, text)
 
-    for match in re.finditer(pattern, text):
-        # 添加图片之前的文本
-        parts.append(text[last_index : match.start()])
-        # 获取图片 URL，并替换为 image_key
-        image_url = match.group(1)
-        image_key = upload_image(image_url, bot)
+    # 对每个找到的图片 URL，获取 image_key 并替换原始文本
+    for url in matches:
+        image_key = upload_image(url, bot)
         logging.info("debug image_key: %r", image_key)
-        parts.append(image_key)
-        last_index = match.end()
+        # 替换 URL 为 image_key
+        text = text.replace(url, image_key)
 
-    # 添加最后一部分文本
-    parts.append(text[last_index:])
-
-    return [part for part in parts if part]
+    return text
 
 
 def send_issue_url_message(
@@ -237,7 +230,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
+    message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -264,9 +257,7 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(
-                    chat_group.im_application_id, issue, repo_url, team
-                )
+                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -350,9 +341,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(
-                    chat_group.im_application_id, issue, repo_url, team
-                )
+                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -473,7 +462,7 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -503,7 +492,7 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(app_id, issue, repo_url, team, True)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response

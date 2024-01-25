@@ -7,7 +7,7 @@ class IssueCard(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         id=16,
         title="",
-        description=[],
+        description=None,
         status="待完成",
         persons=[],
         assignees=[],
@@ -30,7 +30,20 @@ class IssueCard(FeishuMessageCard):
                 "关闭 Issue", type="danger", value={"command": f"/close"}
             )
         )
-        desc_block = desc_to_feishu_message(description) if description else []
+        desc_block = (
+            [
+                FeishuMessageDiv(
+                    "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
+                ),
+                FeishuMessageMarkdown(
+                    # TODO 替换content
+                    description,
+                    text_align="left",
+                ),
+            ]
+            if description
+            else []
+        )
         elements = [
             FeishuMessageColumnSet(
                 FeishuMessageColumn(

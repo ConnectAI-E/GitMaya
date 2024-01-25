@@ -1,22 +1,19 @@
 import httpx
 
 
-def upload_image(url, application_id):
+def upload_image(url, bot):
     response = httpx.get(url, follow_redirects=False)
     if response.status_code == 302:
         new_url = response.headers.get("Location")
-        return upload_image(new_url, application_id)
+        return upload_image(new_url, bot)
     # 确保请求成功
     elif response.status_code == 200:
-        return upload_image_binary(response.content, application_id)
+        return upload_image_binary(response.content, bot)
     else:
         return None
 
 
-def upload_image_binary(img_bin, application_id):
-    from tasks.lark.base import get_bot_by_application_id
-
-    bot, _ = get_bot_by_application_id(application_id)
+def upload_image_binary(img_bin, bot):
     url = f"{bot.host}/open-apis/im/v1/images"
 
     data = {"image_type": "message"}
