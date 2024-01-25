@@ -3,7 +3,6 @@ import logging
 
 from connectai.lark.sdk import Bot
 from httpx import AsyncClient
-from tasks.lark.base import get_bot_by_application_id
 
 
 class ChunkedDownloader(object):
@@ -88,6 +87,8 @@ async def upload_image(img_url, application_id):
 
 
 async def upload_image_binary(img_bin, application_id):
+    from tasks.lark.base import get_bot_by_application_id
+
     bot, _ = get_bot_by_application_id(application_id)
     url = f"{bot.HOST}/open-apis/im/v1/images"
     response = bot.post(url, json={"image_type": "message", "image": img_bin}).json()

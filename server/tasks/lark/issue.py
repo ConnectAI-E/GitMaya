@@ -101,7 +101,7 @@ def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False)
         )
 
     # 处理description
-    description = replace_images_and_split_text.delay(issue.description, application_id)
+    description = replace_images_and_split_text(issue.description, application_id)
 
     return IssueCard(
         repo_url=repo_url,
@@ -115,7 +115,7 @@ def gen_issue_card_by_issue(application_id, issue, repo_url, team, maunal=False)
     )
 
 
-@celery.task()
+# @celery.task()
 def replace_images_and_split_text(text, bot):
     # 查找所有 Markdown 图片格式并替换为 image_key，同时分割文本
     pattern = r"!\[.*?\]\((.*?)\)"
@@ -134,7 +134,7 @@ def replace_images_and_split_text(text, bot):
     # 添加最后一部分文本
     parts.append(text[last_index:])
 
-    return [part.replace("\r\n", "") for part in parts if part]
+    return [part for part in parts if part]
 
 
 def send_issue_url_message(
