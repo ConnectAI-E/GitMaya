@@ -215,18 +215,21 @@ class GitMayaLarkParser(object):
             # 只有群聊才是指定的repo
             if "group" == chat_type:
                 title, users, labels = [], [], []
+                is_first_line = True  # 用于标记是否为第一行
+
                 for arg in param.argv:
-                    if not "\n" in arg:
-                        if not "at_user" in arg and len(users) == 0:
-                            title.append(arg)
+                    if is_first_line:
+                        if "at_user" not in arg:
+                            # 处理labels
+                            labels = arg.split(",") if "," in arg else [arg]
+                            is_first_line = False  # 处理完第一行后，更改标记状态
                         elif "at_user" in arg:
                             users.append(
                                 mentions[arg]["id"]["open_id"]
                                 if arg in mentions
                                 else ""
                             )
-                        else:
-                            labels = arg.split(",")
+                            is_first_line = False  # 处理完第一行后，更改标记状态
                 # 支持title中间有空格
                 title = " ".join(title)
                 users = [open_id for open_id in users if open_id]
