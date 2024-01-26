@@ -1,6 +1,9 @@
 import httpx
+from utils.redis import stalecache
 
 
+# 使用 stalecache 装饰器，以 url 作为缓存键
+@stalecache(key=lambda url, *args, **kwargs: url, expire=300, stale=600)
 def upload_image(url, bot):
     response = httpx.get(url, follow_redirects=False)
     if response.status_code == 302:
@@ -8,7 +11,9 @@ def upload_image(url, bot):
         return upload_image(new_url, bot)
     # 确保请求成功
     elif response.status_code == 200:
-        return upload_image_binary(response.content, bot)
+        # iamg_key 存到缓存中
+        img_key = upload_image_binary(response.content, bot)
+        return img_key
     else:
         return None
 
