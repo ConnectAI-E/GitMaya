@@ -14,6 +14,7 @@
 </p>
 
 <!-- SHIELD GROUP -->
+
 [![][github-logo-shield]][github-logo-link]
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-forks-shield]][github-forks-link]
@@ -140,6 +141,7 @@ First, download the `docker-compose.yml` and `.env` file; they contain the confi
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
+
 </details>
 
 <details>
@@ -149,7 +151,7 @@ $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.ex
 
 </summary>
 
-Then, you need to configure the .env file. You should replace the variables with your own GitHub App information, which created in [Step 1](#step-1-install-github-application).
+Then, you need to configure the `.env` and `docker-compose.yml` file. You should replace the variables with your own GitHub App information, which created in [Step 1](#step-1-install-github-application).
 
 ```fish
 $ vim .env
@@ -177,6 +179,26 @@ DOMAIN=127.0.0.1
 
 > **NOTE**: **file supports multi-line string, so the .pem file could be pasted into `.env` file directly**
 
+Configure the `docker-compose.yml` file.
+
+```fish
+$ vim docker-compose.yml
+```
+
+Replace `VITE_OAUTH_HOST` to your own domain name.
+
+```fish
+  proxy:
+    image: connectai/gitmaya-proxy
+    environment:
+      - VITE_OAUTH_HOST=https://gitmaya.com
+    ports:
+      - "8000:80"
+      - "8001:81"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+```
+
 </details>
 
 <details>
@@ -191,6 +213,7 @@ It will init database in first time, thus it may contain a few error messages in
 ```fish
 $ docker-compose up -d
 ```
+
 </details>
 
 <!-- > \[!NOTE]
