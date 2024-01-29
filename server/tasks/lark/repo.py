@@ -1,5 +1,4 @@
 import logging
-from email import message
 
 from celery_app import app, celery
 from model.schema import (
