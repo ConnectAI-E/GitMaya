@@ -102,7 +102,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
         )
 
     # 处理description
-    description = replace_images_with_keys(issue.description, bot)
+    description = replace_images_with_keys(issue.description if issue.description else "", bot)
 
     return IssueCard(
         repo_url=repo_url,
