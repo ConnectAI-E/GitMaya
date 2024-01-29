@@ -53,8 +53,6 @@ services:
 
   proxy:
     image: connectai/gitmaya-proxy
-    environment:
-      - VITE_OAUTH_HOST=https://gitmaya.com
     ports:
       - "8000:80"
       - "8001:81"
