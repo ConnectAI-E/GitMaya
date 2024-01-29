@@ -221,7 +221,7 @@ class GitMayaLarkParser(object):
                     if is_first_line:
                         if "at_user" not in arg:
                             # 处理labels
-                            labels = arg.split(",") if "," in arg else [arg]
+                            labels = arg.split(",")
                             is_first_line = False  # 处理完第一行后，更改标记状态
                         elif "at_user" in arg:
                             users.append(
