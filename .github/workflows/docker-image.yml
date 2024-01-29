@@ -3,27 +3,45 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    paths:
+      - '**'
+      - 'website/**'
 
 jobs:
-  build:
+  build-main-app:
     runs-on: ubuntu-latest
-
+    if: contains(github.event.head_commit.modified, 'website/') == false
     steps:
     - name: Check out the repo
       uses: actions/checkout@v2
-
     - name: Log in to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKER_HUB_ACCOUNT }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-    - name: Build and push Docker image
+    - name: Build and push main app Docker image
       uses: docker/build-push-action@v2
       with:
         context: .
-        file: Dockerfile
+        file: deploy/Dockerfile
         push: true
         tags: connectai/gitmaya:latest
+
+  build-website:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'website/')
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v2
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_ACCOUNT }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+    - name: Build and push website Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: website
+        file: deploy/Dockerfile.proxy
+        push: true
+        tags: connectai/gitmaya-proxy:latest
