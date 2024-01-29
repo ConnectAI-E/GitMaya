@@ -224,9 +224,7 @@ class GitMayaLarkParser(object):
                         title.append(arg)
                     elif "at_user" in arg:
                         users.append(
-                            mentions[arg]["id"]["open_id"]
-                            if arg in mentions
-                            else ""
+                            mentions[arg]["id"]["open_id"] if arg in mentions else ""
                         )
                     else:
                         labels = arg.split(",")
