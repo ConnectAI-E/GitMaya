@@ -179,26 +179,6 @@ DOMAIN=127.0.0.1
 
 > **NOTE**: **file supports multi-line string, so the .pem file could be pasted into `.env` file directly**
 
-Configure the `docker-compose.yml` file.
-
-```fish
-$ vim docker-compose.yml
-```
-
-Replace `VITE_OAUTH_HOST` to your own domain name.
-
-```fish
-  proxy:
-    image: connectai/gitmaya-proxy
-    environment:
-      - VITE_OAUTH_HOST=https://gitmaya.com
-    ports:
-      - "8000:80"
-      - "8001:81"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-```
-
 </details>
 
 <details>
