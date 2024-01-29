@@ -17,7 +17,6 @@ from model.schema import (
 )
 from model.team import get_assignees_by_openid
 from utils.github.repo import GitHubAppRepo
-from utils.lark.base import desc_to_feishu_message
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
@@ -117,6 +116,16 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
 
 
 def replace_images_with_keys(text, bot):
+    """
+    replace image URL to image_key。
+
+    Args:
+        text (str): original text
+        bot: bot instance
+
+    Returns:
+        str: replaced text
+    """
     # 查找所有 Markdown 图片格式
     pattern = r"!\[.*?\]\((.*?)\)"
     matches = re.findall(pattern, text)
@@ -308,13 +317,38 @@ def send_issue_comment(issue_id, comment, user_name: str):
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
 
-            # TODO 判断是否有图片
+            # 替换 comment 中的图片 url 为 image_key
+            comment = replace_images_with_keys(comment, bot)
+            content = gen_comment_message(user_name, comment)
             result = bot.reply(
                 issue.message_id,
-                FeishuTextMessage(f"@{user_name}: {comment}"),
+                content,
             ).json()
             return result
     return False
+
+
+def gen_comment_message(user_name, comment):
+    # 有图片就解析成 post 富文本
+    pattern = r"(\n|!\[.*?\]\((.*?)\)"
+    elements = re.split(pattern, comment)
+
+    # TODO at等写完映射再加，表情也是
+    messages = []
+    messages.append([FeishuTextMessage(f"@{user_name}: ")])
+    for element in elements:
+        if not element:
+            continue
+        if element.startswith("!["):  # 如果是图片
+            image_key = re.search(r"\((.*?)\)", element).group(1)
+            messages.append([FeishuPostMessageImage(image_key=image_key)])
+        else:  # 处理文本部分
+            lines = element.split("\n")
+            for line in lines:
+                if line:  # 忽略空行
+                    messages.append([FeishuPostMessageText(text=line)])
+
+    return messages
 
 
 @celery.task()
