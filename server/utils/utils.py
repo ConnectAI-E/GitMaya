@@ -1,10 +1,13 @@
+import logging
+
 import httpx
 from utils.redis import stalecache
 
 
 # 使用 stalecache 装饰器，以 url 作为缓存键
-@stalecache(key=lambda url, *args, **kwargs: url, expire=300, stale=600)
+@stalecache(expire=300, stale=600)
 def upload_image(url, bot):
+    logging.info("upload image: %s", url)
     response = httpx.get(url, follow_redirects=False)
     if response.status_code == 302:
         new_url = response.headers.get("Location")

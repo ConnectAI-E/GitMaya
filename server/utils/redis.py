@@ -11,7 +11,7 @@ from app import app
 
 app.config.setdefault("REDIS_URL", "redis://redis:6379/0")
 
-client = redis.from_url(app.config["CELERY_BROKER_URL"], decode_responses=True)
+client = redis.from_url(app.config["REDIS_URL"], decode_responses=True)
 
 
 class RedisStorage(object):
@@ -27,10 +27,8 @@ class RedisStorage(object):
         client.set(name, value)
 
 
-def get_redis_client(decode_responses):
-    return redis.from_url(
-        app.config["CELERY_BROKER_URL"], decode_responses=decode_responses
-    )
+def get_client(decode_responses=False):
+    return redis.from_url(app.config["REDIS_URL"], decode_responses=decode_responses)
 
 
 def get_name(
@@ -44,13 +42,9 @@ def get_name(
     attr_prefix=None,
     namespace="",
 ):
-    name = key or kwargs.get("key", None) or (attr_key and getattr(self, attr_key))
+    name = key or kwargs.get("key", None) or (attr_key and getattr(attr_key))
     if not name:
-        _prefix = (
-            prefix
-            or (attr_prefix and getattr(self, attr_prefix))
-            or gen_prefix(self, method)
-        )
+        _prefix = prefix or (attr_prefix and getattr(attr_prefix)) or gen_prefix(method)
         name = "%s:%u" % (_prefix, crc32(pickle.dumps(args) + pickle.dumps(kwargs)))
     name = namespace and "{}:{}".format(namespace, name) or name
     return name
@@ -74,28 +68,29 @@ def stalecache(
 ):
     def decorate(method):
         @functools.wraps(method)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(*args, **kwargs):
+            cache_key = args[0] if args and not key else None
             name = get_name(
-                self,
                 method,
                 args,
                 kwargs,
-                key=key,
+                key=cache_key,
                 prefix=prefix,
                 attr_key=attr_key,
                 attr_prefix=attr_prefix,
                 namespace=namespace,
             )
-            res = get_redis_client(False).pipeline().ttl(name).get(name).execute()
+
+            res = get_client(False).pipeline().ttl(name).get(name).execute()
             v = pickle.loads(res[1]) if res[0] > 0 and res[1] else None
             if res[0] <= 0 or res[0] < stale:
 
                 def func():
-                    value = method(self, *args, **kwargs)
+                    value = method(*args, **kwargs)
                     logging.debug("update cache: %s", name)
-                    get_redis_client(False).pipeline().set(
-                        name, pickle.dumps(value)
-                    ).expire(name, expire + stale).execute()
+                    client(False).pipeline().set(name, pickle.dumps(value)).expire(
+                        name, expire + stale
+                    ).execute()
                     return value
 
                 # create new cache in blocking modal, if cache not exists.
@@ -105,9 +100,7 @@ def stalecache(
                 # create new cache in non blocking modal, and return stale data.
                 # set expire to get a "lock", and delay to run the task
                 real_time_delay = random.randrange(time_delay, max_time_delay)
-                get_redis_client(False).expire(
-                    name, stale + real_time_delay + time_lock
-                )
+                client(False).expire(name, stale + real_time_delay + time_lock)
                 # 创建一个 asyncio 任务来执行 func
                 asyncio.create_task(asyncio.sleep(real_time_delay, func()))
 
@@ -116,10 +109,9 @@ def stalecache(
         @functools.wraps(method)
         async def async_wrapper(self, *args, **kwargs):
             if kwargs.get("skip_cache"):
-                return await method(self, *args, **kwargs)
+                return await method(*args, **kwargs)
 
             name = get_name(
-                self,
                 method,
                 args,
                 kwargs,
@@ -129,16 +121,16 @@ def stalecache(
                 attr_prefix=attr_prefix,
                 namespace=namespace,
             )
-            res = get_redis_client(False).pipeline().ttl(name).get(name).execute()
+            res = client(False).pipeline().ttl(name).get(name).execute()
             v = pickle.loads(res[1]) if res[0] > 0 and res[1] else None
             if res[0] <= 0 or res[0] < stale:
 
                 async def func():
-                    value = await method(self, *args, **kwargs)
+                    value = await method(*args, **kwargs)
                     logging.debug("update cache: %s", name)
-                    get_redis_client(False).pipeline().set(
-                        name, pickle.dumps(value)
-                    ).expire(name, expire + stale).execute()
+                    client(False).pipeline().set(name, pickle.dumps(value)).expire(
+                        name, expire + stale
+                    ).execute()
                     return value
 
                 # create new cache in blocking modal, if cache not exists.
@@ -148,9 +140,7 @@ def stalecache(
                 # create new cache in non blocking modal, and return stale data.
                 # set expire to get a "lock", and delay to run the task
                 real_time_delay = random.randrange(time_delay, max_time_delay)
-                get_redis_client(False).expire(
-                    name, stale + real_time_delay + time_lock
-                )
+                client(False).expire(name, stale + real_time_delay + time_lock)
                 asyncio.create_task(asyncio.sleep(real_time_delay, func()))
 
             return v
