@@ -3,7 +3,6 @@ import functools
 import logging
 import pickle
 import random
-from binascii import crc32
 from inspect import iscoroutinefunction
 
 import redis
