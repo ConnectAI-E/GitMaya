@@ -100,9 +100,10 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
-    # 处理description
-    description = replace_images_with_keys(issue.description if issue.description else "", bot)
-
+    # 处理 description
+    description = replace_images_with_keys(
+        issue.description if issue.description else "", bot
+    )
     return IssueCard(
         repo_url=repo_url,
         id=issue.issue_number,
