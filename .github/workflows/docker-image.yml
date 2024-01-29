@@ -10,7 +10,6 @@ on:
 jobs:
   build-main-app:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'website/')
     steps:
     - name: Check out the repo
       uses: actions/checkout@v2
@@ -29,7 +28,6 @@ jobs:
 
   build-website:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.modified, 'website/')
     steps:
     - name: Check out the repo
       uses: actions/checkout@v2
