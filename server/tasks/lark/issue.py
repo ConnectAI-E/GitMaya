@@ -3,7 +3,7 @@ import logging
 import re
 
 from celery_app import app, celery
-from connectai.lark.sdk import FeishuTextMessage
+from connectai.lark.sdk import *
 from model.schema import (
     ChatGroup,
     CodeApplication,
@@ -322,31 +322,34 @@ def send_issue_comment(issue_id, comment, user_name: str):
             content = gen_comment_message(user_name, comment)
             result = bot.reply(
                 issue.message_id,
-                content,
+                FeishuPostMessage(*content),
             ).json()
             return result
     return False
 
 
 def gen_comment_message(user_name, comment):
-    # 有图片就解析成 post 富文本
-    pattern = r"(\n|!\[.*?\]\((.*?)\)"
-    elements = re.split(pattern, comment)
+    comment = comment.replace("\r\n", "\n")
+    # 先替换 ![](img_key) 为 \n\x00img:{img_key}\n
+    for match in re.finditer(r"!\[.*?\]\((.*?)\)", comment):
+        image_key = match.group(1)
+        comment = comment.replace(match.group(0), f"\n\x00img:{image_key}\n")
 
     # TODO at等写完映射再加，表情也是
     messages = []
-    messages.append([FeishuTextMessage(f"@{user_name}: ")])
+    messages.append([FeishuPostMessageText(f"@{user_name}: ")])
+
+    # 根据换行符分割
+    elements = re.split("\n", comment)
     for element in elements:
-        if not element:
+        if not element or element == "":
             continue
-        if element.startswith("!["):  # 如果是图片
-            image_key = re.search(r"\((.*?)\)", element).group(1)
+        if element.startswith("\x00img:"):
+            # 跳过 "\x00img:" 部分, \x00 不计算在内
+            image_key = element[5:]
             messages.append([FeishuPostMessageImage(image_key=image_key)])
         else:  # 处理文本部分
-            lines = element.split("\n")
-            for line in lines:
-                if line:  # 忽略空行
-                    messages.append([FeishuPostMessageText(text=line)])
+            messages.append([FeishuPostMessageText(text=element)])
 
     return messages
 
