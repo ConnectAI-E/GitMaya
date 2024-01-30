@@ -326,12 +326,11 @@ def send_issue_comment(issue_id, comment, user_name: str):
 
 def gen_comment_message(user_name, comment):
     comment = comment.replace("\r\n", "\n")
-    # 先替换 ![](img_key) 为 \n\x00img:{img_key}\n
-    for match in re.finditer(r"!\[.*?\]\((.*?)\)", comment):
-        image_key = match.group(1)
-        comment = comment.replace(match.group(0), f"\n\x00img:{image_key}\n")
+    comment = re.sub(
+        r"!\[.*?\]\((.*?)\)", lambda match: f"\n{match.group(1)}\n", comment
+    )
 
-    # TODO at等写完映射再加，表情也是
+    pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
     messages = []
     messages.append([FeishuPostMessageText(f"@{user_name}: ")])
 
@@ -340,10 +339,8 @@ def gen_comment_message(user_name, comment):
     for element in elements:
         if not element or element == "":
             continue
-        if element.startswith("\x00img:"):
-            # 跳过 "\x00img:" 部分, \x00 不计算在内
-            image_key = element[5:]
-            messages.append([FeishuPostMessageImage(image_key=image_key)])
+        if re.match(pattern, element):
+            messages.append([FeishuPostMessageImage(image_key=element)])
         else:  # 处理文本部分
             messages.append([FeishuPostMessageText(text=element)])
 
