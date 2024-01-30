@@ -36,10 +36,6 @@ def gen_prefix(obj, method):
 
 def stalecache(
     key=None,
-    prefix=None,
-    attr_key=None,
-    attr_prefix=None,
-    namespace="",
     expire=600,
     stale=3600,
     time_lock=1,
@@ -79,7 +75,7 @@ def stalecache(
             return v
 
         @functools.wraps(method)
-        async def async_wrapper(self, *args, **kwargs):
+        async def async_wrapper(*args, **kwargs):
             if kwargs.get("skip_cache"):
                 return await method(*args, **kwargs)
 
