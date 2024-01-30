@@ -118,8 +118,8 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
 
 def replace_images_with_keys(text, bot):
     """
-    replace image URL to image_key。
-
+    replace image URL to image_key.
+    ![](url) to ![](image_key)
     Args:
         text (str): original text
         bot: bot instance
@@ -127,18 +127,13 @@ def replace_images_with_keys(text, bot):
     Returns:
         str: replaced text
     """
-    # 查找所有 Markdown 图片格式
     pattern = r"!\[.*?\]\((.*?)\)"
-    matches = re.findall(pattern, text)
-
-    # 对每个找到的图片 URL，获取 image_key 并替换原始文本
-    for url in matches:
-        image_key = upload_image(url, bot)
-        logging.info("debug image_key: %r", image_key)
-        # 替换 URL 为 image_key
-        text = text.replace(url, image_key)
-
-    return text
+    replaced_text = re.sub(
+        pattern,
+        lambda match: f"![]({upload_image(match.group(1), bot)})",
+        text,
+    )
+    return replaced_text
 
 
 def send_issue_url_message(
@@ -500,8 +495,8 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot.update(message_id=message_id, content=message)
     return response
 
@@ -530,8 +525,8 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot.update(message_id=message_id, content=message)
     return response
 
