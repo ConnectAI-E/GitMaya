@@ -23,3 +23,6 @@ class TopicType(Enum):
 
 class GitHubPermissionError(Exception):
     pass
+
+
+MAX_COMMIT_MESSAGE_LENGTH = 40
