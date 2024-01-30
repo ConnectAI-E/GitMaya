@@ -8,12 +8,16 @@ from utils.redis import stalecache
 @stalecache(expire=300, stale=600)
 def upload_image(url, bot, skip_cache=False):
     logging.info("upload image: %s", url)
-    response = httpx.get(url, follow_redirects=False)
-    if response.status_code == 302:
-        new_url = response.headers.get("Location")
-        return upload_image(new_url, bot, skip_cache=True)
-    # 确保请求成功
-    elif response.status_code == 200:
+    response = httpx.get(url, follow_redirects=True)
+    # if response.status_code == 302:
+    #     new_url = response.headers.get("Location")
+    #     return upload_image(new_url, bot, skip_cache=True)
+    # # 确保请求成功
+    # elif response.status_code == 200:
+    #     # 函数返回值: iamg_key 存到缓存中
+    #     img_key = upload_image_binary(response.content, bot)
+    #     return img_key
+    if response.status_code == 200:
         # 函数返回值: iamg_key 存到缓存中
         img_key = upload_image_binary(response.content, bot)
         return img_key
