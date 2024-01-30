@@ -1,0 +1,18 @@
+FROM node:20-slim AS build
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+COPY ./website /app
+WORKDIR /app
+
+RUN pnpm install --frozen-lockfile && pnpm build:saas
+
+FROM jwilder/nginx-proxy:alpine
+
+ADD ./deploy/gitmaya.com.conf /etc/nginx/vhost.d/gitmaya.com.conf
+ADD ./deploy/proxy.conf /etc/nginx/proxy.conf
+
+COPY --from=build /app/dist /var/www/html

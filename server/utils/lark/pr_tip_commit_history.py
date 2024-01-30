@@ -1,3 +1,4 @@
+from utils.constant import MAX_COMMIT_MESSAGE_LENGTH
 from utils.github.model import Commit
 
 from .base import *
@@ -10,8 +11,8 @@ class PrTipCommitHistory(FeishuMessageCard):
     ):
         def process_commit_message(message: str) -> str:
             title = message.split("\n")[0] if "\n" in message else message
-            if len(title) > 23:
-                title = title[:20] + "..."
+            if len(title) > (MAX_COMMIT_MESSAGE_LENGTH + 3):
+                title = title[:MAX_COMMIT_MESSAGE_LENGTH] + "..."
             return title
 
         content = "\n".join(

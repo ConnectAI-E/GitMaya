@@ -1,8 +1,9 @@
 import json
 import logging
+import re
 
 from celery_app import app, celery
-from connectai.lark.sdk import FeishuTextMessage
+from connectai.lark.sdk import *
 from model.schema import (
     ChatGroup,
     CodeApplication,
@@ -20,6 +21,7 @@ from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
 from utils.lark.issue_tip_success import IssueTipSuccess
+from utils.utils import upload_image
 
 from .base import (
     get_bot_by_application_id,
@@ -78,7 +80,7 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -98,16 +100,40 @@ def gen_issue_card_by_issue(issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
+    # 处理 description
+    description = replace_images_with_keys(
+        issue.description if issue.description else "", bot
+    )
     return IssueCard(
         repo_url=repo_url,
         id=issue.issue_number,
         title=issue.title,
-        description=issue.description,
+        description=description,
         status=status,
         assignees=assignees,
         tags=tags,
         updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
     )
+
+
+def replace_images_with_keys(text, bot):
+    """
+    replace image URL to image_key.
+    ![](url) to ![](image_key)
+    Args:
+        text (str): original text
+        bot: bot instance
+
+    Returns:
+        str: replaced text
+    """
+    pattern = r"!\[.*?\]\((.*?)\)"
+    replaced_text = re.sub(
+        pattern,
+        lambda match: f"![]({upload_image(match.group(1), bot)})",
+        text,
+    )
+    return replaced_text
 
 
 def send_issue_url_message(
@@ -209,7 +235,7 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(issue, repo_url, team, True)
+    message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
@@ -238,7 +264,7 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(issue, repo_url, team)
+                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -291,12 +317,37 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+
+            # 替换 comment 中的图片 url 为 image_key
+            comment = replace_images_with_keys(comment, bot)
+            content = gen_comment_message(user_name, comment)
             result = bot.reply(
                 issue.message_id,
-                FeishuTextMessage(f"@{user_name}: {comment}"),
+                FeishuPostMessage(*content),
             ).json()
             return result
     return False
+
+
+def gen_comment_message(user_name, comment):
+    comment = comment.replace("\r\n", "\n")
+    comment = re.sub(r"!\[.*?\]\((.*?)\)", r"\n\1\n", comment)
+
+    pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+    messages = []
+    messages.append([FeishuPostMessageText(f"@{user_name}: ")])
+
+    # 根据换行符分割
+    elements = re.split("\n", comment)
+    for element in elements:
+        if not element or element == "":
+            continue
+        if re.match(pattern, element):
+            messages.append([FeishuPostMessageImage(image_key=element)])
+        else:  # 处理文本部分
+            messages.append([FeishuPostMessageText(text=element)])
+
+    return messages
 
 
 @celery.task()
@@ -325,7 +376,7 @@ def update_issue_card(issue_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(issue, repo_url, team)
+                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
                 result = bot.update(
                     message_id=issue.message_id,
                     content=message,
@@ -446,8 +497,8 @@ def close_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="closed")
-        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot.update(message_id=message_id, content=message)
     return response
 
@@ -476,8 +527,8 @@ def reopen_issue(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         issue.extra.update(state="opened")
-        message = gen_issue_card_by_issue(issue, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
+        message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
         bot.update(message_id=message_id, content=message)
     return response
 
