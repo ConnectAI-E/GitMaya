@@ -49,14 +49,14 @@ def stalecache(
                 return method(*args, **kwargs)
             name = args[0] if args and not key else None
 
-            res = get_client(True).pipeline().ttl(name).get(name).execute()
+            res = get_client(False).pipeline().ttl(name).get(name).execute()
             v = pickle.loads(res[1]) if res[0] > 0 and res[1] else None
             if res[0] <= 0 or res[0] < stale:
 
                 def func():
                     value = method(*args, **kwargs)
                     logging.debug("update cache: %s", name)
-                    get_client(True).pipeline().set(name, pickle.dumps(value)).expire(
+                    get_client(False).pipeline().set(name, pickle.dumps(value)).expire(
                         name, expire + stale
                     ).execute()
                     return value
@@ -68,7 +68,7 @@ def stalecache(
                 # create new cache in non blocking modal, and return stale data.
                 # set expire to get a "lock", and delay to run the task
                 real_time_delay = random.randrange(time_delay, max_time_delay)
-                get_client(True).expire(name, stale + real_time_delay + time_lock)
+                get_client(False).expire(name, stale + real_time_delay + time_lock)
                 # 创建一个 asyncio 任务来执行 func
                 asyncio.create_task(asyncio.sleep(real_time_delay, func()))
 
