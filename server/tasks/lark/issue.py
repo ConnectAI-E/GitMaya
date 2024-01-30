@@ -405,6 +405,19 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
+
+    # raw_message = json.loads(data["event"]["raw_message"])
+    # mentions = {
+    #     m["key"].replace("@_user", "at_user"): m
+    #     for m in raw_message.get("event", {}).get("message", {}).get("mentions", [])
+    # }
+
+    replace_at_feishu_to_github(
+        data["event"]["sender"]["sender_id"]["open_id"],
+        team.id,
+        content["text"],
+    )
+
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, content["text"]
     )
@@ -413,6 +426,56 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+def replace_at_feishu_to_github(openid, team_id, content):
+    """replace feishu at to github at.
+
+    Args:
+        content (str): feishu content.
+
+    Returns:
+        str: github content.
+    """
+
+    # 第一步：根据 openid 和 team_id 查询 team_member 表得到 im_user_id
+    im_user_id = (
+        db.session.query(TeamMember.im_user_id)
+        .join(
+            IMUser,  # BindUser 表是 CodeUser 和 IMUser 的别名
+            IMUser.user_id == TeamMember.im_user_id,
+        )
+        .filter(
+            IMUser.openid == openid,
+            TeamMember.team_id == team_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    # 第二步：使用 im_user_id 和 team_id 再次查询 team_member 表得到 code_user_id
+    if im_user_id:
+        code_user_id = (
+            db.session.query(TeamMember.code_user_id)
+            .filter(
+                TeamMember.im_user_id == im_user_id,
+                TeamMember.team_id == team_id,
+            )
+            .limit(1)
+            .scalar()
+        )
+
+    # 第三步：如果找到了 code_user_id，使用它在 bind_user 表中查询 name
+    if code_user_id:
+        name = (
+            db.session.query(CodeUser.name)
+            .filter(CodeUser.user_id == code_user_id)
+            .scalar()
+        )
+
+    logging.info(f"code name: {name}")
+
+    return None
 
 
 @celery.task()
