@@ -326,9 +326,7 @@ def send_issue_comment(issue_id, comment, user_name: str):
 
 def gen_comment_message(user_name, comment):
     comment = comment.replace("\r\n", "\n")
-    comment = re.sub(
-        r"!\[.*?\]\((.*?)\)", lambda match: f"\n{match.group(1)}\n", comment
-    )
+    comment = re.sub(r"!\[.*?\]\((.*?)\)", r"\n\1\n", comment)
 
     pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
     messages = []
