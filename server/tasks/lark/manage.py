@@ -315,19 +315,7 @@ def create_chat_group_for_repo(
             "不允许重复创建项目群", app_id, message_id, *args, bot=bot, **kwargs
         )
 
-    # 持有相同uuid的请求10小时内只可成功创建1个群聊
-    chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
-    # TODO 这里是一个可以配置的模板
-    name = chat_name or f"{repo.name} 项目群"
-    description = f"{repo.description}"
-    # TODO 当前先使用发消息的人，后面查找这个项目的所有者...
-    try:
-        # parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
-        owner_id = args[1]["event"]["sender"]["sender_id"]["open_id"]
-    except Exception as e:
-        logging.error(e)
-        # card event
-        owner_id = args[0]["open_id"]
+    # 先查询当前项目成员列表
     CodeUser = aliased(BindUser)
     IMUser = aliased(BindUser)
     # user_id_list 使用这个项目绑定的人的列表，同时属于当前repo
@@ -348,6 +336,70 @@ def create_chat_group_for_repo(
             RepoUser.repo_id == repo.id,
         )
     ]
+    # 把user_id_list中的每个user_id查User表，获取每个人的名字
+    user_name_list = [
+        name
+        for name, in db.session.query(IMUser.name).filter(
+            IMUser.openid.in_(user_id_list),
+        )
+    ]
+    invite_message = (
+        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
+        if len(user_name_list) > 0
+        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+    )
+
+    # 如果有已经存在的项目群，尝试直接绑定这个群，将当前项目人员拉进群
+    exists_chat_group = (
+        self.session.query(ChatGroup)
+        .filter(
+            ChatGroup.im_application_id == application.id,
+            ChatGroup.name == chat_name,
+        )
+        .first()
+        if chat_name
+        else None
+    )
+    if exists_chat_group:
+        db.session.query(Repo).filter(Repo.id == repo.id).update(
+            dict(chat_group_id=exists_chat_group.id)
+        )
+        db.session.commit()
+        chat_id = exists_chat_group.chat_id
+        chat_group_members_url = f"{bot.host}/open-apis/im/v1/chats/{chat_id}/members"
+        result = bot.post(
+            chat_group_members_url,
+            json={"id_list": user_id_list},
+        ).json()
+        logging.debug("add members %r to chat_id %r", user_id_list, chat_id)
+
+        content = "\n".join(
+            [
+                f"1. 成功绑定名为「{chat_name}」的项目群",
+                invite_message,
+            ]
+        )
+        # 这里可以再触发一个异步任务给群发卡片，不过为了保存结果，就同步调用
+        result = send_repo_to_chat_group(repo.id, app_id, chat_id) + [
+            send_manage_success_message(
+                content, app_id, message_id, *args, bot=bot, **kwargs
+            )
+        ]
+        return result
+
+    # 持有相同uuid的请求10小时内只可成功创建1个群聊
+    chat_group_url = f"{bot.host}/open-apis/im/v1/chats?uuid={repo.id}"
+    # TODO 这里是一个可以配置的模板
+    name = chat_name or f"{repo.name} 项目群"
+    description = f"{repo.description}"
+    # TODO 当前先使用发消息的人，后面查找这个项目的所有者...
+    try:
+        # parser.parse_args(text, bot.app_id, message_id, content, *args, **kwargs)
+        owner_id = args[1]["event"]["sender"]["sender_id"]["open_id"]
+    except Exception as e:
+        logging.error(e)
+        # card event
+        owner_id = args[0]["open_id"]
 
     if owner_id not in user_id_list:
         user_id_list += [owner_id]
@@ -390,19 +442,6 @@ def create_chat_group_for_repo(
     1. 给操作的用户发成功的消息
     2. 给群发送repo 卡片消息，并pin
     """
-
-    # 把user_id_list中的每个user_id查User表，获取每个人的名字
-    user_name_list = [
-        name
-        for name, in db.session.query(IMUser.name).filter(
-            IMUser.openid.in_(user_id_list),
-        )
-    ]
-    invite_message = (
-        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
-        if len(user_name_list) > 0
-        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
-    )
 
     content = "\n".join(
         [
