@@ -463,18 +463,22 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
         # 获得 mentions 中的 openid list
         mentions = data["event"]["message"]["mentions"]
         openid_list = [mention["id"]["open_id"] for mention in mentions]
+        code_name_list = []
 
-        # 通过 openid list 获得 code_name_list
-        code_name_list = get_github_name_list_by_openid_list(
-            openid_list,
-            team.id,
-            app_id,
-            message_id,
-            content,
-            data,
-            *args,
-            **kwargs,
-        )
+        for openid in openid_list:
+            # 通过 openid list 获得 code_name_list
+            code_name_list.append(
+                get_github_name_by_openid(
+                    openid,
+                    team.id,
+                    app_id,
+                    message_id,
+                    content,
+                    data,
+                    *args,
+                    **kwargs,
+                )
+            )
 
         # 替换 content 中的 im_name 为 code_name
         comment_text = replace_im_name_to_github_name(content["text"], code_name_list)
@@ -513,14 +517,14 @@ def replace_im_name_to_github_name(content, code_name_list):
     return re.sub(r"@_user_(\d+)", replace_user, content)
 
 
-def get_github_name_list_by_openid_list(
-    openid_list, team_id, app_id, message_id, content, data, *args, **kwargs
+def get_github_name_by_openid(
+    openid, team_id, app_id, message_id, content, data, *args, **kwargs
 ):
     """
-    get github name list by openid list
+    get github name by openid
 
     Args:
-        openid_list (list): openid list
+        openid (str): openid
         team_id (str): team_id
         app_id (str): app_id
         message_id (str): message_id
@@ -528,45 +532,48 @@ def get_github_name_list_by_openid_list(
         data (dict): data
 
     Returns:
-        list: GitHub name list
+        str: GitHub name
     """
-    # 根据 openid 列表查询 IMUser 表得到 im_user 列表
-    im_user_list = (
-        db.session.query(IMUser)
-        .filter(
-            IMUser.openid.in_(openid_list),
+    # 第一步：根据 openid 和 team_id 查询 team_member 表得到 im_user_id
+    im_user_id = (
+        db.session.query(TeamMember.im_user_id)
+        .join(
+            IMUser,  # BindUser 表是 CodeUser 和 IMUser 的别名
+            IMUser.id == TeamMember.im_user_id,
         )
-        .all()
+        .filter(
+            IMUser.openid == openid,
+            TeamMember.team_id == team_id,
+        )
+        .limit(1)
+        .scalar()
     )
 
-    if not im_user_list:
+    if not im_user_id:
         return send_issue_failed_tip(
             "找不到对应的飞书用户", app_id, message_id, content, data, *args, **kwargs
         )
 
-    # 用 im_user_id 和 team_id 再次查询 team_member 表得到 code_user_id 列表
-    code_user_ids = (
+    # 第二步：使用 im_user_id 和 team_id 再次查询 team_member 表得到 code_user_id
+    code_user_id = (
         db.session.query(TeamMember.code_user_id)
         .filter(
-            TeamMember.im_user_id.in_([im_user.id for im_user in im_user_list]),
+            TeamMember.im_user_id == im_user_id,
             TeamMember.team_id == team_id,
         )
-        .all()
+        .limit(1)
+        .scalar()
     )
 
-    if not code_user_ids:
+    if not code_user_id:
         return send_issue_failed_tip(
             "找不到对应的 GitHub 用户", app_id, message_id, content, data, *args, **kwargs
         )
 
-    # 用 code_user_id 列表在 bind_user 查 name 列表
-    code_names = (
-        db.session.query(CodeUser.name)
-        .filter(CodeUser.id.in_([code_user_id for code_user_id in code_user_ids]))
-        .all()
-    )
+    # 第三步：如果找到了 code_user_id，使用它在 bind_user 表中查询 name
+    name = db.session.query(CodeUser.name).filter(CodeUser.id == code_user_id).scalar()
 
-    return code_names
+    return name
 
 
 @celery.task()
