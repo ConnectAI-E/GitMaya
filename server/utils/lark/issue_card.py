@@ -7,7 +7,7 @@ class IssueCard(FeishuMessageCard):
         repo_url="https://github.com/ConnectAI-E/GitMaya",
         id=16,
         title="",
-        description="",
+        description=None,
         status="待完成",
         persons=[],
         assignees=[],
@@ -35,7 +35,11 @@ class IssueCard(FeishuMessageCard):
                 FeishuMessageDiv(
                     "💬  <font color='black'>**主要内容**</font>", tag="lark_md"
                 ),
-                FeishuMessageMarkdown(description),
+                FeishuMessageMarkdown(
+                    # TODO 替换content
+                    description,
+                    text_align="left",
+                ),
             ]
             if description
             else []
