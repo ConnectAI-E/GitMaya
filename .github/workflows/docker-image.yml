@@ -44,7 +44,7 @@ jobs:
     - name: Build and push website Docker image
       uses: docker/build-push-action@v2
       with:
-        context: ./website
+        context: .
         file: deploy/Dockerfile.proxy
         push: true
         tags: connectai/gitmaya-proxy:latest
