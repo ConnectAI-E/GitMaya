@@ -127,11 +127,6 @@ class GitMayaLarkParser(object):
         parser_reopen = self.subparsers.add_parser("/reopen")
         parser_reopen.set_defaults(func=self.on_reopen)
 
-        # TODO 这里实际上拿到的信息是 @_user_1，需要检查是不是当前机器人
-        parser_at_bot = self.subparsers.add_parser("at_user_1")
-        parser_at_bot.add_argument("command", nargs="*")
-        parser_at_bot.set_defaults(func=self.on_at_bot)
-
     def _get_topic_by_args(self, *args):
         # 新增一个判断是不是在issue/pr/repo的话题中
         chat_type, topic = "", ""
@@ -509,27 +504,6 @@ class GitMayaLarkParser(object):
         elif TopicType.PULL_REQUEST == topic:
             tasks.reopen_pull_request.delay(*args, **kwargs)
         return "reopen", param, unkown
-
-    def on_at_bot(self, param, unkown, *args, **kwargs):
-        logging.info("on_at_user_1 %r %r", vars(param), unkown)
-
-        raw_message = args[3]
-        user_id = raw_message["event"]["message"]["mentions"][0]["id"]["user_id"]
-        user_key = raw_message["event"]["message"]["mentions"][0]["key"]
-        logging.info(f"user_id: {user_id}")
-        logging.info(f"user_key: {user_key}")
-        # command = param.command
-        content = args[2].split(" ", 1)
-
-        # 判断机器人
-        if user_key == "@_user_1" and user_id is None:
-            command = content[1] if len(content) > 1 else None
-            # 判断@bot 后续命令合法即执行
-            if command:
-                self.parse_args(command, *args, **kwargs)
-            return self.on_help(param, unkown, *args, **kwargs)
-
-        return "on_at_bot", param, unkown
 
     def parse_args(self, command, *args, **kwargs):
         try:
