@@ -298,7 +298,7 @@ def create_chat_group_for_repo(
     chat_group = (
         db.session.query(ChatGroup)
         .filter(
-            ChatGroup.repo_id == repo.id,
+            ChatGroup.id == repo.chat_group_id,
             ChatGroup.status == 0,
         )
         .first()
@@ -373,7 +373,6 @@ def create_chat_group_for_repo(
     chat_group_id = ObjID.new_id()
     chat_group = ChatGroup(
         id=chat_group_id,
-        repo_id=repo.id,
         im_application_id=application.id,
         chat_id=chat_id,
         name=name,
@@ -381,6 +380,10 @@ def create_chat_group_for_repo(
         extra=result,
     )
     db.session.add(chat_group)
+    # 创建群组之后，更新repo.chat_group_id
+    db.session.query(Repo).filter(Repo.id == repo.id).update(
+        dict(chat_group_id=chat_group_id)
+    )
     db.session.commit()
     """
     创建项目群之后，需要发两条消息：

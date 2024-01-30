@@ -61,7 +61,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     repo = (
         db.session.query(Repo)
         .filter(
-            Repo.id == chat_group.repo_id,
+            Repo.chat_group_id == chat_group.id,
             Repo.status == 0,
         )
         .first()
@@ -190,7 +190,7 @@ def create_issue(
     repo = (
         db.session.query(Repo)
         .filter(
-            Repo.id == chat_group.repo_id,
+            Repo.chat_group_id == chat_group.id,
             Repo.status == 0,
         )
         .first()
