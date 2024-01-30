@@ -187,18 +187,25 @@ def create_issue(
         return send_chat_failed_tip(
             "找不到项目群", app_id, message_id, content, data, *args, **kwargs
         )
-    repo = (
+    repos = (
         db.session.query(Repo)
         .filter(
             Repo.chat_group_id == chat_group.id,
             Repo.status == 0,
         )
-        .first()
+        .all()
     )
-    if not repo:
+    if len(repos) > 1:
+        return send_chat_failed_tip(
+            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    if len(repo) == 0:
         return send_chat_failed_tip(
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
         )
+
+    repo = repos[0]  # 能找到唯一的仓库才执行
 
     code_application = (
         db.session.query(CodeApplication)
