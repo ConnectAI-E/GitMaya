@@ -158,6 +158,7 @@ def create_issue(
         message_type = data["event"]["message"].get("message_type", None)
         if "post" == message_type:
             content, title = post_content_to_markdown(content, False)
+            # desc 从 body 第二行开始读取，第一行作为 /issue @user labels 解析
             body = "\n".join(content.split("\n")[1:])
 
         # 如果title是空的，尝试从parent_message拿到内容
