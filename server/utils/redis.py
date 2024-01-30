@@ -10,7 +10,7 @@ from app import app
 
 app.config.setdefault("REDIS_URL", "redis://redis:6379/0")
 
-client = redis.from_url(app.config["CELERY_BROKER_URL"], decode_responses=True)
+client = redis.from_url(app.config["REDIS_URL"], decode_responses=True)
 
 
 class RedisStorage(object):
