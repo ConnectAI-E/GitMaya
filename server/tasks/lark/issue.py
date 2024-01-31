@@ -312,10 +312,10 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
-
             # 替换 comment 中的图片 url 为 image_key
             comment = replace_images_with_keys(comment, bot)
-            content = gen_comment_message(user_name, comment)
+            # 统一用富文本回答, 支持图片、at
+            content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
                 issue.message_id,
                 FeishuPostMessage(*content),
@@ -324,25 +324,71 @@ def send_issue_comment(issue_id, comment, user_name: str):
     return False
 
 
-def gen_comment_message(user_name, comment):
+def gen_comment_post_message(user_name, comment):
     comment = comment.replace("\r\n", "\n")
     comment = re.sub(r"!\[.*?\]\((.*?)\)", r"\n\1\n", comment)
 
-    pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
-    messages = []
-    messages.append([FeishuPostMessageText(f"@{user_name}: ")])
+    img_key_pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+    messages = [[FeishuPostMessageText(f"@{user_name}: ")]]
 
     # 根据换行符分割
-    elements = re.split("\n", comment)
-    for element in elements:
-        if not element or element == "":
+    lines = re.split("\n", comment)
+    for line in lines:
+        if not line or line == "":
             continue
-        if re.match(pattern, element):
-            messages.append([FeishuPostMessageImage(image_key=element)])
-        else:  # 处理文本部分
-            messages.append([FeishuPostMessageText(text=element)])
+        if re.match(img_key_pattern, line):
+            messages.append([FeishuPostMessageImage(image_key=line)])
+        else:
+            # 处理每行 at, 普通文本
+            elements = line.split(" ")
+            element_messages = []
+            for element in elements:
+                if element.startswith("@"):
+                    user_id = get_openid_by_code_name(element[1:])
+                    element_messages.append(
+                        FeishuPostMessageAt(user_id=user_id)
+                        if user_id
+                        else FeishuPostMessageText(text=element)
+                    )
+                else:
+                    element_messages.append(FeishuPostMessageText(text=element))
+
+            messages.append(element_messages)
 
     return messages
+
+
+def get_openid_by_code_name(code_name):
+    code_user_id = (
+        db.session.query(CodeUser.id)
+        .filter(
+            CodeUser.name == code_name,
+        )
+        .limit(1)
+        .scalar()
+    )
+    if not code_user_id:
+        logging.info(f"get_openid_by_code_name---code_user_id: Not found")
+        return None
+
+    openid = (
+        db.session.query(IMUser.openid)
+        .join(
+            TeamMember,
+            TeamMember.im_user_id == IMUser.id,
+        )
+        .filter(
+            TeamMember.code_user_id == code_user_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    if not openid:
+        logging.info(f"get_openid_by_code_name---openid: Not found")
+        return None
+
+    return openid
 
 
 @celery.task()
@@ -456,14 +502,124 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     github_app, team, repo, issue, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
+    comment_text = content["text"]
+
+    # 判断 content 中是否有 at
+    if "mentions" in data["event"]["message"]:
+        # 获得 mentions 中的 openid list
+        mentions = data["event"]["message"]["mentions"]
+        openid_list = [mention["id"]["open_id"] for mention in mentions]
+        code_name_list = []
+
+        for openid in openid_list:
+            # 通过 openid list 获得 code_name_list
+            code_name_list.append(
+                get_github_name_by_openid(
+                    openid,
+                    team.id,
+                    app_id,
+                    message_id,
+                    content,
+                    data,
+                    *args,
+                    **kwargs,
+                )
+            )
+
+        # 替换 content 中的 im_name 为 code_name
+        comment_text = replace_im_name_to_github_name(content["text"], code_name_list)
+
     response = github_app.create_issue_comment(
-        team.name, repo.name, issue.issue_number, content["text"]
+        team.name, repo.name, issue.issue_number, comment_text
     )
     if "id" not in response:
         return send_issue_failed_tip(
             "同步消息失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+def replace_im_name_to_github_name(content, code_name_list):
+    """
+    replace im name to github name
+
+    Args:
+        content (str): content
+        code_name_list (list): code name list
+
+    Returns:
+        str: replaced content
+    """
+
+    # 替换函数
+    def replace_user(match):
+        index = int(match.group(1)) - 1  # 获取用户编号并转换为索引
+        return (
+            f"@{code_name_list[index]}"
+            if 0 <= index < len(code_name_list)
+            else match.group(0)
+        )
+
+    return re.sub(r"@_user_(\d+)", replace_user, content)
+
+
+def get_github_name_by_openid(
+    openid, team_id, app_id, message_id, content, data, *args, **kwargs
+):
+    """
+    get github name by openid
+
+    Args:
+        openid (str): openid
+        team_id (str): team_id
+        app_id (str): app_id
+        message_id (str): message_id
+        content (str): content
+        data (dict): data
+
+    Returns:
+        str: GitHub name
+    """
+    # 第一步：根据 openid 和 team_id 查询 team_member 表得到 im_user_id
+    im_user_id = (
+        db.session.query(TeamMember.im_user_id)
+        .join(
+            IMUser,  # BindUser 表是 CodeUser 和 IMUser 的别名
+            IMUser.id == TeamMember.im_user_id,
+        )
+        .filter(
+            IMUser.openid == openid,
+            TeamMember.team_id == team_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    if not im_user_id:
+        return send_issue_failed_tip(
+            "找不到对应的飞书用户", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    # 第二步：使用 im_user_id 和 team_id 再次查询 team_member 表得到 code_user_id
+    code_user_id = (
+        db.session.query(TeamMember.code_user_id)
+        .filter(
+            TeamMember.im_user_id == im_user_id,
+            TeamMember.team_id == team_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    if not code_user_id:
+        return send_issue_failed_tip(
+            "找不到对应的 GitHub 用户", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    # 第三步：如果找到了 code_user_id，使用它在 bind_user 表中查询 name
+    name = db.session.query(CodeUser.name).filter(CodeUser.id == code_user_id).scalar()
+
+    return name
 
 
 @celery.task()
