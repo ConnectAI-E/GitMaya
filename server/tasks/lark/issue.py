@@ -329,8 +329,7 @@ def gen_comment_post_message(user_name, comment):
     comment = re.sub(r"!\[.*?\]\((.*?)\)", r"\n\1\n", comment)
 
     img_key_pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
-    messages = []
-    messages.append([FeishuPostMessageText(f"@{user_name}: ")])
+    messages = [[FeishuPostMessageText(f"@{user_name}: ")]]
 
     # 根据换行符分割
     lines = re.split("\n", comment)
@@ -341,15 +340,15 @@ def gen_comment_post_message(user_name, comment):
             messages.append([FeishuPostMessageImage(image_key=line)])
         else:
             # 处理每行 at, 普通文本
-            # "test @freeziyou asdf"
             elements = line.split(" ")
             element_messages = []
             for element in elements:
                 if element.startswith("@"):
+                    user_id = get_openid_by_code_name(element[1:])
                     element_messages.append(
-                        FeishuPostMessageAt(
-                            user_id=get_openid_by_code_name(element[1:])
-                        )
+                        FeishuPostMessageAt(user_id=user_id)
+                        if user_id
+                        else FeishuPostMessageText(text=element)
                     )
                 else:
                     element_messages.append(FeishuPostMessageText(text=element))
