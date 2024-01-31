@@ -284,7 +284,7 @@ def send_issue_card(issue_id):
                         message_id,
                         # 第一条话题消息，直接放repo_url
                         FeishuTextMessage(
-                            users + f"{repo_url}/issues/{issue.issue_number}"
+                            users + f" {repo_url}/issues/{issue.issue_number}"
                         ),
                         reply_in_thread=True,
                     ).json()
@@ -626,6 +626,16 @@ def change_issue_assignees(users, app_id, message_id, content, data, *args, **kw
             data,
             *args,
             **kwargs,
+        )
+
+        bot, _ = get_bot_by_application_id(app_id)
+        # at 修改后的负责人
+        users = "".join([f'<at user_id="{open_id}"></at>' for open_id in users])
+        repo_url = f"https://github.com/{team.name}/{repo.name}"
+        bot.reply(
+            message_id,
+            # 第一条话题消息，直接放repo_url
+            FeishuTextMessage(users + f" {repo_url}/issues/{issue.issue_number}"),
         )
     return response
 
