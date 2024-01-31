@@ -368,7 +368,7 @@ def get_openid_by_code_name(code_name):
         .scalar()
     )
     if not code_user_id:
-        logging.info(f"get_openid_by_code_name---code_user_id: {code_user_id}")
+        logging.info(f"get_openid_by_code_name---code_user_id: Not found")
         return None
 
     openid = (
@@ -385,7 +385,7 @@ def get_openid_by_code_name(code_name):
     )
 
     if not openid:
-        logging.info(f"get_openid_by_code_name---openid: {openid}")
+        logging.info(f"get_openid_by_code_name---openid: Not found")
         return None
 
     return openid
