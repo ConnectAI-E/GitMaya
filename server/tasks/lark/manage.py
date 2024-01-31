@@ -81,7 +81,7 @@ def send_welcome_message(app_id, event_id, event, message, *args, **kwargs):
                 .order_by(
                     Repo.modified.desc(),
                 )
-                .limit(20)
+                # .limit(20)  # 这里先不限制长度，看看飞书那边展示情况
                 .all()
             )
             message = ManageManual(
@@ -121,7 +121,7 @@ def send_manage_manual(app_id, message_id, *args, **kwargs):
                 .order_by(
                     Repo.modified.desc(),
                 )
-                .limit(20)
+                # .limit(20)  # 这里先不限制长度，看看飞书那边展示情况
                 .all()
             )
             message = ManageManual(
