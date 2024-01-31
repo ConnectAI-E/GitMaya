@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib.parse import urlparse
 
 from celery_app import app, celery
 from model.schema import (
@@ -242,3 +243,92 @@ def create_issue(
             "创建 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+@celery.task()
+def sync_issue(
+    issue_id, issue_link, app_id, message_id, content, data, *args, **kwargs
+):
+    repo_name = ""
+    try:
+        if not issue_id:
+            path = urlparse(issue_link).path
+            issue_id = int(path.split("/").pop())
+            repo_name = path.split("/")[2]
+    except Exception as e:
+        logging.error(e)
+
+    if not issue_id:
+        return send_chat_failed_tip(
+            "找不到issue", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    chat_id = data["event"]["message"]["chat_id"]
+    chat_group = (
+        db.session.query(ChatGroup)
+        .filter(
+            ChatGroup.chat_id == chat_id,
+        )
+        .first()
+    )
+    if not chat_group:
+        return send_chat_failed_tip(
+            "找不到项目群", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    repos = (
+        db.session.query(Repo)
+        .filter(
+            Repo.chat_group_id == chat_group.id,
+            Repo.status == 0,
+        )
+        .all()
+    )
+    # 如果有多个，尝试从issue_link里面拿到repo_name过滤一下
+    if len(repos) > 1 and repo_name:
+        repos = [repo for repo in repos if repo.name == repo_name]
+
+    if len(repos) > 1:
+        return send_chat_failed_tip(
+            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+        )
+    if len(repos) == 0:
+        return send_chat_failed_tip(
+            "找不到项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    repo = repos[0]  # 能找到唯一的仓库才执行
+
+    code_application = (
+        db.session.query(CodeApplication)
+        .filter(
+            CodeApplication.id == repo.application_id,
+        )
+        .first()
+    )
+    if not code_application:
+        return send_chat_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    team = (
+        db.session.query(Team)
+        .filter(
+            Team.id == code_application.team_id,
+        )
+        .first()
+    )
+    if not team:
+        return send_chat_failed_tip(
+            "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
+        )
+    github_app = GitHubAppRepo(
+        code_application.installation_id, user_id=current_code_user_id
+    )
+    response = github_app.get_one_issue(team.name, repo.name, issue_id)
+    # TODO 先测试一下看这个结果是什么样子？
+    # 后面需要插入记录，再发卡片，创建话题
+    logging.debug("get_one_issue %r", response)
+    return send_chat_failed_tip(
+        "同步 issue 失败", app_id, message_id, content, data, *args, **kwargs
+    )

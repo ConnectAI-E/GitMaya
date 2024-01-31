@@ -201,6 +201,28 @@ class GitHubAppRepo(BaseGitHubApp):
             },
         )
 
+    def get_one_issue(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        issue_number: int,
+    ) -> dict | None:
+        """Get an issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            issue_number (int): The issue id
+
+        Returns:
+            dict: The issue info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
+            auth_type="install_token",
+        )
+
     def create_issue_comment(
         self, repo_onwer: str, repo_name: str, issue_number: int, body: str
     ) -> dict | None:
