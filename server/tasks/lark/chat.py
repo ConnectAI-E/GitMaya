@@ -200,7 +200,7 @@ def create_issue(
             "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
         )
 
-    if len(repo) == 0:
+    if len(repos) == 0:
         return send_chat_failed_tip(
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
         )
