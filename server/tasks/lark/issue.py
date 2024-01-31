@@ -312,10 +312,10 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
-
             # 替换 comment 中的图片 url 为 image_key
             comment = replace_images_with_keys(comment, bot)
-            content = gen_comment_message(user_name, comment)
+            # 统一用富文本回答, 支持图片、at
+            content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
                 issue.message_id,
                 FeishuPostMessage(*content),
@@ -324,25 +324,72 @@ def send_issue_comment(issue_id, comment, user_name: str):
     return False
 
 
-def gen_comment_message(user_name, comment):
+def gen_comment_post_message(user_name, comment):
     comment = comment.replace("\r\n", "\n")
     comment = re.sub(r"!\[.*?\]\((.*?)\)", r"\n\1\n", comment)
 
-    pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
+    img_key_pattern = r"img_v\d{1,}_\w{4}_[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}"
     messages = []
     messages.append([FeishuPostMessageText(f"@{user_name}: ")])
 
     # 根据换行符分割
-    elements = re.split("\n", comment)
-    for element in elements:
-        if not element or element == "":
+    lines = re.split("\n", comment)
+    for line in lines:
+        if not line or line == "":
             continue
-        if re.match(pattern, element):
-            messages.append([FeishuPostMessageImage(image_key=element)])
-        else:  # 处理文本部分
-            messages.append([FeishuPostMessageText(text=element)])
+        if re.match(img_key_pattern, line):
+            messages.append([FeishuPostMessageImage(image_key=line)])
+        else:
+            # 处理每行 at, 普通文本
+            # "test @freeziyou asdf"
+            elements = line.split(" ")
+            element_messages = []
+            for element in elements:
+                if element.startswith("@"):
+                    element_messages.append(
+                        FeishuPostMessageAt(
+                            user_id=get_openid_by_code_name(element[1:])
+                        )
+                    )
+                else:
+                    element_messages.append(FeishuPostMessageText(text=element))
+
+            messages.append(element_messages)
 
     return messages
+
+
+def get_openid_by_code_name(code_name):
+    code_user_id = (
+        db.session.query(CodeUser.id)
+        .filter(
+            CodeUser.name == code_name,
+        )
+        .limit(1)
+        .scalar()
+    )
+    if not code_user_id:
+        logging.info(f"get_openid_by_code_name---code_user_id: {code_user_id}")
+        return None
+
+    openid = (
+        db.session.query(IMUser.openid)
+        .join(
+            TeamMember,
+            TeamMember.im_user_id == IMUser.id,
+        )
+        .filter(
+            TeamMember.code_user_id == code_user_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    if not openid:
+        logging.info(f"get_openid_by_code_name---openid: {openid}")
+        return None
+
+    return openid
 
 
 @celery.task()
