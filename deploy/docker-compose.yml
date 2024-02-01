@@ -58,3 +58,6 @@ services:
       - "8001:81"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+    build:
+      args:
+        - VITE_OAUTH_HOST=localhost
