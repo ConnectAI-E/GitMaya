@@ -339,16 +339,26 @@ def sync_issue(
     # 后面需要插入记录，再发卡片，创建话题
     repository = github_app.get_repo_info_by_name(team.name, repo.name)
     if is_pr:
-        pull_request = github_app.get_one_pull_requrst(team.name, repo.name, issue_id)
+        pull_request = github_app.get_one_pull_request(team.name, repo.name, issue_id)
         logging.debug("get_one_pull_requrst %r", pull_request)
         tasks.on_pull_request_opened(
-            {"action": "opened", "pull_request": pull_request, "repository": repository}
+            {
+                "action": "opened",
+                "sender": pull_request["user"],
+                "pull_request": pull_request,
+                "repository": repository,
+            }
         )
     else:
         issue = github_app.get_one_issue(team.name, repo.name, issue_id)
         logging.debug("get_one_issue %r", issue)
         tasks.on_issue_opened(
-            {"action": "opened", "issue": issue, "repository": repository}
+            {
+                "action": "opened",
+                "sender": issue["user"],
+                "issue": issue,
+                "repository": repository,
+            }
         )
 
     return send_chat_failed_tip(
