@@ -248,7 +248,7 @@ def send_manage_success_message(
 
 @celery.task()
 def create_chat_group_for_repo(
-    repo_url, chat_name, app_id, message_id, data, raw_message, *args, **kwargs
+    repo_url, chat_name, app_id, message_id, *args, **kwargs
 ):
     """
     user input:
@@ -344,6 +344,11 @@ def create_chat_group_for_repo(
             IMUser.openid.in_(user_id_list),
         )
     ]
+    try:
+        chat_id == args[1]["event"]["message"]["chat_id"]
+    except Exception as e:
+        chat_id = ""
+
     # 如果有已经存在的项目群，尝试直接绑定这个群，将当前项目人员拉进群
     exists_chat_group = (
         db.session.query(ChatGroup)
@@ -352,7 +357,7 @@ def create_chat_group_for_repo(
             or_(
                 ChatGroup.name == chat_name if chat_name else False,
                 # 现在支持在群聊里面使用match，尝试从chat_id获取名字
-                ChatGroup.chat_id == data["event"]["message"]["chat_id"],
+                ChatGroup.chat_id == chat_id,
             ),
         )
         .first()
