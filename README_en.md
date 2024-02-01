@@ -4,16 +4,17 @@
 <a href="https://gitmaya.com" target="_blank" style="display: block" align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://github.com/ConnectAI-E/GitMaya/assets/50035229/45cfd4f3-9c17-44d2-b6b7-3aa97c08006b" width="655" height="auto">
-    <img alt="GitMaya - 在聊天中进行Git流程" src="https://github.com/ConnectAI-E/GitMaya/assets/50035229/1c28f0ca-d6e6-4ebd-b858-c4be3eff845e" width="655" height="auto">
+    <img alt="GitMaya - make git flow in chat " src="https://github.com/ConnectAI-E/GitMaya/assets/50035229/1c28f0ca-d6e6-4ebd-b858-c4be3eff845e" width="655" height="auto">
   </picture>
 </a>
 <p align='center'>
-  <samp>一个开源的、高性能的GitOps工具 one chat = one repo 从此告别双边协同</samp>
+  <samp>An open-source, high-performance GitOps for boosting developer-teams productivity</samp>
 <br/>
- <samp>支持飞书、discord、slack 等 <sup><em>(完全开源)</em></sup></samp>
+ <samp>Supports lark, discord, slack, and so on <sup><em>(FULL OPENSOURCE)</em></sup></samp>
 </p>
 
 <!-- SHIELD GROUP -->
+
 [![][github-logo-shield]][github-logo-link]
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-forks-shield]][github-forks-link]
@@ -24,97 +25,100 @@
 </div>
 
 <p align="center">
-    <a href="https://gitmaya.com"> 🖥 立即尝试 GitMaya </a>
+    <a href="https://gitmaya.com">🖥 Try GitMaya Now </a>
 </p>
 
 <strong align="center">
 <samp>
 
-[**English**](./README.md) · [**简体中文**](./README_zh.md)
+[**简体中文**](./README.md) · [**English**](./README_en.md)
 
 </samp>
 </strong>
 
 https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-737df359d67d
 
-## 🔥 功能列表
+## 🔥 Feature List
 
-### 🧑🏻‍💻 所有代码完全开源
+### 🧑🏻‍💻 For Developers, By Developers
 
-以开发者为中心，由开发者设计，为开发者打造。
+Embrace the power of collaboration with our developer-centric, fully open-source product designed by developers, for developers.
 
-### 🌐 跨平台的愉悦体验
+### 🌐 Cross-Platform Bliss
 
-享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
+Enjoy seamless communication across various platforms including **Feishu, Discord, Slack, Microsoft Teams, and Telegram**.
 
-Git计划支持**GIthub, GitLab, SourceForge 和 Bitbucket**。
+Our commitment is to serve developers wherever they feel at home!
 
-开发者在哪里，GitMaya就在哪里。
+### 🔄 One Repo = One ChatGroup
 
-### 🔄 One Repo = One Chat
-体验 "One Repo = One Chat" 的完美同步，让协作流畅无阻！
+Experience the perfection of a 2-way sync with the mantra "One Repo = One ChatGroup". let the collaboration flow effortlessly!
 
-### 💬 简化 GitHub 消息互动：
-从您喜爱的聊天平台直接管理所有 GitHub 互动，不再需要切换上下文。
+### 💬 GitHub Msg Interaction, Simplified:
 
-### 🚀 Issue 全集成
-即时处理Issue，随时同步处理进度。
+Manage all your GitHub interactions right from your favorite chat platform. No more context-switching, just pure efficiency.
 
-### 🔄 Pr 全集成
-高效的PR处理流程，code-diff、comment、merge，一应俱全。
+### 🚀 Instant Issue Reminders
 
-### 🛠 CI/CD 和 GitHub Actions 全集成
-通过在您的聊天平台中直接集成 CI/CD 和 GitHub Actions。
+Say goodbye to delays! Receive instant issue reminders that make feedback and interaction a breeze. Stay in sync with your team effortlessly.
 
-### 🚚 保持在代码审查流程中
-最大化生产力，有效协作保持注意力。
+### 🔄 Pull Request Recap Magic
 
-## 📃 部署流程
+Efficient stand-ups made easy! Get a quick recap of pull requests, ensuring that your team stays on the same page and moves forward with confidence.
 
-部署 GitMaya 需要共计 3 个步骤。
+### 🛠 CI/CD and GitHub Actions Integration
+
+Elevate your development workflow with seamless integration of CI/CD and GitHub Actions directly within your ChatPlatform. Boost productivity and streamline your processes effortlessly.
+
+### 🚚 Stay in the Code Review Flow
+
+Maximize productivity with dedicated code review time slots. Stay focused, collaborate effectively, and ensure your codebase is always in its best shape!
+
+## 📃 Deployment Workflow
+
+Deploying GitMaya requires a total of 3 steps.
 
 <details>
 <summary>
 
-### 步骤 1. 安装 GitHub 应用
+### Step 1. Install GitHub Application
 
 </summary>
 
-您首先需要创建一个 GitHub 应用，详细信息请参考 [从零开始部署 GitHub 应用][Deploy GitHub App From Scratch]。
+You need to create a GitHub app at first, for details refer to [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch].
 
 </details>
 
 <details>
 <summary>
 
-### 步骤 2. 部署 GitMaya
+### Step 2. Deploy GitMaya
 
 </summary>
 
-您可以选择使用 [自托管](#self-hosting) 或 [本地部署](#local-development) 来部署 GitMaya 的前端和后端。
+You can choose to use [Self Hosting](#self-hosting) or [Local Deployment](#local-development) to deploy the front-end and back-end of GitMaya.
 
 </details>
 
 <details>
 <summary>
 
-### 步骤 3. 部署飞书 App 机器人
+### Step 3. Deploy Feishu App Bot
 
 </summary>
 
-部署飞书（Lark）机器人应用的步骤已经集成到 GitMaya 的入门流程中。完成入门流程将自动完成与飞书相关的配置。更多详细信息，请参考 [从零开始部署飞书 App 机器人][Deploy Feishu App Bot From Scratch]。
+The steps for deploying the Feishu (Lark) bot application are already integrated into the onboarding process of GitMaya. Completing the onboarding will automatically complete the Feishu-related configuration. For more details, please refer to [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch].
 
 </details>
 
+<h2 id="self-hosting">🛳 Self Hosting</h2>
 
-<h2 id="self-hosting">🛳 自托管</h2>
-
-GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
+GitMaya provides Self-Hosted Version with Severless and [Docker Image][docker-release-link]. This allows you to deploy your own chatbot within a few minutes without any prior knowledge.
 
 <details>
 <summary>
 
-### `A` 使用 Docker-Compose 部署
+### `A` Deploying with Docker-Compose
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -122,36 +126,38 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 
 </summary>
 
-我们提供了一个 Docker 镜像，用于在您自己的私人设备上部署 GitMaya 服务。使用以下命令启动 GitMaya 服务：
+We provide a Docker image for deploying the GitMaya service on your own private device. Use the following command to start the GitMaya service:
 
 <details>
 <summary>
 
-### 1. 下载 `docker-compose.yml` 和 `.env` 文件
+### 1. Download the `docker-compose.yml` and `.env` File
 
 </summary>
 
-首先，下载 `docker-compose.yml` 和 `.env` 文件；它们包含 GitMaya 服务的配置，包括 MySQL、Celery 和 Redis。
+First, download the `docker-compose.yml` and `.env` file; they contain the configuration for the GitMaya services, including MySQL, Celery, and Redis.
 
 ```fish
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
+
 </details>
 
 <details>
 <summary>
 
-### 2. 配置环境变量
+### 2. Configure the Environment Variables
 
 </summary>
 
-接下来，您需要配置 `.env` 文件。您应该用您在 [步骤 1](#步骤-1-安装-github-应用) 中创建的 GitHub App 信息替换这些变量。
+Then, you need to configure the `.env` and `docker-compose.yml` file. You should replace the variables with your own GitHub App information, which created in [Step 1](#step-1-install-github-application).
 
 ```fish
 $ vim .env
 ```
-**将 `GITHUB_APP_NAME`、`GITHUB_APP_ID`、`GITHUB_APP_PRIVATE_KEY`、`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`GITHUB_WEBHOOK_SECRET` 替换到 .env 文件中**
+
+**Replacing `GITHUB_APP_NAME`, `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_WEBHOOK_SECRET` into .env file**
 
 ```fish
 SECRET_KEY="<REPLACE>"
@@ -171,46 +177,46 @@ GITHUB_WEBHOOK_SECRET=secret
 DOMAIN=127.0.0.1
 ```
 
-> **NOTE**: **文件支持多行字符串，因此.pem 文件可以直接粘贴到 `.env` 文件中**
+> **NOTE**: **file supports multi-line string, so the .pem file could be pasted into `.env` file directly**
 
 </details>
 
 <details>
 <summary>
 
-### 3. 运行镜像
+### 3. Run the Images
 
 </summary>
 
-第一次运行时，它将初始化数据库，因此日志中可能包含一些错误消息。
+It will init database in first time, thus it may contain a few error messages in logs.
 
 ```fish
 $ docker-compose up -d
 ```
+
 </details>
 
 <!-- > \[!NOTE]
 >
-> 有关使用 Docker 部署的详细说明，请参阅 [📘 Docker 部署指南](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment) -->
+> For detailed instructions on deploying with Docker, please refer to the [📘 Docker Deployment Guide](https://github.com/connectai-e/gitmaya/wiki/Docker-Deployment) -->
 
-<!-- <details><summary><h4>🫙 Docker-Compose 环境变量</h4></summary>
+<!-- <details><summary><h4>🫙 Docker-Compose Environment Variable</h4></summary>
 
-该项目提供了一些使用环境变量设置的额外配置项：
+This project provides some additional configuration items set with environment variables:
 
-| 环境变量            | 是否必需 | 描述                                                     | 示例                 |
+| Environment Variable | Required | Description                                              | Example              |
 | -------------------- | -------- | -------------------------------------------------------- | -------------------- |
-| `OPENAI_API_KEY`     | 是       | 这是您在 OpenAI 帐户页面上申请的 API 密钥               | `sk-xxxxxx...xxxxxx` |
-
+| `OPENAI_API_KEY`     | Yes      | This is the API key you apply on the OpenAI account page | `sk-xxxxxx...xxxxxx` | -->
 <!--
 > \[!NOTE]
 >
-> 完整的环境变量列表可以在 [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
+> The complete list of environment variables can be found in the [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
 
 </details>
 
-### `B` 使用 Zeabur 或 Sealos 部署（即将推出！）
+### `B` Deploying with Zeabur or Sealos (Coming soon!)
 
-我们即将支持 Zeabur 的一键部署。
+We will soon support one-click deployment for Zeabur.
 
 <div align="left">
 
@@ -229,22 +235,22 @@ $ docker-compose up -d
 
 </details>
 
-<h2 id="local-development">⌨️ 本地部署</h2>
+<h2 id="local-development">⌨️ Local Development</h2>
 
-<!-- 您可以使用 GitHub Codespaces 进行在线开发：
+<!-- You can use GitHub Codespaces for online development:
 
 [![][codespaces-shield]][codespaces-link]
 
-或者将其克隆到本地进行开发： -->
+Or clone it for local development: -->
 
 <details>
 <summary>
 
-### 1. 克隆仓库
+### 1. Clone the Repository
 
 </summary>
 
-将仓库克隆到您的本地机器或服务器：
+Clone the repository to your local machine or server:
 
 ```fish
 $ git clone https://github.com/ConnectAI-E/GitMaya.git
@@ -256,27 +262,27 @@ $ cd GitMaya
 <details>
 <summary>
 
-### 2. 安装依赖
+### 2. Installing Dependencies
 
 </summary>
 
-#### 使用 pip
+#### Using pip
 
-如果您使用 `pip`
+If you are using `pip`
 
 ```fish
 $ pip install -r requirements.txt
 ```
 
-#### 使用 pdm（推荐）
+#### Using pdm(Recommended)
 
-如果您使用 `pdm`
+If you are using `pdm`
 
 ```fish
 $ pdm install
 ```
 
-激活虚拟环境：
+Activate the virtual environment:
 
 ```fish
 $ eval $(pdm venv activate)
@@ -287,33 +293,33 @@ $ eval $(pdm venv activate)
 <details>
 <summary>
 
-### 3. 配置文件
+### 3. Configuration Files
 
 </summary>
 
-在开始之前，请确保您具备以下配置文件：
+Before starting, ensure you have the following configuration files in place:
 
-- `.env`: **配置飞书、GitHub 和各种中间件变量。我们提供了一个 [.env.example](https://github.com/ConnectAI-E/GitMaya/blob/main/deploy/.env.example) 作为参考**
+- `.env`: **Configure Feishu, GitHub, and various middleware variables. We provide an example [.env.example](https://github.com/ConnectAI-E/GitMaya/blob/main/deploy/.env.example) for referring**
 
-通过替换相关变量配置数据库
+Configure database by replacing relevant variables
 
 ```fish
-# 数据库设置
+# Database Settings
 FLASK_SQLALCHEMY_DATABASE_URI="mysql+pymysql://root:gitmaya2023@mysql:3306/gitmaya?charset=utf8mb4&binary_prefix=true"
 ```
 
-配置 Celery，使用 Redis 作为 Broker
+Configure Celery, using Redis as Broker
 
 ```fish
-# Celery 设置
+# Celery Settings
 CELERY_BROKER_URL=redis://redis:6379/1
 CELERY_RESULT_BACKEND=redis://redis:6379/2
 ```
 
-配置 GitHub App，详细信息请参考: [从零开始部署 GitHub App][Deploy GitHub App From Scratch]
+Configure GitHub App, for details refer to: [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch]
 
 ```fish
-# GitHub 设置
+# GitHub Settings
 GITHUB_APP_NAME=test
 GITHUB_APP_ID=1024
 GITHUB_CLIENT_ID=test
@@ -324,16 +330,16 @@ GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
 -----END RSA PRIVATE KEY-----"
 ```
 
-配置服务器地址
+Configure server address
 
 ```fish
 DOMAIN=127.0.0.1
 ```
 
-（可选）配置 Flask
+(Optional) Configure Flask
 
 ```fish
-# Flask 设置
+# Flask Settings
 SECRET_KEY="test"
 FLASK_PERMANENT_SESSION_LIFETIME=86400
 ```
@@ -343,36 +349,36 @@ FLASK_PERMANENT_SESSION_LIFETIME=86400
 <details>
 <summary>
 
-### 4. 运行服务器
+### 4. Running the Server
 
 </summary>
 
-启动 Redis：
+Start Redis：
 
 ```fish
 $ docker run -d -p 6379:6379 redis:alpine
 ```
 
-启动 Celery，使用 Redis 作为 Broker：
+Start Celery, using Redis as Broker：
 
 ```fish
 $ cd server
 $ celery -A tasks.celery worker -l INFO -c 2
 ```
 
-启动 MySQL：
+Start MySQL：
 
 ```fish
 $ docker run --name mysql -e MYSQL_ROOT_PASSWORD=gitmaya2023 -e MYSQL_DATABASE=gitmaya -e TZ=Asia/Shanghai -p 3306:3306 -v /path/to/your/mysql/data:/var/lib/mysql -v /path/to/your/mysql/conf.d:/etc/mysql/conf.d -d mysql:5.7 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
 ```
 
-创建数据库和表 （仅需要一次）：
+Create database and tables **(needed only once)**:
 
 ```fish
 $ flask --app server/server:app create
 ```
 
-使用 `gunicorn` 运行 GitMaya 服务器：
+Run the GitMaya server by using `gunicorn`:
 
 ```fish
 $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-alive 60 --log-level=info server:app
@@ -382,27 +388,12 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 </details>
 
-## 📕 参考
+## 📕 Reference
 
-- [从零开始部署飞书 App 机器人][Deploy Feishu App Bot From Scratch]
-- [从零开始部署 GitHub App][Deploy GitHub App From Scratch]
-- [飞书 App 官方文档][Feishu App Official Doc]
-- [GitHub App 官方文档][GitHub App Official Doc]
-
-<div align="right">
-
-[![][back-to-top]](#readme-top)
-
-</div>
-
-## 📦 生态系统
-
-GitMaya 系列有多个仓库，这是其中之一：
-
-|     | 仓库                                                    | 语言    | 用途                       |
-| --- | -------------------------------------------------------- | ------- | ------------------------- |
-| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)         | Python  | 服务器端代码              |
-|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli) | Python  | 超级 Git 管理工具         |
+- [Deploy Feishu App Bot From Scratch][Deploy Feishu App Bot From Scratch]
+- [Deploy GitHub App From Scratch][Deploy GitHub App From Scratch]
+- [Feishu App Official Doc][Feishu App Official Doc]
+- [GitHub App Official Doc][GitHub App Official Doc]
 
 <div align="right">
 
@@ -410,9 +401,24 @@ GitMaya 系列有多个仓库，这是其中之一：
 
 </div>
 
-## 🤝 立即参与贡献
+## 📦 Ecosystem
 
-Gitmaya 是完全开源的，由开发者们共同打造。请随时通过代码将你想要的功能变为现实。
+There is a series of gitmaya repositories, and this is one of them:
+
+|     | Repository                                                | Language | Purpose                   |
+| --- | --------------------------------------------------------- | -------- | ------------------------- |
+| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)         | Python   | Server-side code          |
+|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli) | Python   | Super Git management tool |
+
+<div align="right">
+
+[![][back-to-top]](#readme-top)
+
+</div>
+
+## 🤝 Contributing Now
+
+Gitmaya is an open-source platform, freely available and crafted by developers, just like yourself. Feel free to proudly present your envisioned features and bring them to life through code.
 
 [![][pr-welcome-shield]][pr-welcome-link]
 
@@ -442,18 +448,17 @@ Gitmaya 是完全开源的，由开发者们共同打造。请随时通过代码
 
 </div>
 
-## 👻 替代方案
+## 👻 Alternatives
 
-`gitmaya` 受到以下工具的启发。
+`gitmaya` is inspired by the following tools.
 
 - [pullpo](https://pullpo.io/)
 - [graphite](https://graphite.dev/)
 - [typoapp](https://typoapp.io/)
 
-它们都很棒，但关注的重点和功能集合不同，有兴趣也可以试试 :)
+They work well but have different focuses and feature sets, try them out as well :)
 
 <details><summary><h4>📝 License</h4></summary>
-
 
 [![][fossa-license-shield]][fossa-license-link]
 
