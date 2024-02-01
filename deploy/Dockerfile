@@ -5,8 +5,8 @@ RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 ADD ./requirements.txt /tmp/requirements.txt
 
-RUN apt-get update && apt-get install -y libcurl4-openssl-dev libffi-dev libxml2-dev libmariadb-dev\
-  && pip install -r /tmp/requirements.txt && pip install gunicorn gevent
+RUN pip install --no-cache-dir -r /tmp/requirements.txt \
+  && pip install --no-cache-dir gunicorn gevent && rm -rf ~/.cache
 
 ADD ./deploy/wait-for-it.sh /wait-for-it.sh
 ADD ./deploy/entrypoint.sh /entrypoint.sh
