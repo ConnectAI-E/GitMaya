@@ -351,71 +351,63 @@ def create():
         if "exist" in str(e):
             db.create_all()
 
+    try:
+        db.session.query(ChatGroup).first()
+    except Exception as e:
+        if "exist" in str(e):
+            db.create_all()
+            db.session.execute(
+                text(
+                    "alter table repo add chat_group_id binary(12) after owner_bind_id"
+                )
+            )
+
+            class ChatGroupOld(Base):
+                __tablename__ = "chat_group"
+                repo_id = db.Column(
+                    ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目"
+                )
+
+                im_application_id = db.Column(
+                    ObjID(12),
+                    ForeignKey("im_application.id"),
+                    nullable=True,
+                    comment="哪一个项目创建的",
+                )
+                chat_id = db.Column(db.String(128), nullable=True, comment="chat_id")
+                name = db.Column(db.String(128), nullable=True, comment="群名称")
+                description = db.Column(db.String(256), nullable=True, comment="群描述")
+                extra = db.Column(
+                    JSONStr(2048),
+                    nullable=True,
+                    server_default=text("'{}'"),
+                    comment="其他字段",
+                )
+
+            for group in db.session.query(ChatGroupOld).all():
+                if (
+                    not db.session.query(ChatGroup)
+                    .filter(ChatGroup.id == group.id)
+                    .limit(1)
+                    .scalar()
+                ):
+                    db.session.add(
+                        ChatGroup(
+                            id=group.id,
+                            im_application_id=group.im_application_id,
+                            chat_id=group.chat_id,
+                            name=group.name,
+                            description=group.description,
+                            extra=group.extra,
+                            created=group.created,
+                            modified=group.modified,
+                        )
+                    )
+                db.session.query(Repo).filter(Repo.id == group.repo_id).update(
+                    dict(chat_group_id=group.id)
+                )
+            db.session.commit()
+
 
 # add command function to cli commands
 app.cli.add_command(create)
-
-
-# create command function
-@click.command(name="migrate")
-@with_appcontext
-def migrate():
-    # migrate chat_group to chat_group_v1
-    try:
-        db.create_all()
-        db.session.execute(
-            text("alter table repo add chat_group_id binary(12) after owner_bind_id")
-        )
-
-        class ChatGroupOld(Base):
-            __tablename__ = "chat_group"
-            repo_id = db.Column(
-                ObjID(12), ForeignKey("repo.id"), nullable=True, comment="属于哪一个项目"
-            )
-
-            im_application_id = db.Column(
-                ObjID(12),
-                ForeignKey("im_application.id"),
-                nullable=True,
-                comment="哪一个项目创建的",
-            )
-            chat_id = db.Column(db.String(128), nullable=True, comment="chat_id")
-            name = db.Column(db.String(128), nullable=True, comment="群名称")
-            description = db.Column(db.String(256), nullable=True, comment="群描述")
-            extra = db.Column(
-                JSONStr(2048),
-                nullable=True,
-                server_default=text("'{}'"),
-                comment="其他字段",
-            )
-
-        for group in db.session.query(ChatGroupOld).all():
-            if (
-                not db.session.query(ChatGroup)
-                .filter(ChatGroup.id == group.id)
-                .limit(1)
-                .scalar()
-            ):
-                db.session.add(
-                    ChatGroup(
-                        id=group.id,
-                        im_application_id=group.im_application_id,
-                        chat_id=group.chat_id,
-                        name=group.name,
-                        description=group.description,
-                        extra=group.extra,
-                        created=group.created,
-                        modified=group.modified,
-                    )
-                )
-            db.session.query(Repo).filter(Repo.id == group.repo_id).update(
-                dict(chat_group_id=group.id)
-            )
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        app.logger.exception(e)
-
-
-# add command function to cli commands
-app.cli.add_command(migrate)
