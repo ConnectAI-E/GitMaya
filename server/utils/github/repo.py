@@ -36,19 +36,20 @@ class GitHubAppRepo(BaseGitHubApp):
         if not team:
             return None
 
-        return self.get_repo_info_by_name(repo.name)
+        return self.get_repo_info_by_name(team.name, repo.name)
 
-    def get_repo_info_by_name(self, repo_name: str) -> dict | None:
+    def get_repo_info_by_name(self, team_name: str, repo_name: str) -> dict | None:
         """Get repo info by repo name.
 
         Args:
+            team_name (str): The organization name from GitHub.
             repo_name (str): The repo name from GitHub.
 
         Returns:
             dict: Repo info.
         """
         return self.base_github_rest_api(
-            f"https://api.github.com/repos/{team.name}/{repo.name}",
+            f"https://api.github.com/repos/{team_name}/{repo_name}",
             "GET",
             "install_token",
         )

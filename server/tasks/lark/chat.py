@@ -15,8 +15,6 @@ from model.schema import (
 )
 from model.team import get_code_users_by_openid
 from sqlalchemy.orm import aliased
-from tasks.github.issue import on_issue_opened
-from tasks.github.pull_request import on_pull_request_opened
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
@@ -336,18 +334,22 @@ def sync_issue(
         code_application.installation_id, user_id=current_code_user_id
     )
 
+    import tasks
+
     # 后面需要插入记录，再发卡片，创建话题
     repository = github_app.get_repo_info_by_name(team.name, repo.name)
     if is_pr:
         pull_request = github_app.get_one_pull_requrst(team.name, repo.name, issue_id)
         logging.debug("get_one_pull_requrst %r", pull_request)
-        on_pull_request_opened(
+        tasks.on_pull_request_opened(
             {"action": "opened", "pull_request": pull_request, "repository": repository}
         )
     else:
         issue = github_app.get_one_issue(team.name, repo.name, issue_id)
         logging.debug("get_one_issue %r", issue)
-        on_issue_opened({"action": "opened", "issue": issue, "repository": repository})
+        tasks.on_issue_opened(
+            {"action": "opened", "issue": issue, "repository": repository}
+        )
 
     return send_chat_failed_tip(
         "同步 issue 失败", app_id, message_id, content, data, *args, **kwargs
