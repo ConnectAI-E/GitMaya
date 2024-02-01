@@ -343,22 +343,18 @@ def create_chat_group_for_repo(
             IMUser.openid.in_(user_id_list),
         )
     ]
-    invite_message = (
-        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
-        if len(user_name_list) > 0
-        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
-    )
-
     # 如果有已经存在的项目群，尝试直接绑定这个群，将当前项目人员拉进群
     exists_chat_group = (
         self.session.query(ChatGroup)
         .filter(
             ChatGroup.im_application_id == application.id,
-            ChatGroup.name == chat_name,
+            or_(
+                ChatGroup.name == chat_name if chat_name else False,
+                # 现在支持在群聊里面使用match，尝试从chat_id获取名字
+                ChatGroup.chat_id == data["event"]["message"]["chat_id"],
+            ),
         )
         .first()
-        if chat_name
-        else None
     )
     if exists_chat_group:
         db.session.query(Repo).filter(Repo.id == repo.id).update(
@@ -372,6 +368,11 @@ def create_chat_group_for_repo(
             json={"id_list": user_id_list},
         ).json()
         logging.debug("add members %r to chat_id %r", user_id_list, chat_id)
+        invite_message = (
+            f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{exists_chat_group.name}」群"
+            if len(user_name_list) > 0
+            else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+        )
 
         content = "\n".join(
             [
@@ -442,6 +443,11 @@ def create_chat_group_for_repo(
     1. 给操作的用户发成功的消息
     2. 给群发送repo 卡片消息，并pin
     """
+    invite_message = (
+        f"2. 成功拉取「 {'、'.join(user_name_list)} 」进入「{name}」群"
+        if len(user_name_list) > 0
+        else "2. 未获取相关绑定成员, 请检查成员是否绑定"
+    )
 
     content = "\n".join(
         [

@@ -362,6 +362,10 @@ app.cli.add_command(create)
 def migrate():
     # migrate chat_group to chat_group_v1
     try:
+        db.create_all()
+        db.session.execute(
+            text("alter table repo add chat_group_id binary(12) after owner_bind_id")
+        )
 
         class ChatGroupOld(Base):
             __tablename__ = "chat_group"
