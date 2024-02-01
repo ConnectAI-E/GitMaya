@@ -15,6 +15,8 @@ from model.schema import (
 )
 from model.team import get_code_users_by_openid
 from sqlalchemy.orm import aliased
+from tasks.github.issue import on_issue_opened
+from tasks.github.pull_request import on_pull_request_opened
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
@@ -250,11 +252,13 @@ def sync_issue(
     issue_id, issue_link, app_id, message_id, content, data, *args, **kwargs
 ):
     repo_name = ""
+    is_pr = False
     try:
         if not issue_id:
             path = urlparse(issue_link).path
             issue_id = int(path.split("/").pop())
             repo_name = path.split("/")[2]
+            is_pr = path.split("/")[3] == "pull"
     except Exception as e:
         logging.error(e)
 
@@ -324,17 +328,27 @@ def sync_issue(
         )
     openid = data["event"]["sender"]["sender_id"]["open_id"]
     # 这里连三个表查询，所以一次性都查出来
-    code_users = get_code_users_by_openid([openid] + users)
+    code_users = get_code_users_by_openid([openid])
     # 当前操作的用户
     current_code_user_id = code_users[openid][0]
 
     github_app = GitHubAppRepo(
         code_application.installation_id, user_id=current_code_user_id
     )
-    response = github_app.get_one_issue(team.name, repo.name, issue_id)
-    # TODO 先测试一下看这个结果是什么样子？
+
     # 后面需要插入记录，再发卡片，创建话题
-    logging.debug("get_one_issue %r", response)
+    repository = github_app.get_repo_info_by_name(team.name, repo.name)
+    if is_pr:
+        pull_request = github_app.get_one_pull_requrst(team.name, repo.name, issue_id)
+        logging.debug("get_one_pull_requrst %r", pull_request)
+        on_pull_request_opened(
+            {"action": "opened", "pull_request": pull_request, "repository": repository}
+        )
+    else:
+        issue = github_app.get_one_issue(team.name, repo.name, issue_id)
+        logging.debug("get_one_issue %r", issue)
+        on_issue_opened({"action": "opened", "issue": issue, "repository": repository})
+
     return send_chat_failed_tip(
         "同步 issue 失败", app_id, message_id, content, data, *args, **kwargs
     )
