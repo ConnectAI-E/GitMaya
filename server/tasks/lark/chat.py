@@ -23,6 +23,7 @@ from utils.lark.post_message import post_content_to_markdown
 from .base import (
     get_bot_by_application_id,
     get_chat_group_by_chat_id,
+    get_git_object_by_message_id,
     get_repo_name_by_repo_id,
     with_authenticated_github,
 )
@@ -61,7 +62,7 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     repo = (
         db.session.query(Repo)
         .filter(
-            Repo.id == chat_group.repo_id,
+            Repo.chat_group_id == chat_group.id,
             Repo.status == 0,
         )
         .first()
@@ -187,18 +188,43 @@ def create_issue(
         return send_chat_failed_tip(
             "找不到项目群", app_id, message_id, content, data, *args, **kwargs
         )
-    repo = (
-        db.session.query(Repo)
-        .filter(
-            Repo.id == chat_group.repo_id,
-            Repo.status == 0,
+    repos = []
+    try:
+        # 如果是在话题内运行命令（repo/issue/pull_request）尝试找到对应的repo
+        if len(repos) == 0:
+            root_id = data["event"]["message"].get("root_id", "")
+            if root_id:
+                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                if repo:
+                    repos = [repo]
+                elif issue or pr:
+                    repo_id = issue.repo_id if issue else pr.repo_id
+                    repo = db.session.query(Repo).filter(Repo.id == repo_id).first()
+                    if repo:
+                        repos = [repo]
+    except Exception as e:
+        logging.error(e)
+
+    if len(repos) == 0:
+        repos = (
+            db.session.query(Repo)
+            .filter(
+                Repo.chat_group_id == chat_group.id,
+                Repo.status == 0,
+            )
+            .all()
         )
-        .first()
-    )
-    if not repo:
+    if len(repos) > 1:
+        return send_chat_failed_tip(
+            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+        )
+
+    if len(repos) == 0:
         return send_chat_failed_tip(
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
         )
+
+    repo = repos[0]  # 能找到唯一的仓库才执行
 
     code_application = (
         db.session.query(CodeApplication)

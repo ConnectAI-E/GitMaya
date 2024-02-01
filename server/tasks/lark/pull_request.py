@@ -281,14 +281,14 @@ def send_pull_request_card(pull_request_id: str):
     """
     pr = db.session.query(PullRequest).filter(PullRequest.id == pull_request_id).first()
     if pr:
+        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == pr.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
-        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
         if chat_group and repo:
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
@@ -338,10 +338,13 @@ def send_pull_request_comment(pull_request_id, comment, user_name: str):
     """
     pr = db.session.query(PullRequest).filter(PullRequest.id == pull_request_id).first()
     if pr:
+        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
+        if not repo:
+            return False
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == pr.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
@@ -367,14 +370,16 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
 
     pr = db.session.query(PullRequest).filter(PullRequest.id == pr_id).first()
     if pr:
+        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
+        if not repo:
+            return False
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == pr.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
-        repo = db.session.query(Repo).filter(Repo.id == pr.repo_id).first()
         if chat_group and repo:
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()

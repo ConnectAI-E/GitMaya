@@ -249,14 +249,16 @@ def send_issue_card(issue_id):
     """
     issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
     if issue:
+        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
+        if not repo:
+            return False
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == issue.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
-        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
         if chat_group and repo:
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
@@ -303,10 +305,13 @@ def send_issue_comment(issue_id, comment, user_name: str):
     """
     issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
     if issue:
+        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
+        if not repo:
+            return False
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == issue.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
@@ -401,14 +406,16 @@ def update_issue_card(issue_id: str):
 
     issue = db.session.query(Issue).filter(Issue.id == issue_id).first()
     if issue:
+        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
+        if not repo:
+            return False
         chat_group = (
             db.session.query(ChatGroup)
             .filter(
-                ChatGroup.repo_id == issue.repo_id,
+                ChatGroup.id == repo.chat_group_id,
             )
             .first()
         )
-        repo = db.session.query(Repo).filter(Repo.id == issue.repo_id).first()
 
         if chat_group and repo:
             bot, application = get_bot_by_application_id(chat_group.im_application_id)
