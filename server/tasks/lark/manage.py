@@ -17,6 +17,7 @@ from model.schema import (
     TeamMember,
     db,
 )
+from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 from utils.lark.chat_manual import ChatManual
 from utils.lark.manage_fail import ManageFaild
@@ -247,7 +248,7 @@ def send_manage_success_message(
 
 @celery.task()
 def create_chat_group_for_repo(
-    repo_url, chat_name, app_id, message_id, *args, **kwargs
+    repo_url, chat_name, app_id, message_id, data, raw_message, *args, **kwargs
 ):
     """
     user input:
@@ -345,7 +346,7 @@ def create_chat_group_for_repo(
     ]
     # 如果有已经存在的项目群，尝试直接绑定这个群，将当前项目人员拉进群
     exists_chat_group = (
-        self.session.query(ChatGroup)
+        db.session.query(ChatGroup)
         .filter(
             ChatGroup.im_application_id == application.id,
             or_(
