@@ -26,7 +26,7 @@ from utils.lark.pr_manual import (
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
 
-from server.tasks.lark.issue import (
+from tasks.lark.issue import (
     gen_comment_post_message,
     get_github_name_by_openid,
     replace_im_name_to_github_name,
