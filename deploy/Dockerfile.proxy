@@ -6,7 +6,6 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 COPY ./website /app
-COPY .env /app/.env.development
 WORKDIR /app
 
 RUN pnpm install --frozen-lockfile && pnpm build
