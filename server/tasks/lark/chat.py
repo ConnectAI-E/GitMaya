@@ -187,19 +187,7 @@ def create_issue(
         return send_chat_failed_tip(
             "找不到项目群", app_id, message_id, content, data, *args, **kwargs
         )
-    repos = (
-        db.session.query(Repo)
-        .filter(
-            Repo.chat_group_id == chat_group.id,
-            Repo.status == 0,
-        )
-        .all()
-    )
-    if len(repos) > 1:
-        return send_chat_failed_tip(
-            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
-        )
-
+    repos = []
     try:
         # 如果是在话题内运行命令（repo/issue/pull_request）尝试找到对应的repo
         if len(repos) == 0:
@@ -215,6 +203,20 @@ def create_issue(
                         repos = [repo]
     except Exception as e:
         logging.error(e)
+
+    if len(repos) == 0:
+        repos = (
+            db.session.query(Repo)
+            .filter(
+                Repo.chat_group_id == chat_group.id,
+                Repo.status == 0,
+            )
+            .all()
+        )
+    if len(repos) > 1:
+        return send_chat_failed_tip(
+            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+        )
 
     if len(repos) == 0:
         return send_chat_failed_tip(
