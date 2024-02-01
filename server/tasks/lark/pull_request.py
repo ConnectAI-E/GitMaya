@@ -15,6 +15,12 @@ from model.schema import (
     db,
 )
 from model.team import get_assignees_by_openid
+from tasks.lark.issue import (
+    gen_comment_post_message,
+    get_github_name_by_openid,
+    replace_im_name_to_github_name,
+    replace_images_with_keys,
+)
 from utils.github.repo import GitHubAppRepo
 from utils.lark.pr_card import PullCard
 from utils.lark.pr_manual import (
@@ -25,13 +31,6 @@ from utils.lark.pr_manual import (
 )
 from utils.lark.pr_tip_failed import PrTipFailed
 from utils.lark.pr_tip_success import PrTipSuccess
-
-from tasks.lark.issue import (
-    gen_comment_post_message,
-    get_github_name_by_openid,
-    replace_im_name_to_github_name,
-    replace_images_with_keys,
-)
 
 from .base import (
     get_bot_by_application_id,
