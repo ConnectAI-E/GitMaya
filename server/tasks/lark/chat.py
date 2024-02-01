@@ -23,6 +23,7 @@ from utils.lark.post_message import post_content_to_markdown
 from .base import (
     get_bot_by_application_id,
     get_chat_group_by_chat_id,
+    get_git_object_by_message_id,
     get_repo_name_by_repo_id,
     with_authenticated_github,
 )
@@ -191,7 +192,7 @@ def create_issue(
     try:
         # 如果是在话题内运行命令（repo/issue/pull_request）尝试找到对应的repo
         if len(repos) == 0:
-            root_id = args[1]["event"]["message"].get("root_id", "")
+            root_id = data["event"]["message"].get("root_id", "")
             if root_id:
                 repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
                 if repo:
