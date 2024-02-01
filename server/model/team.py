@@ -202,6 +202,9 @@ def get_team_repo(team_id, user_id, page=1, size=20):
             CodeApplication.status == 0,
             RepoWithUsers.status == 0,
         )
+    ).order_by(
+        Repo.chat_group_id.desc(),  # 已经关联的在前面
+        Repo.created.desc(),  # 创建时间倒序
     )
     total = query.count()
     if total == 0:
