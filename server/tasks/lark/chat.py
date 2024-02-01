@@ -322,6 +322,12 @@ def sync_issue(
         return send_chat_failed_tip(
             "找不到对应的项目", app_id, message_id, content, data, *args, **kwargs
         )
+    openid = data["event"]["sender"]["sender_id"]["open_id"]
+    # 这里连三个表查询，所以一次性都查出来
+    code_users = get_code_users_by_openid([openid] + users)
+    # 当前操作的用户
+    current_code_user_id = code_users[openid][0]
+
     github_app = GitHubAppRepo(
         code_application.installation_id, user_id=current_code_user_id
     )
