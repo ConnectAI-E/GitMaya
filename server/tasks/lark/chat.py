@@ -172,7 +172,7 @@ def create_issue(
                 title = json.loads(parent_message["body"]["content"]).get("text")
     if not title:
         return send_chat_failed_tip(
-            "issue 标题为空", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "issue 标题为空", app_id, message_id, content, data, *args, **kwargs
         )
 
     chat_id = data["event"]["message"]["chat_id"]

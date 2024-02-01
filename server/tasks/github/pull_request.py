@@ -66,7 +66,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         repo_id=repo.id,
         pull_request_number=pr_info.number,
         title=pr_info.title,
-        description=pr_info.body,
+        description=pr_info.body[:1000],
         base=pr_info.base.ref,
         head=pr_info.head.ref,
         state=pr_info.state,
