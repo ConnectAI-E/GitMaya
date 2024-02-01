@@ -341,7 +341,7 @@ def sync_issue(
     if is_pr:
         pull_request = github_app.get_one_pull_request(team.name, repo.name, issue_id)
         logging.debug("get_one_pull_requrst %r", pull_request)
-        tasks.on_pull_request_opened(
+        return tasks.on_pull_request_opened(
             {
                 "action": "opened",
                 "sender": pull_request["user"],
@@ -352,7 +352,7 @@ def sync_issue(
     else:
         issue = github_app.get_one_issue(team.name, repo.name, issue_id)
         logging.debug("get_one_issue %r", issue)
-        tasks.on_issue_opened(
+        return tasks.on_issue_opened(
             {
                 "action": "opened",
                 "sender": issue["user"],
