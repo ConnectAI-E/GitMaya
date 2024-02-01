@@ -200,6 +200,22 @@ def create_issue(
             "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
         )
 
+    try:
+        # 如果是在话题内运行命令（repo/issue/pull_request）尝试找到对应的repo
+        if len(repos) == 0:
+            root_id = args[1]["event"]["message"].get("root_id", "")
+            if root_id:
+                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                if repo:
+                    repos = [repo]
+                elif issue or pr:
+                    repo_id = issue.repo_id if issue else pr.repo_id
+                    repo = db.session.query(Repo).filter(Repo.id == repo_id).first()
+                    if repo:
+                        repos = [repo]
+    except Exception as e:
+        logging.error(e)
+
     if len(repos) == 0:
         return send_chat_failed_tip(
             "找不到项目", app_id, message_id, content, data, *args, **kwargs
