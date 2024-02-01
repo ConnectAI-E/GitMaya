@@ -70,7 +70,8 @@ def stalecache(
                 real_time_delay = random.randrange(time_delay, max_time_delay)
                 get_client(False).expire(name, stale + real_time_delay + time_lock)
                 # 创建一个 asyncio 任务来执行 func
-                asyncio.create_task(asyncio.sleep(real_time_delay, func()))
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(asyncio.sleep(real_time_delay, func()))
 
             return v
 
@@ -101,7 +102,8 @@ def stalecache(
                 # set expire to get a "lock", and delay to run the task
                 real_time_delay = random.randrange(time_delay, max_time_delay)
                 get_client(False).expire(name, stale + real_time_delay + time_lock)
-                asyncio.create_task(asyncio.sleep(real_time_delay, func()))
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(asyncio.sleep(real_time_delay, func()))
 
             return v
 

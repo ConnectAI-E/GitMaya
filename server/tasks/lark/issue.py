@@ -133,7 +133,7 @@ def replace_images_with_keys(text, bot):
         lambda match: f"![]({upload_image(match.group(1), bot)})",
         text,
     )
-    return replaced_text
+    return replaced_text.replace("![]()", "(请确认图片是否上传成功)")
 
 
 def send_issue_url_message(
