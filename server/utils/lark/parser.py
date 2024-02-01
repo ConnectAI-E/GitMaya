@@ -1,5 +1,6 @@
 import argparse
 import logging
+from urllib.parse import urlparse
 
 import tasks
 from utils.constant import TopicType
@@ -209,6 +210,24 @@ class GitMayaLarkParser(object):
             }
             # 只有群聊才是指定的repo
             if "group" == chat_type:
+                if len(param.argv) == 1:
+                    issue_id_or_link = param.argv[0]
+                    try:
+                        if issue_id_or_link.isdigit():
+                            tasks.sync_issue.delay(
+                                int(issue_id_or_link), None, *args, **kwargs
+                            )
+                        elif urlparse(issue_id_or_link).netloc:
+                            # 这里是否需要检查netloc==github.com??
+                            tasks.sync_issue.delay(
+                                None, issue_id_or_link, *args, **kwargs
+                            )
+                        else:
+                            raise Exception("invalid issue_id or issue link.")
+                        return "issue", param, unkown
+                    except Exception as e:
+                        logging.error(e)
+
                 title, users, labels = [], [], []
 
                 for arg in param.argv:
