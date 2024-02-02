@@ -47,7 +47,7 @@ class RepoWithUsers(Repo):
     group = relationship(
         ChatGroup,
         primaryjoin=and_(
-            ChatGroup.repo_id == Repo.id,
+            ChatGroup.id == Repo.chat_group_id,
             ChatGroup.status == 0,
         ),
         viewonly=True,
@@ -202,6 +202,9 @@ def get_team_repo(team_id, user_id, page=1, size=20):
             CodeApplication.status == 0,
             RepoWithUsers.status == 0,
         )
+    ).order_by(
+        Repo.chat_group_id.desc(),  # 已经关联的在前面
+        Repo.created.desc(),  # 创建时间倒序
     )
     total = query.count()
     if total == 0:
@@ -463,7 +466,7 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
     chat_group = (
         db.session.query(ChatGroup)
         .filter(
-            ChatGroup.repo_id == repo.id,
+            ChatGroup.id == repo.chat_group_id,
             ChatGroup.status == 0,
         )
         .first()
@@ -539,7 +542,6 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
     chat_group_id = ObjID.new_id()
     chat_group = ChatGroup(
         id=chat_group_id,
-        repo_id=repo.id,
         im_application_id=application.id,
         chat_id=chat_id,
         name=name,
@@ -547,6 +549,10 @@ def create_repo_chat_group_by_repo_id(user_id, team_id, repo_id, chat_name=None)
         extra=result,
     )
     db.session.add(chat_group)
+    # 更改连表规则，创建新的群之后，需要更新repo.chat_group_id
+    db.session.query(Repo).filter(
+        Repo.id == repo.id,
+    ).update(dict(chat_group_id=chat_group_id))
     db.session.commit()
     # send card message, and pin repo card
     tasks.send_repo_to_chat_group.delay(repo.id, app_id, chat_id)

@@ -36,8 +36,20 @@ class GitHubAppRepo(BaseGitHubApp):
         if not team:
             return None
 
+        return self.get_repo_info_by_name(team.name, repo.name)
+
+    def get_repo_info_by_name(self, team_name: str, repo_name: str) -> dict | None:
+        """Get repo info by repo name.
+
+        Args:
+            team_name (str): The organization name from GitHub.
+            repo_name (str): The repo name from GitHub.
+
+        Returns:
+            dict: Repo info.
+        """
         return self.base_github_rest_api(
-            f"https://api.github.com/repos/{team.name}/{repo.name}",
+            f"https://api.github.com/repos/{team_name}/{repo_name}",
             "GET",
             "install_token",
         )
@@ -201,6 +213,28 @@ class GitHubAppRepo(BaseGitHubApp):
             },
         )
 
+    def get_one_issue(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        issue_number: int,
+    ) -> dict | None:
+        """Get an issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            issue_number (int): The issue id
+
+        Returns:
+            dict: The issue info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/issues/{issue_number}",
+            auth_type="install_token",
+        )
+
     def create_issue_comment(
         self, repo_onwer: str, repo_name: str, issue_number: int, body: str
     ) -> dict | None:
@@ -261,6 +295,28 @@ class GitHubAppRepo(BaseGitHubApp):
             "PATCH",
             "user_token",
             json=json,
+        )
+
+    def get_one_pull_request(
+        self,
+        repo_onwer: str,
+        repo_name: str,
+        pull_number: int,
+    ) -> dict | None:
+        """Get an issue
+
+        Args:
+            repo_onwer (str): The repo owner.
+            repo_name (str): The repo name.
+            pull_number (int): The pull_request id
+
+        Returns:
+            dict: The issue info.
+        """
+
+        return self.base_github_rest_api(
+            f"https://api.github.com/repos/{repo_onwer}/{repo_name}/pulls/{pull_number}",
+            auth_type="install_token",
         )
 
     def requested_reviewers(

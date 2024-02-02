@@ -36,7 +36,7 @@ def on_push(data: dict | None) -> list:
 
     # 发送 Commit Log 信息
     chat_group = (
-        db.session.query(ChatGroup).filter(ChatGroup.repo_id == repo.id).first()
+        db.session.query(ChatGroup).filter(ChatGroup.id == repo.chat_group_id).first()
     )
     if not chat_group:
         app.logger.info(f"ChatGroup not found: {repo.name}")

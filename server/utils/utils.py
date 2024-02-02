@@ -5,16 +5,18 @@ from utils.redis import stalecache
 
 
 # 使用 stalecache 装饰器，以 url 作为缓存键
-@stalecache(expire=300, stale=600)
+@stalecache(expire=3600, stale=600)
 def upload_image(url, bot):
     logging.info("upload image: %s", url)
+    if not url or not url.startswith("http"):
+        return ""
     response = httpx.get(url, follow_redirects=True)
     if response.status_code == 200:
         # 函数返回值: iamg_key 存到缓存中
         img_key = upload_image_binary(response.content, bot)
         return img_key
     else:
-        return None
+        return ""
 
 
 def upload_image_binary(img_bin, bot):
