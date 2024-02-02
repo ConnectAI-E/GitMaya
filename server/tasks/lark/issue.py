@@ -119,7 +119,8 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
 def replace_images_with_keys(text, bot):
     """
     replace image URL to image_key.
-    ![](url) to ![](image_key)
+    Markdown: ![](url) -> ![](image_key)
+    HTML: <img src="url"> -> ![](image_key)
     Args:
         text (str): original text
         bot: bot instance
@@ -127,12 +128,22 @@ def replace_images_with_keys(text, bot):
     Returns:
         str: replaced text
     """
-    pattern = r"!\[.*?\]\((.*?)\)"
+    # Replace Markdown image syntax
+    markdown_pattern = r"!\[.*?\]\((.*?)\)"
     replaced_text = re.sub(
-        pattern,
+        markdown_pattern,
         lambda match: f"![]({upload_image(match.group(1), bot)})",
         text,
     )
+
+    # Replace HTML image syntax
+    html_pattern = r"<img.*?src=\"(.*?)\".*?>"
+    replaced_text = re.sub(
+        html_pattern,
+        lambda match: f"![]({upload_image(match.group(1), bot)})",
+        replaced_text,
+    )
+
     return replaced_text.replace("![]()", "(请确认图片是否上传成功)")
 
 
