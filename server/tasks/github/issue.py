@@ -186,7 +186,7 @@ def on_issue_updated(event_dict: dict) -> list:
 
     if issue:
         issue.title = issue_info.title
-        issue.description = issue_info.body
+        issue.description = issue_info.body[:1000] if issue_info.body else None
         issue.extra = issue_info.model_dump()
 
         db.session.commit()
