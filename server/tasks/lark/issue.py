@@ -345,7 +345,7 @@ def gen_comment_post_message(user_name, comment):
             messages.append([FeishuPostMessageImage(image_key=line)])
         else:
             # 处理每行 at, 普通文本
-            elements = line.split(" ")
+            elements = re.findall(r"\S+|\s+", line)
             element_messages = []
             for element in elements:
                 if element.startswith("@"):
