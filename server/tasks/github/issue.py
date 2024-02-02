@@ -135,6 +135,9 @@ def on_issue_opened(event_dict: dict | None) -> list:
     issue_info = event.issue
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    if not repo:
+        app.logger.error(f"Failed to find repo: {event_dict}")
+        return []
     # 检查是否已经创建过 issue
     issue = (
         db.session.query(Issue)
@@ -177,6 +180,9 @@ def on_issue_updated(event_dict: dict) -> list:
     issue_info = event.issue
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    if not repo:
+        app.logger.error(f"Failed to find repo: {event_dict}")
+        return []
     # 修改 issue
     issue = (
         db.session.query(Issue)

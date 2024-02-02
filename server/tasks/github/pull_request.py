@@ -47,6 +47,9 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
     pr_info = event.pull_request
 
     repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
+    if not repo:
+        app.logger.error(f"Failed to find repo: {event_dict}")
+        return []
     # 检查是否已经创建过 pullrequest
     pr = (
         db.session.query(PullRequest)

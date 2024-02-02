@@ -254,6 +254,22 @@ def create_issue(
     openid = data["event"]["sender"]["sender_id"]["open_id"]
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid] + users)
+
+    import tasks
+
+    if openid not in code_users:
+        host = os.environ.get("DOMAIN")
+
+        return tasks.send_manage_fail_message(
+            f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
+        )
+
     # 当前操作的用户
     current_code_user_id = code_users[openid][0]
 
@@ -353,14 +369,28 @@ def sync_issue(
     openid = data["event"]["sender"]["sender_id"]["open_id"]
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid])
+
+    import tasks
+
+    if openid not in code_users:
+        host = os.environ.get("DOMAIN")
+
+        return tasks.send_manage_fail_message(
+            f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
+        )
+
     # 当前操作的用户
     current_code_user_id = code_users[openid][0]
 
     github_app = GitHubAppRepo(
         code_application.installation_id, user_id=current_code_user_id
     )
-
-    import tasks
 
     # 后面需要插入记录，再发卡片，创建话题
     repository = github_app.get_repo_info_by_name(team.name, repo.name)
