@@ -21,7 +21,7 @@ from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
 from utils.lark.issue_tip_success import IssueTipSuccess
-from utils.utils import upload_image
+from utils.utils import upload_image, upload_private_image
 
 from .base import (
     get_bot_by_application_id,
@@ -80,7 +80,9 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(
+    bot, issue, repo_url, team, maunal=False, from_github=False, user_name=None
+):
     assignees = get_assignees_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
@@ -100,10 +102,32 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
-    # 处理 description
-    description = replace_images_with_keys(
-        issue.description if issue.description else "", bot
-    )
+    description = issue.description
+
+    if from_github:
+        # 处理图片, 私有仓库先下载再上传飞书
+        extra = (
+            db.session.query(Repo.extra)
+            .filter(
+                Repo.id == issue.repo_id,
+            )
+            .scalar()
+        )
+        is_private = extra.get("private", True)
+
+        # 处理 description
+        if is_private:
+            access_token = get_code_access_token_by_name(user_name)
+            description = replace_images_with_keys(
+                issue.description if issue.description else "",
+                bot,
+                access_token=access_token,
+            )
+        else:
+            description = replace_images_with_keys(
+                issue.description if issue.description else "", bot
+            )
+
     return IssueCard(
         repo_url=repo_url,
         id=issue.issue_number,
@@ -116,7 +140,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     )
 
 
-def replace_images_with_keys(text, bot):
+def replace_images_with_keys(text, bot, access_token=None):
     """
     replace image URL to image_key.
     ![](url) to ![](image_key)
@@ -128,11 +152,18 @@ def replace_images_with_keys(text, bot):
         str: replaced text
     """
     pattern = r"!\[.*?\]\((.*?)\)"
-    replaced_text = re.sub(
-        pattern,
-        lambda match: f"![]({upload_image(match.group(1), bot)})",
-        text,
-    )
+    if access_token:
+        replaced_text = re.sub(
+            pattern,
+            lambda match: f"![]({upload_private_image(match.group(1),access_token, bot)})",
+            text,
+        )
+    else:
+        replaced_text = re.sub(
+            pattern,
+            lambda match: f"![]({upload_image(match.group(1), bot)})",
+            text,
+        )
     return replaced_text.replace("![]()", "(请确认图片是否上传成功)")
 
 
@@ -160,7 +191,14 @@ def send_issue_url_message(
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_issue_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -172,7 +210,14 @@ def send_issue_url_message(
     )
     if not team:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -183,7 +228,14 @@ def send_issue_url_message(
         )
     else:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
     # 回复到话题内部
     return bot.reply(message_id, message).json()
@@ -219,7 +271,14 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_issue_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -231,17 +290,24 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     )
     if not team:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_issue_card_by_issue(bot, issue, repo_url, team, True)
+    message = gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=True)
     # 回复到话题内部
     return bot.reply(message_id, message).json()
 
 
 @celery.task()
-def send_issue_card(issue_id):
+def send_issue_card(issue_id, user_name):
     """send new issue card message to user.
 
     Args:
@@ -264,7 +330,9 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                message = gen_issue_card_by_issue(
+                    bot, issue, repo_url, team, from_github=True, user_name=user_name
+                )
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -297,7 +365,7 @@ def send_issue_card(issue_id):
 
 @celery.task()
 def send_issue_comment(issue_id, comment, user_name: str):
-    """send new issue comment message to user.
+    """send new issue comment message to feishu.
 
     Args:
         issue_id: Issue.id.
@@ -317,8 +385,19 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+
+            # 处理图片, 私有仓库先下载再上传飞书
+            is_private = repo.extra.get("private", True)
+
             # 替换 comment 中的图片 url 为 image_key
-            comment = replace_images_with_keys(comment, bot)
+            if is_private:
+                access_token = get_code_access_token_by_name(user_name)
+                comment = replace_images_with_keys(
+                    comment, bot, access_token=access_token
+                )
+            else:
+                comment = replace_images_with_keys(comment, bot)
+
             # 统一用富文本回答, 支持图片、at
             content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
@@ -327,6 +406,16 @@ def send_issue_comment(issue_id, comment, user_name: str):
             ).json()
             return result
     return False
+
+
+def get_code_access_token_by_name(name):
+    access_token = (
+        (db.session.query(CodeUser.access_token).filter(CodeUser.name == name))
+        .limit(1)
+        .scalar()
+    )
+    # TODO 校验Token
+    return access_token
 
 
 def gen_comment_post_message(user_name, comment):
@@ -620,7 +709,13 @@ def get_github_name_by_openid(
 
     if not code_user_id:
         return send_issue_failed_tip(
-            "找不到对应的 GitHub 用户", app_id, message_id, content, data, *args, **kwargs
+            "找不到对应的 GitHub 用户",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
 
     # 第三步：如果找到了 code_user_id，使用它在 bind_user 表中查询 name

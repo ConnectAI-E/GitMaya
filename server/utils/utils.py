@@ -19,6 +19,16 @@ def upload_image(url, bot):
         return ""
 
 
+@stalecache(expire=3600, stale=600)
+def upload_private_image(url, access_token, bot):
+    img_bin = download_image_with_token(access_token, url)
+    if img_bin:
+        img_key = upload_image_binary(img_bin, bot)
+        return img_key
+    else:
+        return ""
+
+
 def upload_image_binary(img_bin, bot):
     url = f"{bot.host}/open-apis/im/v1/images"
 
@@ -28,6 +38,33 @@ def upload_image_binary(img_bin, bot):
     }
     response = bot.post(url, data=data, files=files).json()
     return response["data"]["image_key"]
+
+
+def download_image_with_token(access_token: str, url: str) -> str | None:
+    """Download image by access token.
+
+    Args:
+        access_token (str): The user access token.
+        url (str): The image url.
+
+    Returns:
+        str: image.
+    """
+
+    response = httpx.get(
+        url,
+        headers={
+            "Accept": "application/vnd.github.v3+json",
+            "Authorization": f"Bearer {access_token}",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+
+    if response.status_code != 200:
+        logging.debug(f"Failed to get image. {response.text}")
+        return None
+
+    return response.content
 
 
 def query_one_page(query, page, size):

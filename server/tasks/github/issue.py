@@ -158,7 +158,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
     db.session.add(new_issue)
     db.session.commit()
 
-    task = send_issue_card.delay(issue_id=new_issue.id)
+    task = send_issue_card.delay(issue_id=new_issue.id, user_name=event.sender.login)
 
     # 新建issue之后也要更新 repo info
     on_repository_updated(event.model_dump())
