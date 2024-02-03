@@ -143,7 +143,8 @@ def gen_issue_card_by_issue(
 def replace_images_with_keys(text, bot, access_token=None):
     """
     replace image URL to image_key.
-    ![](url) to ![](image_key)
+    Markdown: ![](url) -> ![](image_key)
+    HTML: <img src="url"> -> ![](image_key)
     Args:
         text (str): original text
         bot: bot instance
@@ -151,19 +152,32 @@ def replace_images_with_keys(text, bot, access_token=None):
     Returns:
         str: replaced text
     """
-    pattern = r"!\[.*?\]\((.*?)\)"
+    markdown_pattern = r"!\[.*?\]\((.*?)\)"
+    html_pattern = r"<img.*?src=\"(.*?)\".*?>"
+    
     if access_token:
         replaced_text = re.sub(
-            pattern,
+            markdown_pattern,
             lambda match: f"![]({upload_private_image(match.group(1),access_token, bot)})",
             text,
         )
+        replaced_text = re.sub(
+            html_pattern,
+            lambda match: f"![]({upload_private_image(match.group(1), bot)})",
+            replaced_text,
+        )
     else:
         replaced_text = re.sub(
-            pattern,
+            markdown_pattern,
             lambda match: f"![]({upload_image(match.group(1), bot)})",
             text,
         )
+        replaced_text = re.sub(
+            html_pattern,
+            lambda match: f"![]({upload_image(match.group(1), bot)})",
+            replaced_text,
+        )
+
     return replaced_text.replace("![]()", "(请确认图片是否上传成功)")
 
 
@@ -434,7 +448,7 @@ def gen_comment_post_message(user_name, comment):
             messages.append([FeishuPostMessageImage(image_key=line)])
         else:
             # 处理每行 at, 普通文本
-            elements = line.split(" ")
+            elements = re.findall(r"\S+|\s+", line)
             element_messages = []
             for element in elements:
                 if element.startswith("@"):

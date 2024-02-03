@@ -2,7 +2,7 @@ import json
 import logging
 
 from celery_app import app, celery
-from connectai.lark.sdk import FeishuTextMessage
+from connectai.lark.sdk import FeishuPostMessage, FeishuTextMessage
 from model.schema import (
     ChatGroup,
     CodeApplication,
@@ -15,6 +15,12 @@ from model.schema import (
     db,
 )
 from model.team import get_assignees_by_openid
+from tasks.lark.issue import (
+    gen_comment_post_message,
+    get_github_name_by_openid,
+    replace_im_name_to_github_name,
+    replace_images_with_keys,
+)
 from utils.github.repo import GitHubAppRepo
 from utils.lark.pr_card import PullCard
 from utils.lark.pr_manual import (
@@ -350,9 +356,13 @@ def send_pull_request_comment(pull_request_id, comment, user_name: str):
         )
         if chat_group and pr.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            # 替换 comment 中的图片 url 为 image_key
+            comment = replace_images_with_keys(comment, bot)
+            # 统一用富文本回答, 支持图片、at
+            content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
                 pr.message_id,
-                FeishuTextMessage(f"@{user_name}: {comment}"),
+                FeishuPostMessage(*content),
             ).json()
             return result
     return False
@@ -470,8 +480,35 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
     github_app, team, repo, pr, _, _ = _get_github_app(
         app_id, message_id, content, data, *args, **kwargs
     )
+    comment_text = content["text"]
+
+    # 判断 content 中是否有 at
+    if "mentions" in data["event"]["message"]:
+        # 获得 mentions 中的 openid list
+        mentions = data["event"]["message"]["mentions"]
+        openid_list = [mention["id"]["open_id"] for mention in mentions]
+        code_name_list = []
+
+        for openid in openid_list:
+            # 通过 openid list 获得 code_name_list
+            code_name_list.append(
+                get_github_name_by_openid(
+                    openid,
+                    team.id,
+                    app_id,
+                    message_id,
+                    content,
+                    data,
+                    *args,
+                    **kwargs,
+                )
+            )
+
+        # 替换 content 中的 im_name 为 code_name
+        comment_text = replace_im_name_to_github_name(content["text"], code_name_list)
+
     response = github_app.create_issue_comment(
-        team.name, repo.name, pr.pull_request_number, content["text"]
+        team.name, repo.name, pr.pull_request_number, comment_text
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
