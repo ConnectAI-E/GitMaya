@@ -154,7 +154,7 @@ def replace_images_with_keys(text, bot, access_token=None):
     """
     markdown_pattern = r"!\[.*?\]\((.*?)\)"
     html_pattern = r"<img.*?src=\"(.*?)\".*?>"
-    
+
     if access_token:
         replaced_text = re.sub(
             markdown_pattern,
