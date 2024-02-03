@@ -19,7 +19,7 @@ def upload_image(url, bot):
         return ""
 
 
-@stalecache(expire=3600, stale=600)
+@stalecache(expire=86400, stale=600)
 def upload_private_image(url, access_token, bot):
     img_bin = download_image_with_token(access_token, url)
     if img_bin:
@@ -58,6 +58,7 @@ def download_image_with_token(access_token: str, url: str) -> str | None:
             "Authorization": f"Bearer {access_token}",
             "X-GitHub-Api-Version": "2022-11-28",
         },
+        follow_redirects=True,
     )
 
     if response.status_code != 200:
