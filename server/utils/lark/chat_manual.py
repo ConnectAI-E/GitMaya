@@ -13,7 +13,7 @@ class ChatManual(FeishuMessageCard):
             GitMayaTitle(),
             FeishuMessageHr(),
             FeishuMessageDiv(
-                content="**📄 创建 Issue **\n*群聊下回复「/issue + 新 Issue 标题 + @分配成员」 *\n *群聊绑定多仓库时，请在对应仓库话题下创建 Issue *",
+                content="**📄 创建 Issue **\n*群聊下回复「/issue + 新 Issue 标题 + @分配成员」 *\n*群聊绑定多仓库时，请在对应仓库话题下创建 Issue *",
                 tag="lark_md",
             ),
             # FeishuMessageDiv(
