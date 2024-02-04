@@ -36,7 +36,7 @@ def on_issue_comment(data: dict) -> list:
             task = on_issue_comment_created.delay(event.model_dump())
             return [task.id]
         case "edited":
-            task = on_issue_comment_edited.delay(event.model_dump())
+            task = on_issue_comment_created.delay(event.model_dump())
             return [task.id]
         case _:
             app.logger.info(f"Unhandled issue event action: {action}")
@@ -46,52 +46,6 @@ def on_issue_comment(data: dict) -> list:
 @celery.task()
 def on_issue_comment_created(event_dict: dict | list | None) -> list:
     """Handle issue comment created event.
-
-    Send issue card message to Repo Owner.
-    """
-    try:
-        event = IssueCommentEvent(**event_dict)
-    except Exception as e:
-        app.logger.error(f"Failed to parse issue event: {e}")
-        return []
-
-    repo = db.session.query(Repo).filter(Repo.repo_id == event.repository.id).first()
-    if repo:
-        if hasattr(event.issue, "pull_request") and event.issue.pull_request:
-            pr = (
-                db.session.query(PullRequest)
-                .filter(
-                    PullRequest.repo_id == repo.id,
-                    PullRequest.pull_request_number == event.issue.number,
-                )
-                .first()
-            )
-            if pr:
-                task = send_pull_request_comment.delay(
-                    pr.id, event.comment.body, event.sender.login
-                )
-                return [task.id]
-        else:
-            issue = (
-                db.session.query(Issue)
-                .filter(
-                    Issue.repo_id == repo.id,
-                    Issue.issue_number == event.issue.number,
-                )
-                .first()
-            )
-            if issue:
-                task = send_issue_comment.delay(
-                    issue.id, event.comment.body, event.sender.login
-                )
-                return [task.id]
-
-    return []
-
-
-@celery.task()
-def on_issue_comment_edited(event_dict: dict | list | None) -> list:
-    """Handle issue comment edited event.
 
     Send issue card message to Repo Owner.
     """
@@ -155,6 +109,9 @@ def on_issue(data: dict) -> list:
     match action:
         case "opened":
             task = on_issue_opened.delay(event.model_dump())
+            return [task.id]
+        case "edited":
+            task = on_issue_updated.delay(event.model_dump())
             return [task.id]
         # TODO: 区分已关闭的 Issue
         case _:
