@@ -110,9 +110,6 @@ def on_issue(data: dict) -> list:
         case "opened":
             task = on_issue_opened.delay(event.model_dump())
             return [task.id]
-        case "edited":
-            task = on_issue_updated.delay(event.model_dump())
-            return [task.id]
         # TODO: 区分已关闭的 Issue
         case _:
             task = on_issue_updated.delay(event.model_dump())
