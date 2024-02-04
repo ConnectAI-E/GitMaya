@@ -8,6 +8,7 @@ from model.schema import (
     ChatGroup,
     CodeApplication,
     CodeUser,
+    IMApplication,
     IMUser,
     Issue,
     Repo,
@@ -16,6 +17,7 @@ from model.schema import (
     db,
 )
 from model.team import get_assignees_by_openid
+from utils.github.bot import BaseGitHubApp
 from utils.github.repo import GitHubAppRepo
 from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
@@ -405,7 +407,7 @@ def send_issue_comment(issue_id, comment, user_name: str):
 
             # 替换 comment 中的图片 url 为 image_key
             if is_private:
-                access_token = get_code_access_token_by_name(user_name)
+                access_token = get_installation_token_by_issue(issue_id)
                 comment = replace_images_with_keys(
                     comment, bot, access_token=access_token
                 )
@@ -420,6 +422,33 @@ def send_issue_comment(issue_id, comment, user_name: str):
             ).json()
             return result
     return False
+
+
+def get_installation_token_by_issue(issue_id):
+    # 1. 通过 issue_id 查询 im_application_id
+    code_application_id = (
+        db.session.query(Repo.application_id)
+        .join(
+            Issue,
+            Issue.repo_id == Repo.id,
+        )
+        .filter(
+            Issue.id == issue_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+    installation_id = (
+        db.session.query(CodeApplication.installation_id)
+        .filter(
+            CodeApplication.id == code_application_id,
+        )
+        .limit(1)
+        .scalar()
+    )
+
+    github_app = BaseGitHubApp(installation_id)
+    return github_app.installation_token
 
 
 def get_code_access_token_by_name(name):
