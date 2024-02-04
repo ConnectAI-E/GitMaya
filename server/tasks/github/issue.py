@@ -35,6 +35,9 @@ def on_issue_comment(data: dict) -> list:
         case "created":
             task = on_issue_comment_created.delay(event.model_dump())
             return [task.id]
+        case "edited":
+            task = on_issue_comment_created.delay(event.model_dump())
+            return [task.id]
         case _:
             app.logger.info(f"Unhandled issue event action: {action}")
             return []
