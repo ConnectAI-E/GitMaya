@@ -80,9 +80,9 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
-def get_creater_by_issue(issue, team):
-    code_name = issue.extra["user"].get("login", None)
-
+def get_creater_by_item(item, team):
+    code_name = item.extra["user"].get("login", None)
+    creater = None
     if code_name:
         creater = (
             db.session.query(IMUser.openid)
@@ -94,6 +94,7 @@ def get_creater_by_issue(issue, team):
             .filter(
                 TeamMember.team_id == team.id,
                 CodeUser.name == code_name,
+                CodeUser.status == 0,
             )
             .scalar()
         )
@@ -102,7 +103,7 @@ def get_creater_by_issue(issue, team):
 
 def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
-    creater, code_name = get_creater_by_issue(issue, team)
+    creater, code_name = get_creater_by_item(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
     if status == "closed":
@@ -344,7 +345,7 @@ def send_issue_card(issue_id):
                     db.session.commit()
 
                     assignees = get_assignees_by_issue(issue, team)
-                    creater, _ = get_creater_by_issue(issue, team)
+                    creater, _ = get_creater_by_item(issue, team)
                     if creater not in assignees and creater:
                         assignees.append(creater)
 

@@ -17,6 +17,7 @@ from model.schema import (
 from model.team import get_assignees_by_openid
 from tasks.lark.issue import (
     gen_comment_post_message,
+    get_creater_by_item,
     get_github_name_by_openid,
     replace_im_name_to_github_name,
     replace_images_with_keys,
@@ -93,29 +94,9 @@ def get_assignees_by_pr(pr, team):
     return assignees
 
 
-def get_creater_by_pr(pr, team):
-    code_name = pr.extra["user"].get("login", None)
-
-    if code_name:
-        creater = (
-            db.session.query(IMUser.openid)
-            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
-            .join(
-                CodeUser,
-                CodeUser.id == TeamMember.code_user_id,
-            )
-            .filter(
-                TeamMember.team_id == team.id,
-                CodeUser.name == code_name,
-            )
-            .scalar()
-        )
-    return creater, code_name
-
-
 def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
     assignees = get_assignees_by_pr(pr, team)
-    creater, code_name = get_creater_by_pr(pr, team)
+    creater, code_name = get_creater_by_item(pr, team)
     reviewers = pr.extra.get("requested_reviewers", [])
 
     if len(reviewers):
@@ -371,7 +352,7 @@ def send_pull_request_card(pull_request_id: str):
                     db.session.commit()
 
                     assignees = get_assignees_by_pr(pr, team)
-                    creater, _ = get_creater_by_pr(pr, team)
+                    creater, _ = get_creater_by_item(pr, team)
                     if creater not in assignees and creater:
                         assignees.append(creater)
 
