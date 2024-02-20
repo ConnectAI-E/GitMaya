@@ -68,6 +68,7 @@ class Issue(BaseModel):
     comments: int
     created_at: str
     updated_at: str
+    user: User
     assignee: Optional[User] = None
     assignees: Optional[list[User]] = []
     pull_request: Optional[PRInIssue] = None

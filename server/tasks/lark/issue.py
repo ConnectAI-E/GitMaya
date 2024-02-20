@@ -80,8 +80,29 @@ def get_assignees_by_issue(issue, team):
     return assignees
 
 
+def get_creater_by_issue(issue, team):
+    code_name = issue.extra["user"].get("login", None)
+
+    if code_name:
+        creater = (
+            db.session.query(IMUser.openid)
+            .join(TeamMember, TeamMember.im_user_id == IMUser.id)
+            .join(
+                CodeUser,
+                CodeUser.id == TeamMember.code_user_id,
+            )
+            .filter(
+                TeamMember.team_id == team.id,
+                CodeUser.name == code_name,
+            )
+            .scalar()
+        )
+    return creater, code_name
+
+
 def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     assignees = get_assignees_by_issue(issue, team)
+    creater, code_name = get_creater_by_issue(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
     status = issue.extra.get("state", "opened")
     if status == "closed":
@@ -110,6 +131,8 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
         title=issue.title,
         description=description,
         status=status,
+        creater=creater if creater else code_name,
+        is_creater_outside=False if creater else True,
         assignees=assignees,
         tags=tags,
         updated=issue.modified.strftime("%Y-%m-%d %H:%M:%S"),
@@ -171,7 +194,14 @@ def send_issue_url_message(
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_issue_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -183,7 +213,14 @@ def send_issue_url_message(
     )
     if not team:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -194,7 +231,14 @@ def send_issue_url_message(
         )
     else:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
     # 回复到话题内部
     return bot.reply(message_id, message).json()
@@ -230,7 +274,14 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_issue_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -242,7 +293,14 @@ def send_issue_manual(app_id, message_id, content, data, *args, **kwargs):
     )
     if not team:
         return send_issue_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -286,6 +344,10 @@ def send_issue_card(issue_id):
                     db.session.commit()
 
                     assignees = get_assignees_by_issue(issue, team)
+                    creater, _ = get_creater_by_issue(issue, team)
+                    if creater not in assignees and creater:
+                        assignees.append(creater)
+
                     users = (
                         "".join(
                             [f'<at user_id="{open_id}"></at>' for open_id in assignees]
@@ -297,7 +359,7 @@ def send_issue_card(issue_id):
                         message_id,
                         # 第一条话题消息，直接放repo_url
                         FeishuTextMessage(
-                            users + f" {repo_url}/issues/{issue.issue_number}"
+                            f"{users} {repo_url}/issues/{issue.issue_number}"
                         ),
                         reply_in_thread=True,
                     ).json()
@@ -631,7 +693,13 @@ def get_github_name_by_openid(
 
     if not code_user_id:
         return send_issue_failed_tip(
-            "找不到对应的 GitHub 用户", app_id, message_id, content, data, *args, **kwargs
+            "找不到对应的 GitHub 用户",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
 
     # 第三步：如果找到了 code_user_id，使用它在 bind_user 表中查询 name
