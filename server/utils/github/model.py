@@ -107,7 +107,7 @@ class PullRequest(BaseModel):
     assignees: Optional[list[User]] = []
     base: Branch
     head: Branch
-
+    user: User
     comments: int
     review_comments: int
     commits: int
