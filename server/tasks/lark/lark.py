@@ -117,6 +117,18 @@ def get_contact_by_lark_application(application_id):
                     db.session.add(bind_user)
                     db.session.commit()
                     user_ids.append(bind_user_id)
+                else:
+                    # 如果已拉取过用户则更新 bind_user 信息
+                    db.session.query(BindUser).filter(
+                        BindUser.id == bind_user_id
+                    ).update(
+                        dict(
+                            name=item["name"],
+                            avatar=item["avatar"]["avatar_origin"],
+                            extra=item,
+                        )
+                    )
+                    db.session.commit()
             db.session.query(IMApplication).filter(
                 IMApplication.id == application.id,
             ).update(dict(status=1))
