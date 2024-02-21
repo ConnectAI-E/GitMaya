@@ -68,6 +68,7 @@ class Issue(BaseModel):
     comments: int
     created_at: str
     updated_at: str
+    user: User
     assignee: Optional[User] = None
     assignees: Optional[list[User]] = []
     pull_request: Optional[PRInIssue] = None
@@ -106,7 +107,7 @@ class PullRequest(BaseModel):
     assignees: Optional[list[User]] = []
     base: Branch
     head: Branch
-
+    user: User
     comments: int
     review_comments: int
     commits: int

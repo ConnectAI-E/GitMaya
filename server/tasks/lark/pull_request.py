@@ -17,6 +17,7 @@ from model.schema import (
 from model.team import get_assignees_by_openid
 from tasks.lark.issue import (
     gen_comment_post_message,
+    get_creater_by_item,
     get_github_name_by_openid,
     replace_im_name_to_github_name,
     replace_images_with_keys,
@@ -95,6 +96,7 @@ def get_assignees_by_pr(pr, team):
 
 def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
     assignees = get_assignees_by_pr(pr, team)
+    creater, code_name = get_creater_by_item(pr, team)
     reviewers = pr.extra.get("requested_reviewers", [])
 
     if len(reviewers):
@@ -142,6 +144,8 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
         status=status,
         merged=merged,
         persons=[],  # TODO：应该是所有有写权限的人
+        creater=creater if creater else code_name,
+        is_creater_outside=False if creater else True,
         assignees=assignees,
         reviewers=reviewers,
         labels=labels,
@@ -172,7 +176,14 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_pull_request_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -184,7 +195,14 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
     )
     if not team:
         return send_pull_request_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -218,7 +236,14 @@ def send_pull_request_url_message(
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_pull_request_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -230,7 +255,14 @@ def send_pull_request_url_message(
     )
     if not team:
         return send_pull_request_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
@@ -251,7 +283,14 @@ def send_pull_request_url_message(
         )
     else:
         return send_pull_request_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
     # 回复到话题内部
     return bot.reply(message_id, message).json()
@@ -313,6 +352,10 @@ def send_pull_request_card(pull_request_id: str):
                     db.session.commit()
 
                     assignees = get_assignees_by_pr(pr, team)
+                    creater, _ = get_creater_by_item(pr, team)
+                    if creater not in assignees and creater:
+                        assignees.append(creater)
+
                     users = (
                         "".join(
                             [f'<at user_id="{open_id}"></at>' for open_id in assignees]
@@ -325,7 +368,7 @@ def send_pull_request_card(pull_request_id: str):
                         message_id,
                         # TODO 第一条话题消息，直接放repo_url
                         FeishuTextMessage(
-                            f"{users}{repo_url}/pull/{pr.pull_request_number}"
+                            f"{users} {repo_url}/pull/{pr.pull_request_number}"
                         ),
                         reply_in_thread=True,
                     ).json()
@@ -730,10 +773,22 @@ def change_pull_request_reviewer(
     )
     if "id" not in response:
         return send_pull_request_failed_tip(
-            "更新 Pull Request 审核人失败", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 审核人失败",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     else:
         send_pull_request_success_tip(
-            "更新 Pull Request 审核人成功", app_id, message_id, content, data, *args, **kwargs
+            "更新 Pull Request 审核人成功",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     return response

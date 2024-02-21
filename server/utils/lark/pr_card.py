@@ -13,6 +13,8 @@ class PullCard(FeishuMessageCard):
         persons=[],
         assignees=[],
         reviewers=[],
+        creater=None,
+        is_creater_outside=False,
         status="待合并",
         merged=False,
         labels=[],
@@ -29,6 +31,9 @@ class PullCard(FeishuMessageCard):
             "".join([f"<at id={open_id}></at>" for open_id in reviewers])
             if len(reviewers) > 0
             else "**<font color='red'>待分配</font>**"
+        )
+        creater = (
+            f"{creater}(组织外用户)" if is_creater_outside else f"<at id={creater}></at>"
         )
         label = (
             "、".join(labels) if len(labels) > 0 else "**<font color='red'>待补充</font>**"
@@ -97,6 +102,15 @@ class PullCard(FeishuMessageCard):
                             weight=1,
                             vertical_align="top",
                         ),
+                        FeishuMessageColumn(
+                            FeishuMessageMarkdown(
+                                f"🧔 <font color='grey'>**创建人**</font>\n{creater}",
+                                text_align="left",
+                            ),
+                            width="weighted",
+                            weight=1,
+                            vertical_align="top",
+                        ),
                         flex_mode="bisect",
                         background_style="grey",
                     ),
@@ -108,19 +122,23 @@ class PullCard(FeishuMessageCard):
                 background_style="grey",
             ),
             FeishuMessageAction(
-                FeishuMessageButton("已合并", type="default", value={"value": ""})
-                if merged
-                else FeishuMessageButton(
-                    "合并 PR", type="primary", value={"command": f"/merge"}
+                (
+                    FeishuMessageButton("已合并", type="default", value={"value": ""})
+                    if merged
+                    else FeishuMessageButton(
+                        "合并 PR", type="primary", value={"command": f"/merge"}
+                    )
                 ),
-                FeishuMessageButton(
-                    "重新打开 PR",
-                    type="primary",
-                    value={"command": "/deny" if merged else "/reopen"},
-                )
-                if status == "已关闭"
-                else FeishuMessageButton(
-                    "关闭 PR", type="danger", value={"command": f"/close"}
+                (
+                    FeishuMessageButton(
+                        "重新打开 PR",
+                        type="primary",
+                        value={"command": "/deny" if merged else "/reopen"},
+                    )
+                    if status == "已关闭"
+                    else FeishuMessageButton(
+                        "关闭 PR", type="danger", value={"command": f"/close"}
+                    )
                 ),
                 FeishuMessageButton(
                     "查看 File Changed",
