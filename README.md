@@ -80,7 +80,7 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 
 </summary>
 
-### `A` 使用 Docker-Compose 部署
+#### `A` 使用 Docker-Compose 部署
 
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
@@ -93,7 +93,7 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 <details>
 <summary>
 
-### 1. 下载 `docker-compose.yml` 和 `.env` 文件
+###### 1. 下载 `docker-compose.yml` 和 `.env` 文件
 
 </summary>
 
@@ -108,7 +108,7 @@ $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.ex
 <details>
 <summary>
 
-### 2. 配置环境变量
+###### 2. 配置环境变量
 
 </summary>
 
@@ -144,7 +144,7 @@ DOMAIN=127.0.0.1
 <details>
 <summary>
 
-### 3. 运行镜像
+###### 3. 运行镜像
 
 </summary>
 
@@ -173,7 +173,7 @@ $ docker-compose up -d
 > 完整的环境变量列表可以在 [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
 
 
-### `B` 使用 Zeabur 或 Sealos 部署（即将推出！）
+#### `B` 使用 Zeabur 或 Sealos 部署（即将推出！）
 
 我们即将支持 Zeabur 的一键部署。
 
@@ -206,10 +206,10 @@ $ docker-compose up -d
 
 <details>
 <summary>
-### 1. 克隆仓库
+  
+#### 1. 克隆仓库
+
 </summary>
-
-
 
 
 将仓库克隆到您的本地机器或服务器：
@@ -224,11 +224,11 @@ $ cd GitMaya
 <details>
 <summary>
 
-### 2. 安装依赖
+#### 2. 安装依赖
 
 </summary>
 
-#### 使用 pip
+##### 使用 pip
 
 如果您使用 `pip`
 
@@ -236,7 +236,7 @@ $ cd GitMaya
 $ pip install -r requirements.txt
 ```
 
-#### 使用 pdm（推荐）
+##### 使用 pdm（推荐）
 
 如果您使用 `pdm`
 
@@ -255,7 +255,7 @@ $ eval $(pdm venv activate)
 <details>
 <summary>
 
-### 3. 配置文件
+#### 3. 配置文件
 
 </summary>
 
@@ -311,7 +311,7 @@ FLASK_PERMANENT_SESSION_LIFETIME=86400
 <details>
 <summary>
 
-### 4. 运行服务器
+#### 4. 运行服务器
 
 </summary>
 
