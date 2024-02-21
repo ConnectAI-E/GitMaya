@@ -122,10 +122,14 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
-    # 处理 description
+    # 处理 description 中的图片
     description = replace_images_with_keys(
         issue.description if issue.description else "", bot
     )
+
+    # 处理 description 中的at
+    description = replace_code_name_to_im_name(description)
+
     return IssueCard(
         repo_url=repo_url,
         id=issue.issue_number,
@@ -169,6 +173,18 @@ def replace_images_with_keys(text, bot):
     )
 
     return replaced_text.replace("![]()", "(请确认图片是否上传成功)")
+
+
+def replace_code_name_to_im_name(text):
+    # 处理每行 at, 普通文本
+    def replacement_func(match):
+        code_name = match.group(1)
+        user_id = get_openid_by_code_name(code_name)
+        # 消息卡片的md和回复消息md的at格式不同
+        return f'<at id="{user_id}"></at>'
+
+    replaced_text = re.sub(r"@(\w+)", replacement_func, text)
+    return replaced_text
 
 
 def send_issue_url_message(
@@ -587,28 +603,10 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
     # 判断 content 中是否有 at
     if "mentions" in data["event"]["message"]:
-        # 获得 mentions 中的 openid list
-        mentions = data["event"]["message"]["mentions"]
-        openid_list = [mention["id"]["open_id"] for mention in mentions]
-        code_name_list = []
-
-        for openid in openid_list:
-            # 通过 openid list 获得 code_name_list
-            code_name_list.append(
-                get_github_name_by_openid(
-                    openid,
-                    team.id,
-                    app_id,
-                    message_id,
-                    content,
-                    data,
-                    *args,
-                    **kwargs,
-                )
-            )
-
         # 替换 content 中的 im_name 为 code_name
-        comment_text = replace_im_name_to_github_name(content["text"], code_name_list)
+        comment_text = replace_im_name_to_github_name(
+            app_id, message_id, content, data, team, *args, **kwargs
+        )
 
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, comment_text
@@ -620,9 +618,36 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     return response
 
 
-def replace_im_name_to_github_name(content, code_name_list):
+def replace_im_name_to_github_name(
+    app_id, message_id, content, data, team, *args, **kwargs
+):
+    # 获得 mentions 中的 openid list
+    mentions = data["event"]["message"]["mentions"]
+    openid_list = [mention["id"]["open_id"] for mention in mentions]
+    code_name_list = []
+
+    for openid in openid_list:
+        # 通过 openid list 获得 code_name_list
+        code_name_list.append(
+            get_github_name_by_openid(
+                openid,
+                team.id,
+                app_id,
+                message_id,
+                content,
+                data,
+                *args,
+                **kwargs,
+            )
+        )
+
+    # 替换 content 中的 im_name 为 code_name
+    return replace_user_to_github_name(content["text"], code_name_list)
+
+
+def replace_user_to_github_name(content, code_name_list):
     """
-    replace im name to github name
+    replace @_user_ to github name
 
     Args:
         content (str): content

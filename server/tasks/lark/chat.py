@@ -15,6 +15,7 @@ from model.schema import (
 )
 from model.team import get_code_users_by_openid
 from sqlalchemy.orm import aliased
+from tasks.lark.issue import replace_im_name_to_github_name
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
@@ -75,7 +76,14 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_chat_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -87,7 +95,14 @@ def send_chat_manual(app_id, message_id, content, data, *args, **kwargs):
     )
     if not team:
         return send_chat_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     message = ChatManual(
@@ -112,7 +127,14 @@ def send_chat_url_message(
     bot, application = get_bot_by_application_id(app_id)
     if not application:
         return send_chat_failed_tip(
-            "找不到对应的应用", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的应用",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     team = (
@@ -124,7 +146,14 @@ def send_chat_url_message(
     )
     if not team:
         return send_chat_failed_tip(
-            "找不到对应的项目", app_id, message_id, content, data, *args, bot=bot, **kwargs
+            "找不到对应的项目",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            bot=bot,
+            **kwargs,
         )
 
     repo_url = f"https://github.com/{team.name}/{repo_name}"
@@ -217,7 +246,13 @@ def create_issue(
         )
     if len(repos) > 1:
         return send_chat_failed_tip(
-            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+            "当前群有多个项目，无法唯一确定仓库",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
 
     if len(repos) == 0:
@@ -277,6 +312,15 @@ def create_issue(
         code_application.installation_id, user_id=current_code_user_id
     )
     assignees = [code_users[openid][1] for openid in users if openid in code_users]
+
+    # 判断 content 中是否有 at
+    if "mentions" in data["event"]["message"]:
+        # 替换 content 中的 im_name 为 code_name
+        body = replace_im_name_to_github_name(
+            app_id, message_id, {"text": body}, data, team, *args, **kwargs
+        )
+        body = body.replace("\n", "\r\n")
+
     response = github_app.create_issue(
         team.name, repo.name, title, body, assignees, labels
     )
@@ -334,7 +378,13 @@ def sync_issue(
 
     if len(repos) > 1:
         return send_chat_failed_tip(
-            "当前群有多个项目，无法唯一确定仓库", app_id, message_id, content, data, *args, **kwargs
+            "当前群有多个项目，无法唯一确定仓库",
+            app_id,
+            message_id,
+            content,
+            data,
+            *args,
+            **kwargs,
         )
     if len(repos) == 0:
         return send_chat_failed_tip(
