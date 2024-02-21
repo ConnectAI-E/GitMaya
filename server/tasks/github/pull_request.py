@@ -63,13 +63,16 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         app.logger.info(f"PullRequest already exists: {pr.id}")
         return []
 
+    # 限制 body 长度
+    pr_info.body = pr_info.body[:1000] if pr_info.body else ""
+
     # 创建 pullrequest
     new_pr = PullRequest(
         id=ObjID.new_id(),
         repo_id=repo.id,
         pull_request_number=pr_info.number,
         title=pr_info.title,
-        description=pr_info.body[:1000] if pr_info.body else "",
+        description=pr_info.body,
         base=pr_info.base.ref,
         head=pr_info.head.ref,
         state=pr_info.state,
