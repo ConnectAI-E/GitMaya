@@ -8,7 +8,7 @@
   </picture>
 </a>
 <p align='center'>
-  <samp>一个开源的、高性能的GitOps工具 one chat = one repo 从此告别双边协同</samp>
+  <samp>一款开源的、高性能的 GitOps one chat = one repo </samp>
 <br/>
  <samp>支持飞书、discord、slack 等 <sup><em>(完全开源)</em></sup></samp>
 </p>
@@ -36,83 +36,49 @@
 </strong>
 
 https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-737df359d67d
+## 👋 GitMaya 的来历
+生活就该简单点，开源协作也得这么干。咱们就抓重点，聊天和代码托管，这俩是核心。所以，搞个进度管理工具，就围绕这俩转。
+
+记住了，GitMaya 就像一辆忠实的吉普车，虽然不亮眼，但能带你去任何你想去的地方。
+
+简洁至上，实用为王。
 
 ## 🔥 功能列表
 
-### 🧑🏻‍💻 所有代码完全开源
+🔄 **One Repo = One Chat** 在一个聊天群中管理项目所有进展（：现在也支持关联多个仓库
 
-以开发者为中心，由开发者设计，为开发者打造。
+🚀 **Issue 处理集成** 即时处理Issue，随时同步处理进度
 
-### 🌐 跨平台的愉悦体验
+🔄 **Pr 处理集成** code-diff、comment、merge，一应俱全
 
-享受在不同平台上的无缝沟通，IM计划支持 **Feishu, Discord, Slack, Microsoft Teams, 和 Telegram**。
+🛠 **CI/CD 和 GitHub Actions 藏处理集成** 便捷获取最新 Action 进展
 
-Git计划支持**GIthub, GitLab, SourceForge 和 Bitbucket**。
+💬 **简化 GitHub 消息互动** 直接在聊天工具管理所有 GitHub 互动，不再需要切换上下文。
 
-开发者在哪里，GitMaya就在哪里。
-
-### 🔄 One Repo = One Chat
-体验 "One Repo = One Chat" 的完美同步，让协作流畅无阻！
-
-### 💬 简化 GitHub 消息互动：
-从您喜爱的聊天平台直接管理所有 GitHub 互动，不再需要切换上下文。
-
-### 🚀 Issue 全集成
-即时处理Issue，随时同步处理进度。
-
-### 🔄 Pr 全集成
-高效的PR处理流程，code-diff、comment、merge，一应俱全。
-
-### 🛠 CI/CD 和 GitHub Actions 全集成
-通过在您的聊天平台中直接集成 CI/CD 和 GitHub Actions。
-
-### 🚚 保持在代码审查流程中
-最大化生产力，有效协作保持注意力。
+🌐 **跨平台支持** 聊天平台支持 飞书, Discord, Slack, Microsoft Teams, 和 TG。代码托管支持 GIthub 和 GitLab
 
 ## 📃 部署流程
 
-部署 GitMaya 需要共计 3 个步骤。
+建议使用在线版本：<a href="https://gitmaya.com"> 🖥 立即尝试 GitMaya </a>
 
-<details>
-<summary>
+如果你想手动部署 GitMaya ，需要共计 3 个步骤。
 
 ### 步骤 1. 安装 GitHub 应用
 
-</summary>
-
 您首先需要创建一个 GitHub 应用，详细信息请参考 [从零开始部署 GitHub 应用][Deploy GitHub App From Scratch]。
-
-</details>
-
-<details>
-<summary>
 
 ### 步骤 2. 部署 GitMaya
 
-</summary>
-
 您可以选择使用 [自托管](#self-hosting) 或 [本地部署](#local-development) 来部署 GitMaya 的前端和后端。
-
-</details>
 
 <details>
 <summary>
-
-### 步骤 3. 部署飞书 App 机器人
-
-</summary>
-
-部署飞书（Lark）机器人应用的步骤已经集成到 GitMaya 的入门流程中。完成入门流程将自动完成与飞书相关的配置。更多详细信息，请参考 [从零开始部署飞书 App 机器人][Deploy Feishu App Bot From Scratch]。
-
-</details>
-
-
-<h2 id="self-hosting">🛳 自托管</h2>
+  
+<h4 id="self-hosting">🛳 自托管</h2>
 
 GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
 
-<details>
-<summary>
+</summary>
 
 ### `A` 使用 Docker-Compose 部署
 
@@ -120,7 +86,7 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 [![][docker-size-shield]][docker-size-link]
 [![][docker-pulls-shield]][docker-pulls-link]
 
-</summary>
+
 
 我们提供了一个 Docker 镜像，用于在您自己的私人设备上部署 GitMaya 服务。使用以下命令启动 GitMaya 服务：
 
@@ -206,7 +172,6 @@ $ docker-compose up -d
 >
 > 完整的环境变量列表可以在 [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
 
-</details>
 
 ### `B` 使用 Zeabur 或 Sealos 部署（即将推出！）
 
@@ -225,24 +190,27 @@ $ docker-compose up -d
 [![][back-to-top]](#readme-top)
 
 </div>
+
+</details>
 </details>
 
 </details>
-
-<h2 id="local-development">⌨️ 本地部署</h2>
-
-<!-- 您可以使用 GitHub Codespaces 进行在线开发：
-
-[![][codespaces-shield]][codespaces-link]
-
-或者将其克隆到本地进行开发： -->
 
 <details>
 <summary>
+<h4 id="local-development">⌨️ 本地部署</h2>
 
-### 1. 克隆仓库
+将仓库克隆到本地进行开发
 
 </summary>
+
+<details>
+<summary>
+### 1. 克隆仓库
+</summary>
+
+
+
 
 将仓库克隆到您的本地机器或服务器：
 
@@ -382,6 +350,17 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 </details>
 
+<details>
+<summary>
+
+### 步骤 3. 部署飞书 App 机器人
+
+</summary>
+
+部署飞书（Lark）机器人应用的步骤已经集成到 GitMaya 的入门流程中。完成入门流程将自动完成与飞书相关的配置。更多详细信息，请参考 [从零开始部署飞书 App 机器人][Deploy Feishu App Bot From Scratch]。
+
+</details>
+
 ## 📕 参考
 
 - [从零开始部署飞书 App 机器人][Deploy Feishu App Bot From Scratch]
@@ -444,7 +423,7 @@ Gitmaya 是完全开源的，由开发者们共同打造。请随时通过代码
 
 ## 👻 替代方案
 
-`gitmaya` 受到以下工具的启发。
+GitMaya` 受到以下工具的启发。
 
 - [pullpo](https://pullpo.io/)
 - [graphite](https://graphite.dev/)
