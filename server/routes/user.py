@@ -1,5 +1,5 @@
 from app import app
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, Response, jsonify, request, session
 from model.team import (
     get_application_info_by_team_id,
     get_team_list_by_user_id,
@@ -8,7 +8,7 @@ from model.team import (
 from model.user import get_user_by_id
 from tasks.lark.base import get_bot_by_application_id
 from utils.auth import authenticated
-from utils.utils import download_image
+from utils.utils import download_file
 
 bp = Blueprint("user", __name__, url_prefix="/api")
 
@@ -62,9 +62,6 @@ def set_account():
     return jsonify({"code": 0, "msg": "success"})
 
 
-app.register_blueprint(bp)
-
-
 @bp.route("/<team_id>/<message_id>/image/<img_key>", methods=["GET"])
 @authenticated
 def get_image(team_id, message_id, img_key):
@@ -84,5 +81,8 @@ def get_image(team_id, message_id, img_key):
     _, im_application = get_application_info_by_team_id(team_id)
     bot, _ = get_bot_by_application_id(im_application.id)
 
-    image_content = download_image(img_key, bot)
-    return image_content
+    image_content = download_file(img_key, message_id, bot, "image")
+    return Response(image_content, mimetype="image/png")
+
+
+app.register_blueprint(bp)
