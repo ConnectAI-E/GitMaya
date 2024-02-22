@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import re
 from urllib.parse import urlparse
 
 from celery_app import app, celery
@@ -313,13 +315,17 @@ def create_issue(
     )
     assignees = [code_users[openid][1] for openid in users if openid in code_users]
 
-    # 判断 content 中是否有 at
+    # 处理 body
+    # 1. 判断 body 中是否有 at
     if "mentions" in data["event"]["message"]:
-        # 替换 content 中的 im_name 为 code_name
+        # 替换 body 中的 im_name 为 code_name
         body = replace_im_name_to_github_name(
             app_id, message_id, {"text": body}, data, team, *args, **kwargs
         )
         body = body.replace("\n", "\r\n")
+
+    # 2. 处理 body 中的图片
+    body = replace_images_keys_with_url(body, team.id, message_id)
 
     response = github_app.create_issue(
         team.name, repo.name, title, body, assignees, labels
@@ -329,6 +335,26 @@ def create_issue(
             "创建 issue 失败", app_id, message_id, content, data, *args, **kwargs
         )
     return response
+
+
+def replace_images_keys_with_url(text, team_id, message_id):
+    """
+    replace image_key with image URL.
+    ![](image_key) -> ![](gitmaya.com/api/<team_id>/<message_id>/image/<image_key>)
+    Args:
+        text (str): original text
+
+    Returns:
+        str: replaced text
+    """
+    host = os.environ.get("DOMAIN")
+    replaced_text = re.sub(
+        r"!\[.*?\]\((.*?)\)",
+        lambda match: f"![]({host}/api/{team_id}/{message_id}/image/{match.group(1)})",
+        text,
+    )
+
+    return replaced_text
 
 
 @celery.task()
