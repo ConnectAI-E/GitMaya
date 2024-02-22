@@ -47,15 +47,15 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 🔄 **One Repo = One Chat** 在一个聊天群中管理项目所有进展（：现在也支持关联多个仓库
 
-🚀 **Issue 处理集成** 即时处理Issue，随时同步处理进度
+🚀 **Issue 处理集成** 不出群聊，接管所有 Issue 操作
 
-🔄 **Pr 处理集成** code-diff、comment、merge，一应俱全
+🔄 **Pr 处理集成** 从 code-diff 到 merge pr，加速代码审核 
 
-🛠 **CI/CD 和 GitHub Actions 藏处理集成** 便捷获取最新 Action 进展
+🛠 **CI/CD 和 GitHub Actions 处理集成** 对话中便捷获取最新 Github Action 进展
 
-💬 **简化 GitHub 消息互动** 直接在聊天工具管理所有 GitHub 互动，不再需要切换上下文。
+💬 **简化 GitHub 消息互动** 在聊天工具管理所有 GitHub 互动，不再需要切换上下文。
 
-🌐 **跨平台支持** 聊天平台支持 飞书, Discord, Slack, Microsoft Teams, 和 TG。代码托管支持 GIthub 和 GitLab
+🌐 **跨平台支持** 聊天平台支持 飞书, Discord, Slack, Microsoft Teams, 和 TG。代码托管支持 Github 和 GitLab
 
 ## 📃 部署流程
 
