@@ -63,7 +63,7 @@ def set_account():
 
 
 @bp.route("/<team_id>/<message_id>/image/<img_key>", methods=["GET"])
-@authenticated
+# @authenticated
 def get_image(team_id, message_id, img_key):
     """
     1. 用 img_key 下载 image(cache)
