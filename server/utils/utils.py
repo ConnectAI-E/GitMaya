@@ -30,6 +30,14 @@ def upload_image_binary(img_bin, bot):
     return response["data"]["image_key"]
 
 
+@stalecache(expire=3600, stale=600)
+def download_image(img_key, bot):
+    url = f"{bot.host}/open-apis/im/v1/images/{img_key}"
+
+    response = bot.get(url)
+    return response.content
+
+
 def query_one_page(query, page, size):
     offset = (page - 1) * int(size)
     return (
