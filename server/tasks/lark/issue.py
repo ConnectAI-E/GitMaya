@@ -601,12 +601,12 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     )
     comment_text = content["text"]
 
-    # 判断 content 中是否有 at
-    if "mentions" in data["event"]["message"]:
-        # 替换 content 中的 im_name 为 code_name
-        comment_text = replace_im_name_to_github_name(
-            app_id, message_id, content, data, team, *args, **kwargs
-        )
+    from tasks.lark.chat import process_desc
+
+    # 处理 desc
+    comment_text = process_desc(
+        app_id, message_id, comment_text, data, team, *args, **kwargs
+    )
 
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, comment_text
