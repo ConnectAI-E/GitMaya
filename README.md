@@ -14,6 +14,7 @@
 </p>
 
 <!-- SHIELD GROUP -->
+
 [![][github-logo-shield]][github-logo-link]
 [![][github-contributors-shield]][github-contributors-link]
 [![][github-forks-shield]][github-forks-link]
@@ -36,7 +37,9 @@
 </strong>
 
 https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-737df359d67d
+
 ## 👋 GitMaya 的来历
+
 生活就该简单点，开源协作也得这么干。咱们就抓重点，聊天和代码托管，这俩是核心。所以，搞个进度管理工具，就围绕这俩转。
 
 记住了，GitMaya 就像一辆忠实的吉普车，虽然不亮眼，但能带你去任何你想去的地方。
@@ -49,7 +52,7 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 🚀 **Issue 处理集成** 不出群聊，接管所有 Issue 操作
 
-🔄 **Pr 处理集成** 从 code-diff 到 merge pr，加速代码审核 
+🔄 **Pr 处理集成** 从 code-diff 到 merge pr，加速代码审核
 
 🛠 **CI/CD 和 GitHub Actions 处理集成** 对话中便捷获取最新 Github Action 进展
 
@@ -73,7 +76,7 @@ https://github.com/ConnectAI-E/GitMaya/assets/50035229/490b87d3-47f7-4a89-a4c7-7
 
 <details>
 <summary>
-  
+
 <h4 id="self-hosting">🛳 自托管</h2>
 
 GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自托管版本。这使您能够在几分钟内部署自己的聊天机器人，无需任何先前的知识。
@@ -85,8 +88,6 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 [![][docker-release-shield]][docker-release-link]
 [![][docker-size-shield]][docker-size-link]
 [![][docker-pulls-shield]][docker-pulls-link]
-
-
 
 我们提供了一个 Docker 镜像，用于在您自己的私人设备上部署 GitMaya 服务。使用以下命令启动 GitMaya 服务：
 
@@ -103,6 +104,7 @@ GitMaya 提供支持无服务器和 [Docker 镜像][docker-release-link] 的自�
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/docker-compose.yml
 $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.example -O .env
 ```
+
 </details>
 
 <details>
@@ -117,6 +119,7 @@ $ wget https://raw.githubusercontent.com/ConnectAI-E/GitMaya/main/deploy/.env.ex
 ```fish
 $ vim .env
 ```
+
 **将 `GITHUB_APP_NAME`、`GITHUB_APP_ID`、`GITHUB_APP_PRIVATE_KEY`、`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`GITHUB_WEBHOOK_SECRET` 替换到 .env 文件中**
 
 ```fish
@@ -153,6 +156,7 @@ DOMAIN=127.0.0.1
 ```fish
 $ docker-compose up -d
 ```
+
 </details>
 
 <!-- > \[!NOTE]
@@ -171,7 +175,6 @@ $ docker-compose up -d
 > \[!NOTE]
 >
 > 完整的环境变量列表可以在 [📘 Environment Variables](https://github.com/connectai-e/gitmaya/wiki/Environment-Variable) -->
-
 
 #### `B` 使用 Zeabur 或 Sealos 部署（即将推出！）
 
@@ -206,11 +209,10 @@ $ docker-compose up -d
 
 <details>
 <summary>
-  
+
 #### 1. 克隆仓库
 
 </summary>
-
 
 将仓库克隆到您的本地机器或服务器：
 
@@ -378,10 +380,10 @@ $ gunicorn --worker-class=gevent --workers 1 --bind 0.0.0.0:8888 -t 600 --keep-a
 
 GitMaya 系列有多个仓库，这是其中之一：
 
-|     | 仓库                                                    | 语言    | 用途                       |
-| --- | -------------------------------------------------------- | ------- | ------------------------- |
-| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)         | Python  | 服务器端代码              |
-|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli) | Python  | 超级 Git 管理工具         |
+|     | 仓库                                                      | 语言   | 用途              |
+| --- | --------------------------------------------------------- | ------ | ----------------- |
+| 👉  | [GitMaya](https://github.com/ConnectAI-E/GitMaya)         | Python | 服务器端代码      |
+|     | [GitMaya-Cli](https://github.com/ConnectAI-E/GitMaya-Cli) | Python | 超级 Git 管理工具 |
 
 <div align="right">
 
@@ -432,7 +434,6 @@ GitMaya` 受到以下工具的启发。
 它们都很棒，但关注的重点和功能集合不同，有兴趣也可以试试 :)
 
 <details><summary><h4>📝 License</h4></summary>
-
 
 [![][fossa-license-shield]][fossa-license-link]
 
