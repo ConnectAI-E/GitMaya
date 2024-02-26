@@ -605,7 +605,7 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
 
     # 处理 desc
     comment_text = process_desc(
-        app_id, message_id, comment_text, data, team, *args, **kwargs
+        app_id, message_id, repo.id, comment_text, data, team, *args, **kwargs
     )
 
     response = github_app.create_issue_comment(

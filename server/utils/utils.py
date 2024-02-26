@@ -6,12 +6,11 @@ from utils.redis import stalecache
 
 
 def process_image(url, bot):
-    if (
-        not url
-        or not url.startswith("http")
-        or url.startswith(f"{os.environ.get('DOMAIN')}/api")
-    ):
+    if not url or not url.startswith("http"):
         return ""
+
+    if url.startswith(f"{os.environ.get('DOMAIN')}/api"):
+        return url.split("/")[-1]
     return upload_image(url, bot)
 
 

@@ -316,7 +316,7 @@ def create_issue(
     assignees = [code_users[openid][1] for openid in users if openid in code_users]
 
     # 处理 body
-    body = process_desc(app_id, message_id, body, data, team, *args, **kwargs)
+    body = process_desc(app_id, message_id, repo.id, body, data, team, *args, **kwargs)
 
     response = github_app.create_issue(
         team.name, repo.name, title, body, assignees, labels
@@ -328,7 +328,7 @@ def create_issue(
     return response
 
 
-def process_desc(app_id, message_id, desc, data, team, *args, **kwargs):
+def process_desc(app_id, message_id, repo_id, desc, data, team, *args, **kwargs):
     """
     处理发给 github 的 desc, 转换@、处理图片、换行
     """
@@ -340,16 +340,16 @@ def process_desc(app_id, message_id, desc, data, team, *args, **kwargs):
         )
 
     # 2. 处理 body 中的图片
-    desc = replace_images_keys_with_url(desc, team.id, message_id)
+    desc = replace_images_keys_with_url(desc, team.id, message_id, repo_id)
 
     # github 只支持 \r\n
     return desc.replace("\n", "\r\n")
 
 
-def replace_images_keys_with_url(text, team_id, message_id):
+def replace_images_keys_with_url(text, team_id, message_id, repo_id):
     """
     replace image_key with image URL.
-    ![](image_key) -> ![](gitmaya.com/api/<team_id>/<message_id>/image/<image_key>)
+    ![](image_key) -> ![](gitmaya.com/api/<team_id>/<message_id>/<repo_id>/image/<image_key>)
     Args:
         text (str): original text
 
@@ -359,7 +359,7 @@ def replace_images_keys_with_url(text, team_id, message_id):
     host = os.environ.get("DOMAIN")
     replaced_text = re.sub(
         r"!\[.*?\]\((.*?)\)",
-        lambda match: f"![]({host}/api/{team_id}/{message_id}/image/{match.group(1)})",
+        lambda match: f"![]({host}/api/{team_id}/{message_id}/{repo_id}/image/{match.group(1)})",
         text,
     )
 

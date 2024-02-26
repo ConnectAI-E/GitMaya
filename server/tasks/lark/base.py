@@ -24,6 +24,11 @@ def get_chat_group_by_chat_id(chat_id):
 
 
 def get_repo_name_by_repo_id(repo_id):
+    repo = get_repo_by_repo_id(repo_id)
+    return repo.name
+
+
+def get_repo_by_repo_id(repo_id):
     repo = (
         db.session.query(Repo)
         .filter(
@@ -32,7 +37,7 @@ def get_repo_name_by_repo_id(repo_id):
         )
         .first()
     )
-    return repo.name
+    return repo
 
 
 def get_bot_by_application_id(app_id):

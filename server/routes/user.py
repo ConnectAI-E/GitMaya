@@ -1,12 +1,12 @@
 from app import app
-from flask import Blueprint, Response, jsonify, request, session
+from flask import Blueprint, Response, abort, jsonify, request, session
 from model.team import (
     get_application_info_by_team_id,
     get_team_list_by_user_id,
     is_team_admin,
 )
 from model.user import get_user_by_id
-from tasks.lark.base import get_bot_by_application_id
+from tasks.lark.base import get_bot_by_application_id, get_repo_by_repo_id
 from utils.auth import authenticated
 from utils.utils import download_file
 
@@ -62,27 +62,37 @@ def set_account():
     return jsonify({"code": 0, "msg": "success"})
 
 
-@bp.route("/<team_id>/<message_id>/image/<img_key>", methods=["GET"])
-# @authenticated
-def get_image(team_id, message_id, img_key):
+@bp.route("/<team_id>/<message_id>/<repo_id>/image/<img_key>", methods=["GET"])
+def get_image(team_id, message_id, repo_id, img_key):
     """
     1. 用 img_key 下载 image(cache)
-    2. 这个链接需要用户登录信息
-        1. 公开仓库，不校验
-    3. 并且需要多加一层权限管理（只有这个team下面的人 ，才能查看这个图）
-    4. 如果没有登录的时候，这个url返回一张403的图，点击的时候，告诉用户需要登录
-        1. 如果是github上面查看的时候，通过 判断，展示图片
-        2. 如果用户点击图片，直接浏览器打开
-            1. 这个时候rederer是空的，跳转github　oauth登录
-            2. 然后跳转回到这个图片。可以正常查看图片内容
-            3. 这个时候如果刷新github的issue页面，应该是能正常查看图片的
+    2.
     """
-    # 必须要登录，才能查看图片，不然ddos分分钟打爆db
-    _, im_application = get_application_info_by_team_id(team_id)
-    bot, _ = get_bot_by_application_id(im_application.id)
 
-    image_content = download_file(img_key, message_id, bot, "image")
-    return Response(image_content, mimetype="image/png")
+    def download_and_respond():
+        _, im_application = get_application_info_by_team_id(team_id)
+        bot, _ = get_bot_by_application_id(im_application.id)
+        image_content = download_file(img_key, message_id, bot, "image")
+        return Response(image_content, mimetype="image/png")
+
+    # GitHub调用
+    user_agent = request.headers.get("User-Agent")
+    if user_agent and user_agent.startswith("github-camo"):
+        return download_and_respond()
+
+    # TODO 用户调用(弱需求, 通常来讲此接口不会被暴露), 需要进一步校验权限
+    referer = request.headers.get("Referer")
+    if not referer:
+        # 公开仓库不校验
+        repo = get_repo_by_repo_id(repo_id)
+        is_private = repo.extra.get("private", False)
+        app.logger.debug(f"is_private: {is_private}")
+
+        # 私有仓库校验，先登录
+        if is_private:
+            return abort(403)
+
+    return download_and_respond()
 
 
 app.register_blueprint(bp)
