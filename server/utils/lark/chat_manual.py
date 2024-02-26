@@ -30,6 +30,10 @@ class ChatManual(FeishuMessageCard):
             #     else None,
             # ),
             FeishuMessageDiv(
+                content="**🗄 关联新仓库至当前群聊 **\n*群聊下回复「/match + repo url」 *",
+                tag="lark_md",
+            ),
+            FeishuMessageDiv(
                 content=f"**⚡️ 前往 GitHub 查看 Repo 主页 **\n*群聊下回复「/view」 *",
                 tag="lark_md",
                 extra=FeishuMessageButton(
