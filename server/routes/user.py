@@ -65,8 +65,9 @@ def set_account():
 @bp.route("/<team_id>/<message_id>/<repo_id>/image/<img_key>", methods=["GET"])
 def get_image(team_id, message_id, repo_id, img_key):
     """
-    1. 用 img_key 下载 image(cache)
-    2.
+    1. 用 img_key 请求飞书接口下载 image
+    2. 判断请求来源，如果是 GitHub 调用，则直接返回 image
+    3. 用户调用 校验权限
     """
 
     def download_and_respond():
