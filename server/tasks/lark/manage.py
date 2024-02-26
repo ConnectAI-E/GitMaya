@@ -340,12 +340,14 @@ def create_chat_group_for_repo(
     # 把user_id_list中的每个user_id查User表，获取每个人的名字
     user_name_list = [
         name
-        for name, in db.session.query(IMUser.name).filter(
+        for name, in db.session.query(IMUser.name)
+        .filter(
             IMUser.openid.in_(user_id_list),
         )
+        .distinct()
     ]
     try:
-        chat_id == args[1]["event"]["message"]["chat_id"]
+        chat_id = args[1]["event"]["message"]["chat_id"]
     except Exception as e:
         chat_id = ""
 
@@ -382,7 +384,7 @@ def create_chat_group_for_repo(
 
         content = "\n".join(
             [
-                f"1. 成功绑定名为「{chat_name}」的项目群",
+                f"1. 成功绑定名为「{chat_name if chat_name else exists_chat_group.name}」的项目群",
                 invite_message,
             ]
         )
