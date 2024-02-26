@@ -384,7 +384,7 @@ def create_chat_group_for_repo(
 
         content = "\n".join(
             [
-                f"1. 成功绑定名为「{chat_name}」的项目群",
+                f"1. 成功绑定名为「{chat_name if chat_name else exists_chat_group.name}」的项目群",
                 invite_message,
             ]
         )
