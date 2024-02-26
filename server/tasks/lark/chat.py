@@ -224,7 +224,7 @@ def create_issue(
         if len(repos) == 0:
             root_id = data["event"]["message"].get("root_id", "")
             if root_id:
-                repo, issue, pr = tasks.get_git_object_by_message_id(root_id)
+                repo, issue, pr = get_git_object_by_message_id(root_id)
                 if repo:
                     repos = [repo]
                 elif issue or pr:
