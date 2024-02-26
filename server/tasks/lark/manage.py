@@ -345,7 +345,7 @@ def create_chat_group_for_repo(
         )
     ]
     try:
-        chat_id == args[1]["event"]["message"]["chat_id"]
+        chat_id = args[1]["event"]["message"]["chat_id"]
     except Exception as e:
         chat_id = ""
 
