@@ -340,9 +340,11 @@ def create_chat_group_for_repo(
     # 把user_id_list中的每个user_id查User表，获取每个人的名字
     user_name_list = [
         name
-        for name, in db.session.query(IMUser.name).filter(
+        for name, in db.session.query(IMUser.name)
+        .filter(
             IMUser.openid.in_(user_id_list),
         )
+        .distinct()
     ]
     try:
         chat_id = args[1]["event"]["message"]["chat_id"]
