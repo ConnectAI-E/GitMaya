@@ -1,8 +1,14 @@
 from app import app
-from flask import Blueprint, jsonify, request, session
-from model.team import get_team_list_by_user_id, is_team_admin
+from flask import Blueprint, Response, abort, jsonify, request, session
+from model.team import (
+    get_application_info_by_team_id,
+    get_team_list_by_user_id,
+    is_team_admin,
+)
 from model.user import get_user_by_id
+from tasks.lark.base import get_bot_by_application_id, get_repo_by_repo_id
 from utils.auth import authenticated
+from utils.utils import download_file
 
 bp = Blueprint("user", __name__, url_prefix="/api")
 
@@ -54,6 +60,40 @@ def set_account():
         session.permanent = True
 
     return jsonify({"code": 0, "msg": "success"})
+
+
+@bp.route("/<team_id>/<repo_id>/<message_id>/image/<img_key>", methods=["GET"])
+def get_image(team_id, message_id, repo_id, img_key):
+    """
+    1. 用 img_key 请求飞书接口下载 image
+    2. 判断请求来源，如果是 GitHub 调用，则直接返回 image
+    3. 用户调用 校验权限
+    """
+
+    def download_and_respond():
+        _, im_application = get_application_info_by_team_id(team_id)
+        bot, _ = get_bot_by_application_id(im_application.id)
+        image_content = download_file(img_key, message_id, bot, "image")
+        return Response(image_content, mimetype="image/png")
+
+    # GitHub调用
+    user_agent = request.headers.get("User-Agent")
+    if user_agent and user_agent.startswith("github-camo"):
+        return download_and_respond()
+
+    # TODO 用户调用(弱需求, 通常来讲此接口不会被暴露), 需要进一步校验权限
+    referer = request.headers.get("Referer")
+    if not referer:
+        # 公开仓库不校验
+        repo = get_repo_by_repo_id(repo_id)
+        is_private = repo.extra.get("private", False)
+        app.logger.debug(f"is_private: {is_private}")
+
+        # 私有仓库校验，先登录
+        if is_private:
+            return abort(403)
+
+    return download_and_respond()
 
 
 app.register_blueprint(bp)

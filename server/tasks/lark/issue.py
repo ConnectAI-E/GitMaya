@@ -21,7 +21,7 @@ from utils.lark.issue_card import IssueCard
 from utils.lark.issue_manual_help import IssueManualHelp, IssueView
 from utils.lark.issue_tip_failed import IssueTipFailed
 from utils.lark.issue_tip_success import IssueTipSuccess
-from utils.utils import upload_image
+from utils.utils import process_image
 
 from .base import (
     get_bot_by_application_id,
@@ -122,12 +122,12 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
             tags=tags,
         )
 
-    # 处理 description 中的图片
+    # 处理从 github 创建 Issue 时, description 中的图片
     description = replace_images_with_keys(
         issue.description if issue.description else "", bot
     )
 
-    # 处理 description 中的at
+    # 处理从 github 创建 Issue 时, description 中的 at
     description = replace_code_name_to_im_name(description)
 
     return IssueCard(
@@ -160,7 +160,7 @@ def replace_images_with_keys(text, bot):
     markdown_pattern = r"!\[.*?\]\((.*?)\)"
     replaced_text = re.sub(
         markdown_pattern,
-        lambda match: f"![]({upload_image(match.group(1), bot)})",
+        lambda match: f"![]({process_image(match.group(1), bot)})",
         text,
     )
 
@@ -168,7 +168,7 @@ def replace_images_with_keys(text, bot):
     html_pattern = r"<img.*?src=\"(.*?)\".*?>"
     replaced_text = re.sub(
         html_pattern,
-        lambda match: f"![]({upload_image(match.group(1), bot)})",
+        lambda match: f"![]({process_image(match.group(1), bot)})",
         replaced_text,
     )
 
@@ -601,12 +601,12 @@ def create_issue_comment(app_id, message_id, content, data, *args, **kwargs):
     )
     comment_text = content["text"]
 
-    # 判断 content 中是否有 at
-    if "mentions" in data["event"]["message"]:
-        # 替换 content 中的 im_name 为 code_name
-        comment_text = replace_im_name_to_github_name(
-            app_id, message_id, content, data, team, *args, **kwargs
-        )
+    from tasks.lark.chat import process_desc
+
+    # 处理 desc
+    comment_text = process_desc(
+        app_id, message_id, repo.id, comment_text, data, team, *args, **kwargs
+    )
 
     response = github_app.create_issue_comment(
         team.name, repo.name, issue.issue_number, comment_text

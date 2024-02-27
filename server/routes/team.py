@@ -175,29 +175,29 @@ def install_im_application_to_team_by_get_method(team_id, platform):
             )
             app.logger.info("result %r", result)
             events = [
-                "20",
-                "im.message.message_read_v1",
-                "im.message.reaction.created_v1",
-                "im.message.reaction.deleted_v1",
-                "im.message.recalled_v1",
-                "im.message.receive_v1",
+                "20",  # 用户和机器人的会话首次被创建
+                "im.message.message_read_v1",  # 消息已读
+                "im.message.reaction.created_v1",  # 新增消息表情回复
+                "im.message.reaction.deleted_v1",  # 删除消息表情回复
+                "im.message.recalled_v1",  # 撤回消息
+                "im.message.receive_v1",  # 接收消息
             ]
             scope_ids = [
-                "8002",
-                "100032",
-                "6081",
-                "14",
-                "1",
-                "21001",
-                "20001",
-                "20011",
-                "3001",
-                "20012",
-                "20010",
-                "3000",
-                "20008",
-                "1000",
-                "20009",
+                "8002",  # 获取应用信息
+                "100032",  # 获取通讯录基本信息
+                "6081",  # 以应用身份读取通讯录
+                "14",  # 获取用户基本信息
+                "1",  # 获取用户邮箱信息
+                "21001",  # 获取与更新群组信息
+                "20001",  # 获取与发送单聊、群组消息
+                "20011",  # 获取用户在群组中 @ 机器人的消息
+                "3001",  # 接收群聊中 @ 机器人消息事件
+                "20012",  # 获取群组中所有消息
+                "20010",  # 获取用户发给机器人的单聊消息
+                "3000",  # 读取用户发给机器人的单聊消息
+                "20008",  # 获取单聊、群组消息
+                "1000",  # 以应用的身份发消息
+                "20009",  # 获取上传图片或文件资源
             ]
             hook_url = f"{os.environ.get('DOMAIN')}/api/feishu/hook/{app_id}"
             return redirect(
@@ -260,9 +260,9 @@ def get_task_result_by_id(team_id, task_id):
             "data": {
                 "task_id": task.id,
                 "status": task.status,
-                "result": task.result
-                if isinstance(task.result, list)
-                else str(task.result),
+                "result": (
+                    task.result if isinstance(task.result, list) else str(task.result)
+                ),
             },
         }
     )
