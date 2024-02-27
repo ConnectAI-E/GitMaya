@@ -5,23 +5,13 @@ import re
 from urllib.parse import urlparse
 
 from celery_app import app, celery
-from model.schema import (
-    ChatGroup,
-    CodeApplication,
-    CodeUser,
-    IMUser,
-    Repo,
-    Team,
-    TeamMember,
-    db,
-)
+from model.schema import ChatGroup, CodeApplication, Repo, Team, db
 from model.team import get_code_users_by_openid
-from sqlalchemy.orm import aliased
 from tasks.lark.issue import replace_im_name_to_github_name
+from tasks.lark.manage import send_manage_fail_message
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
-from utils.lark.issue_card import IssueCard
 from utils.lark.post_message import post_content_to_markdown
 
 from .base import (
@@ -295,9 +285,7 @@ def create_issue(
     if openid not in code_users:
         host = os.environ.get("DOMAIN")
 
-        import tasks
-
-        return tasks.send_manage_fail_message(
+        return send_manage_fail_message(
             f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
             app_id,
             message_id,
@@ -455,12 +443,10 @@ def sync_issue(
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid])
 
-    import tasks
-
     if openid not in code_users:
         host = os.environ.get("DOMAIN")
 
-        return tasks.send_manage_fail_message(
+        return send_manage_fail_message(
             f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
             app_id,
             message_id,
