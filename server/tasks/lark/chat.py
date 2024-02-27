@@ -292,10 +292,10 @@ def create_issue(
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid] + users)
 
-    import tasks
-
     if openid not in code_users:
         host = os.environ.get("DOMAIN")
+
+        import tasks
 
         return tasks.send_manage_fail_message(
             f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
