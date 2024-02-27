@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 from celery_app import app, celery
 from model.schema import ChatGroup, CodeApplication, Repo, Team, db
 from model.team import get_code_users_by_openid
+from tasks.github.issue import on_issue_opened
+from tasks.github.pull_request import on_pull_request_opened
 from tasks.lark.issue import replace_im_name_to_github_name
 from tasks.lark.manage import send_manage_fail_message
 from utils.github.repo import GitHubAppRepo
@@ -468,7 +470,7 @@ def sync_issue(
     if is_pr:
         pull_request = github_app.get_one_pull_request(team.name, repo.name, issue_id)
         logging.debug("get_one_pull_requrst %r", pull_request)
-        return tasks.on_pull_request_opened(
+        return on_pull_request_opened(
             {
                 "action": "opened",
                 "sender": pull_request["user"],
@@ -479,7 +481,7 @@ def sync_issue(
     else:
         issue = github_app.get_one_issue(team.name, repo.name, issue_id)
         logging.debug("get_one_issue %r", issue)
-        return tasks.on_issue_opened(
+        return on_issue_opened(
             {
                 "action": "opened",
                 "sender": issue["user"],
