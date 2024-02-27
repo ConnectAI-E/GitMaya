@@ -349,7 +349,7 @@ def process_desc(app_id, message_id, repo_id, desc, data, team, *args, **kwargs)
 def replace_images_keys_with_url(text, team_id, message_id, repo_id):
     """
     replace image_key with image URL.
-    ![](image_key) -> ![](gitmaya.com/api/<team_id>/<message_id>/<repo_id>/image/<image_key>)
+    ![](image_key) -> ![](gitmaya.com/api/<team_id>/<repo_id>/<message_id>/image/<image_key>)
     Args:
         text (str): original text
 
@@ -359,7 +359,7 @@ def replace_images_keys_with_url(text, team_id, message_id, repo_id):
     host = os.environ.get("DOMAIN")
     replaced_text = re.sub(
         r"!\[.*?\]\((.*?)\)",
-        lambda match: f"![]({host}/api/{team_id}/{message_id}/{repo_id}/image/{match.group(1)})",
+        lambda match: f"![]({host}/api/{team_id}/{repo_id}/{message_id}/image/{match.group(1)})",
         text,
     )
 

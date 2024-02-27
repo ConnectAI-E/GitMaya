@@ -62,7 +62,7 @@ def set_account():
     return jsonify({"code": 0, "msg": "success"})
 
 
-@bp.route("/<team_id>/<message_id>/<repo_id>/image/<img_key>", methods=["GET"])
+@bp.route("/<team_id>/<repo_id>/<message_id>/image/<img_key>", methods=["GET"])
 def get_image(team_id, message_id, repo_id, img_key):
     """
     1. 用 img_key 请求飞书接口下载 image
