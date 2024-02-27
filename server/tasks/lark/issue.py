@@ -161,7 +161,7 @@ def replace_images_with_keys(text, bot, is_private=False):
     replaced_text = re.sub(
         markdown_pattern,
         lambda match: (
-            f"图片({match.group(1)})"
+            f"图片: {match.group(1)}"
             if is_private
             else f"![]({process_image(match.group(1), bot)})"
         ),
@@ -173,7 +173,7 @@ def replace_images_with_keys(text, bot, is_private=False):
     replaced_text = re.sub(
         html_pattern,
         lambda match: (
-            f"图片({match.group(1)})"
+            f"图片: {match.group(1)}"
             if is_private
             else f"![]({process_image(match.group(1), bot)})"
         ),
@@ -418,8 +418,9 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            is_private = repo.extra.get("private", False)
             # 替换 comment 中的图片 url 为 image_key
-            comment = replace_images_with_keys(comment, bot)
+            comment = replace_images_with_keys(comment, bot, is_private=is_private)
             # 统一用富文本回答, 支持图片、at
             content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
