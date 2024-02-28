@@ -5,23 +5,15 @@ import re
 from urllib.parse import urlparse
 
 from celery_app import app, celery
-from model.schema import (
-    ChatGroup,
-    CodeApplication,
-    CodeUser,
-    IMUser,
-    Repo,
-    Team,
-    TeamMember,
-    db,
-)
+from model.schema import ChatGroup, CodeApplication, Repo, Team, db
 from model.team import get_code_users_by_openid
-from sqlalchemy.orm import aliased
+from tasks.github.issue import on_issue_opened
+from tasks.github.pull_request import on_pull_request_opened
 from tasks.lark.issue import replace_im_name_to_github_name
+from tasks.lark.manage import send_manage_fail_message
 from utils.github.repo import GitHubAppRepo
 from utils.lark.chat_manual import ChatManual, ChatView
 from utils.lark.chat_tip_failed import ChatTipFailed
-from utils.lark.issue_card import IssueCard
 from utils.lark.post_message import post_content_to_markdown
 
 from .base import (
@@ -292,12 +284,10 @@ def create_issue(
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid] + users)
 
-    import tasks
-
     if openid not in code_users:
         host = os.environ.get("DOMAIN")
 
-        return tasks.send_manage_fail_message(
+        return send_manage_fail_message(
             f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
             app_id,
             message_id,
@@ -455,12 +445,10 @@ def sync_issue(
     # 这里连三个表查询，所以一次性都查出来
     code_users = get_code_users_by_openid([openid])
 
-    import tasks
-
     if openid not in code_users:
         host = os.environ.get("DOMAIN")
 
-        return tasks.send_manage_fail_message(
+        return send_manage_fail_message(
             f"[请点击绑定 GitHub 账号后重试]({host}/api/github/oauth)",
             app_id,
             message_id,
@@ -482,7 +470,7 @@ def sync_issue(
     if is_pr:
         pull_request = github_app.get_one_pull_request(team.name, repo.name, issue_id)
         logging.debug("get_one_pull_requrst %r", pull_request)
-        return tasks.on_pull_request_opened(
+        return on_pull_request_opened(
             {
                 "action": "opened",
                 "sender": pull_request["user"],
@@ -493,7 +481,7 @@ def sync_issue(
     else:
         issue = github_app.get_one_issue(team.name, repo.name, issue_id)
         logging.debug("get_one_issue %r", issue)
-        return tasks.on_issue_opened(
+        return on_issue_opened(
             {
                 "action": "opened",
                 "sender": issue["user"],
