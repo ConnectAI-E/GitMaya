@@ -86,12 +86,14 @@ def get_image(team_id, message_id, repo_id, img_key):
     if not referer:
         # 公开仓库不校验
         repo = get_repo_by_repo_id(repo_id)
+        if not repo:
+            return abort(404, "Not found repo!")
         is_private = repo.extra.get("private", False)
         app.logger.debug(f"is_private: {is_private}")
 
         # 私有仓库校验，先登录
         if is_private:
-            return abort(403)
+            return abort(403, "Not support private repo!")
 
     return download_and_respond()
 
