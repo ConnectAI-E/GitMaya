@@ -101,7 +101,7 @@ def get_creater_by_item(item, team):
     return creater, code_name
 
 
-def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
+def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False, is_private=False):
     assignees = get_assignees_by_issue(issue, team)
     creater, code_name = get_creater_by_item(issue, team)
     tags = [i["name"] for i in issue.extra.get("labels", [])]
@@ -124,7 +124,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
 
     # 处理从 github 创建 Issue 时, description 中的图片
     description = replace_images_with_keys(
-        issue.description if issue.description else "", bot
+        issue.description if issue.description else "", bot, is_private=is_private
     )
 
     # 处理从 github 创建 Issue 时, description 中的 at
@@ -144,7 +144,7 @@ def gen_issue_card_by_issue(bot, issue, repo_url, team, maunal=False):
     )
 
 
-def replace_images_with_keys(text, bot):
+def replace_images_with_keys(text, bot, is_private=False):
     """
     replace image URL to image_key.
     Markdown: ![](url) -> ![](image_key)
@@ -160,7 +160,11 @@ def replace_images_with_keys(text, bot):
     markdown_pattern = r"!\[.*?\]\((.*?)\)"
     replaced_text = re.sub(
         markdown_pattern,
-        lambda match: f"![]({process_image(match.group(1), bot)})",
+        lambda match: (
+            f"图片: {match.group(1)}"
+            if is_private
+            else f"![]({process_image(match.group(1), bot)})"
+        ),
         text,
     )
 
@@ -168,7 +172,11 @@ def replace_images_with_keys(text, bot):
     html_pattern = r"<img.*?src=\"(.*?)\".*?>"
     replaced_text = re.sub(
         html_pattern,
-        lambda match: f"![]({process_image(match.group(1), bot)})",
+        lambda match: (
+            f"图片: {match.group(1)}"
+            if is_private
+            else f"![]({process_image(match.group(1), bot)})"
+        ),
         replaced_text,
     )
 
@@ -350,7 +358,10 @@ def send_issue_card(issue_id):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-                message = gen_issue_card_by_issue(bot, issue, repo_url, team)
+                is_private = repo.extra.get("private", False)
+                message = gen_issue_card_by_issue(
+                    bot, issue, repo_url, team, is_private=is_private
+                )
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
                 ).json()
@@ -407,8 +418,9 @@ def send_issue_comment(issue_id, comment, user_name: str):
         )
         if chat_group and issue.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            is_private = repo.extra.get("private", False)
             # 替换 comment 中的图片 url 为 image_key
-            comment = replace_images_with_keys(comment, bot)
+            comment = replace_images_with_keys(comment, bot, is_private=is_private)
             # 统一用富文本回答, 支持图片、at
             content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
