@@ -15,10 +15,12 @@ from model.schema import (
     db,
 )
 from model.team import get_assignees_by_openid
+from tasks.lark.chat import process_desc
 from tasks.lark.issue import (
     gen_comment_post_message,
     get_creater_by_item,
     get_github_name_by_openid,
+    replace_code_name_to_im_name,
     replace_im_name_to_github_name,
     replace_images_with_keys,
 )
@@ -94,7 +96,9 @@ def get_assignees_by_pr(pr, team):
     return assignees
 
 
-def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
+def gen_pr_card_by_pr(
+    bot, pr: PullRequest, repo_url, team, maunal=False, is_private=False
+):
     assignees = get_assignees_by_pr(pr, team)
     creater, code_name = get_creater_by_item(pr, team)
     reviewers = pr.extra.get("requested_reviewers", [])
@@ -133,6 +137,14 @@ def gen_pr_card_by_pr(pr: PullRequest, repo_url, team, maunal=False):
             tags=labels,
             merged=merged,
         )
+
+    # 处理从 github 创建 Issue 时, description 中的图片
+    description = replace_images_with_keys(
+        pr.description if pr.description else "", bot, is_private=is_private
+    )
+
+    # 处理从 github 创建 Issue 时, description 中的 at
+    description = replace_code_name_to_im_name(description)
 
     return PullCard(
         repo_url=repo_url,
@@ -206,7 +218,7 @@ def send_pull_request_manual(app_id, message_id, content, data, *args, **kwargs)
         )
 
     repo_url = f"https://github.com/{team.name}/{repo.name}"
-    message = gen_pr_card_by_pr(pr, repo_url, team, maunal=True)
+    message = gen_pr_card_by_pr(bot, pr, repo_url, team, maunal=True)
 
     # 回复到话题内部
     return bot.reply(message_id, message).json()
@@ -339,8 +351,10 @@ def send_pull_request_card(pull_request_id: str):
             team = db.session.query(Team).filter(Team.id == application.team_id).first()
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
-
-                message = gen_pr_card_by_pr(pr, repo_url, team)
+                is_private = repo.extra.get("private", False)
+                message = gen_pr_card_by_pr(
+                    bot, pr, repo_url, team, is_private=is_private
+                )
 
                 result = bot.send(
                     chat_group.chat_id, message, receive_id_type="chat_id"
@@ -399,8 +413,9 @@ def send_pull_request_comment(pull_request_id, comment, user_name: str):
         )
         if chat_group and pr.message_id:
             bot, _ = get_bot_by_application_id(chat_group.im_application_id)
+            is_private = repo.extra.get("private", False)
             # 替换 comment 中的图片 url 为 image_key
-            comment = replace_images_with_keys(comment, bot)
+            comment = replace_images_with_keys(comment, bot, is_private=is_private)
             # 统一用富文本回答, 支持图片、at
             content = gen_comment_post_message(user_name, comment)
             result = bot.reply(
@@ -439,7 +454,7 @@ def update_pull_request_card(pr_id: str) -> bool | dict:
             if application and team:
                 repo_url = f"https://github.com/{team.name}/{repo.name}"
 
-                message = gen_pr_card_by_pr(pr, repo_url, team)
+                message = gen_pr_card_by_pr(bot, pr, repo_url, team)
 
                 result = bot.update(pr.message_id, message).json()
                 return result
@@ -525,30 +540,9 @@ def create_pull_request_comment(app_id, message_id, content, data, *args, **kwar
     )
     comment_text = content["text"]
 
-    # 判断 content 中是否有 at
-    if "mentions" in data["event"]["message"]:
-        # 获得 mentions 中的 openid list
-        mentions = data["event"]["message"]["mentions"]
-        openid_list = [mention["id"]["open_id"] for mention in mentions]
-        code_name_list = []
-
-        for openid in openid_list:
-            # 通过 openid list 获得 code_name_list
-            code_name_list.append(
-                get_github_name_by_openid(
-                    openid,
-                    team.id,
-                    app_id,
-                    message_id,
-                    content,
-                    data,
-                    *args,
-                    **kwargs,
-                )
-            )
-
-        # 替换 content 中的 im_name 为 code_name
-        comment_text = replace_im_name_to_github_name(content["text"], code_name_list)
+    comment_text = process_desc(
+        app_id, message_id, repo.id, comment_text, data, team, *args, **kwargs
+    )
 
     response = github_app.create_issue_comment(
         team.name, repo.name, pr.pull_request_number, comment_text
@@ -584,7 +578,7 @@ def close_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(state="closed")
-        message = gen_pr_card_by_pr(pr, repo_url, team, True)
+        message = gen_pr_card_by_pr(bot, pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -613,7 +607,7 @@ def merge_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(merged=True)
-        message = gen_pr_card_by_pr(pr, repo_url, team, True)
+        message = gen_pr_card_by_pr(bot, pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
@@ -642,7 +636,7 @@ def reopen_pull_request(app_id, message_id, content, data, *args, **kwargs):
     if root_id != message_id:
         repo_url = f"https://github.com/{team.name}/{repo.name}"
         pr.extra.update(state="opened")
-        message = gen_pr_card_by_pr(pr, repo_url, team, True)
+        message = gen_pr_card_by_pr(bot, pr, repo_url, team, True)
         bot, _ = get_bot_by_application_id(app_id)
         bot.update(message_id=message_id, content=message)
     return response
