@@ -150,7 +150,7 @@ def gen_pr_card_by_pr(
         repo_url=repo_url,
         id=pr.pull_request_number,
         title=pr.title,
-        description=pr.description,
+        description=description,
         base=pr.extra.get("base", {}),
         head=pr.extra.get("head", {}),
         status=status,
@@ -380,7 +380,7 @@ def send_pull_request_card(pull_request_id: str):
 
                     first_message_result = bot.reply(
                         message_id,
-                        # TODO 第一条话题消息，直接放repo_url
+                        # 第一条话题消息，直接放repo_url
                         FeishuTextMessage(
                             f"{users} {repo_url}/pull/{pr.pull_request_number}"
                         ),

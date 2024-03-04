@@ -18,7 +18,9 @@ def process_image(url, bot):
 @stalecache(expire=3600, stale=600)
 def upload_image(url, bot):
     logging.info("upload image: %s", url)
-    response = httpx.get(url, follow_redirects=True)
+    response = httpx.get(
+        url, follow_redirects=True, timeout=15
+    )  # Increase the timeout to 30 seconds
     if response.status_code == 200:
         # 函数返回值: iamg_key 存到缓存中
         img_key = upload_image_binary(response.content, bot)
