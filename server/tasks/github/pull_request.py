@@ -64,15 +64,13 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         return []
 
     # 限制 body 长度
-    pr_desc = ""
-    if pr_info.body:
-        pr_desc = (
-            pr_info.body[: 980 - len(pr_info.html_url)]
-            + "...\n\n点击查看全文: "
-            + pr_info.html_url
-            if len(pr_info.body) > 1000
-            else pr_info.body
-        )
+    pr_info.body = (
+        pr_info.body[: 980 - len(pr_info.html_url)]
+        + "...\n\n点击查看全文: "
+        + pr_info.html_url
+        if len(pr_info.body) > 1000
+        else pr_info.body
+    )
 
     # 创建 pullrequest
     new_pr = PullRequest(
@@ -80,7 +78,7 @@ def on_pull_request_opened(event_dict: dict | list | None) -> list:
         repo_id=repo.id,
         pull_request_number=pr_info.number,
         title=pr_info.title,
-        description=pr_desc,
+        description=pr_info.body,
         base=pr_info.base.ref,
         head=pr_info.head.ref,
         state=pr_info.state,
@@ -119,13 +117,14 @@ def on_pull_request_updated(event_dict: dict) -> list:
     )
     if pr:
         pr.title = event.pull_request.title
-        pr.description = (
+        event.pull_request.body = (
             event.pull_request.body[: 980 - len(event.pull_request.html_url)]
             + "...\n\n点击查看全文: "
             + event.pull_request.html_url
             if len(event.pull_request.body) > 1000
             else event.pull_request.body
         )
+        pr.description = event.pull_request.body
         pr.base = event.pull_request.base.ref
         pr.head = event.pull_request.head.ref
         pr.state = event.pull_request.state

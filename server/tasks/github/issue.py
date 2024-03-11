@@ -152,15 +152,13 @@ def on_issue_opened(event_dict: dict | None) -> list:
         return []
 
     # 限制 body 长度
-    issue_desc = ""
-    if issue_info.body:
-        issue_desc = (
-            issue_info.body[: 980 - len(issue_info.html_url)]
-            + "...\n\n点击查看全文: "
-            + issue_info.html_url
-            if len(issue_info.body) > 1000
-            else issue_info.body
-        )
+    issue_info.body = (
+        issue_info.body[: 980 - len(issue_info.html_url)]
+        + "...\n\n点击查看全文: "
+        + issue_info.html_url
+        if len(issue_info.body) > 1000
+        else issue_info.body
+    )
 
     # 创建 issue
     new_issue = Issue(
@@ -169,7 +167,7 @@ def on_issue_opened(event_dict: dict | None) -> list:
         issue_number=issue_info.number,
         title=issue_info.title,
         # TODO 这里超过1024的长度了，暂时不想单纯的增加字段长度，因为飞书那边消息也是有限制的
-        description=issue_desc,
+        description=issue_info.body,
         extra=issue_info.model_dump(),
     )
     db.session.add(new_issue)
@@ -206,13 +204,14 @@ def on_issue_updated(event_dict: dict) -> list:
 
     if issue:
         issue.title = issue_info.title
-        issue.description = (
+        issue_info.body = (
             issue_info.body[: 980 - len(issue_info.html_url)]
             + "...\n\n点击查看全文: "
             + issue_info.html_url
             if len(issue_info.body) > 1000
             else issue_info.body
         )
+        issue.description = issue_info.body
         issue.extra = issue_info.model_dump()
 
         db.session.commit()
