@@ -62,6 +62,7 @@ class Issue(BaseModel):
     id: int
     number: int
     title: str
+    html_url: str
     body: Optional[str] = None
     state: str  # open/closed
     labels: Optional[list[Label]] = []
@@ -96,6 +97,7 @@ class PullRequest(BaseModel):
     id: int
     number: int
     title: str
+    html_url: str
     body: Optional[str] = None
     state: str  # open/closed
     merged: Optional[bool] = False
