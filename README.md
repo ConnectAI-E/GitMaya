@@ -25,7 +25,11 @@
 </div>
 
 <p align="center">
-    <a href="https://gitmaya.com"> 🖥 立即尝试 GitMaya </a>
+    <a href="https://gitmaya.com"> 🖥 Try GitMaya Now </a>
+</p>
+
+<p align="center">
+    <a href="https://gitmaya-doc.netlify.app/"> 📖 使用文档</a>
 </p>
 
 <strong align="center">
