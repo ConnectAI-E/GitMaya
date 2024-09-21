@@ -152,7 +152,13 @@ def on_issue_opened(event_dict: dict | None) -> list:
         return []
 
     # 限制 body 长度
-    issue_info.body = issue_info.body[:1000] if issue_info.body else None
+    issue_info.body = (
+        issue_info.body[: 980 - len(issue_info.html_url)]
+        + "...\n\n点击查看全文: "
+        + issue_info.html_url
+        if len(issue_info.body) > 1000
+        else issue_info.body
+    )
 
     # 创建 issue
     new_issue = Issue(
@@ -198,7 +204,14 @@ def on_issue_updated(event_dict: dict) -> list:
 
     if issue:
         issue.title = issue_info.title
-        issue.description = issue_info.body[:1000] if issue_info.body else None
+        issue_info.body = (
+            issue_info.body[: 980 - len(issue_info.html_url)]
+            + "...\n\n点击查看全文: "
+            + issue_info.html_url
+            if len(issue_info.body) > 1000
+            else issue_info.body
+        )
+        issue.description = issue_info.body
         issue.extra = issue_info.model_dump()
 
         db.session.commit()
